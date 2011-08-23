@@ -44,11 +44,22 @@ class _OpenSlide(c_void_p):
         return super(_OpenSlide, cls).from_param(obj)
 
 # check if the library got into an error state after each library call
-def _errcheck(result, func, args):
+def _check_error(result, func, args):
     err = get_error(args[0])
     if err is not None:
         raise OpenSlideError(err)
     return result
+
+# Convert returned NULL-terminated string array into a list
+def _check_name_list(result, func, args):
+    _check_error(result, func, args)
+    names = []
+    for i in count():
+        name = result[i]
+        if not name:
+            break
+        names.append(name)
+    return names
 
 can_open = _lib.openslide_can_open
 can_open.restype = c_int # c_bool
@@ -65,12 +76,12 @@ close.argtypes = [ _OpenSlide ]
 get_layer_count = _lib.openslide_get_layer_count
 get_layer_count.restype = c_int32
 get_layer_count.argtypes = [ _OpenSlide ]
-get_layer_count.errcheck = _errcheck
+get_layer_count.errcheck = _check_error
 
 _get_layer_dimensions = _lib.openslide_get_layer_dimensions
 _get_layer_dimensions.restype = None
 _get_layer_dimensions.argtypes = [ _OpenSlide, c_int32, POINTER(c_int64), POINTER(c_int64) ]
-_get_layer_dimensions.errcheck = _errcheck
+_get_layer_dimensions.errcheck = _check_error
 def get_layer_dimensions(slide, layer):
     w, h = c_int64(), c_int64()
     _get_layer_dimensions(slide, layer, byref(w), byref(h))
@@ -79,17 +90,17 @@ def get_layer_dimensions(slide, layer):
 get_layer_downsample = _lib.openslide_get_layer_downsample
 get_layer_downsample.restype = c_double
 get_layer_downsample.argtypes = [ _OpenSlide, c_int32 ]
-get_layer_downsample.errcheck = _errcheck
+get_layer_downsample.errcheck = _check_error
 
 get_best_layer_for_downsample = _lib.openslide_get_best_layer_for_downsample
 get_best_layer_for_downsample.restype = c_int32
 get_best_layer_for_downsample.argtypes = [ _OpenSlide, c_double ]
-get_best_layer_for_downsample.errcheck = _errcheck
+get_best_layer_for_downsample.errcheck = _check_error
 
 _read_region = _lib.openslide_read_region
 _read_region.restype = None
 _read_region.argtypes = [ _OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64, c_int64 ]
-_read_region.errcheck = _errcheck
+_read_region.errcheck = _check_error
 def read_region(slide, x, y, layer, w, h):
     buf = create_string_buffer(w * h * 4)
     dest = cast(buf, POINTER(c_uint32))
@@ -100,40 +111,30 @@ get_error = _lib.openslide_get_error
 get_error.restype = c_char_p
 get_error.argtypes = [ _OpenSlide ]
 
-def _checknamelist(result, func, args):
-    _errcheck(result, func, args)
-    names = []
-    for i in count():
-        name = result[i]
-        if not name:
-            break
-        names.append(name)
-    return names
-
 get_property_names = _lib.openslide_get_property_names
 get_property_names.restype = POINTER(c_char_p)
 get_property_names.argtypes = [ _OpenSlide ]
-get_property_names.errcheck = _checknamelist
+get_property_names.errcheck = _check_name_list
 
 get_property_value = _lib.openslide_get_property_value
 get_property_value.restype = c_char_p
 get_property_value.argtypes = [ _OpenSlide, c_char_p ]
-get_property_value.errcheck = _errcheck
+get_property_value.errcheck = _check_error
 
 get_comment = _lib.openslide_get_comment
 get_comment.restype = c_char_p
 get_comment.argtypes = [ _OpenSlide ]
-get_comment.errcheck = _errcheck
+get_comment.errcheck = _check_error
 
 get_associated_image_names = _lib.openslide_get_associated_image_names
 get_associated_image_names.restype = POINTER(c_char_p)
 get_associated_image_names.argtypes = [ _OpenSlide ]
-get_associated_image_names.errcheck = _checknamelist
+get_associated_image_names.errcheck = _check_name_list
 
 _get_associated_image_dimensions = _lib.openslide_get_associated_image_dimensions
 _get_associated_image_dimensions.restype = None
 _get_associated_image_dimensions.argtypes = [ _OpenSlide, c_char_p, POINTER(c_int64), POINTER(c_int64) ]
-_get_associated_image_dimensions.errcheck = _errcheck
+_get_associated_image_dimensions.errcheck = _check_error
 def get_associated_image_dimensions(slide, name):
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
@@ -142,7 +143,7 @@ def get_associated_image_dimensions(slide, name):
 _read_associated_image = _lib.openslide_read_associated_image
 _read_associated_image.restype = None
 _read_associated_image.argtypes = [ _OpenSlide, c_char_p, POINTER(c_uint32) ]
-_read_associated_image.errcheck = _errcheck
+_read_associated_image.errcheck = _check_error
 def read_associated_image(slide, name):
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
