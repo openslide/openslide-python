@@ -128,11 +128,6 @@ get_property_value.restype = c_char_p
 get_property_value.argtypes = [ _OpenSlide, c_char_p ]
 get_property_value.errcheck = _check_error
 
-get_comment = _lib.openslide_get_comment
-get_comment.restype = c_char_p
-get_comment.argtypes = [ _OpenSlide ]
-get_comment.errcheck = _check_error
-
 get_associated_image_names = _lib.openslide_get_associated_image_names
 get_associated_image_names.restype = POINTER(c_char_p)
 get_associated_image_names.argtypes = [ _OpenSlide ]
