@@ -20,7 +20,6 @@
 from ctypes import *
 from itertools import count
 import PIL.Image
-import struct
 import sys
 
 _lib = cdll.LoadLibrary('libopenslide.so.0')
