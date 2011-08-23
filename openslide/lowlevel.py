@@ -17,30 +17,34 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-import struct, PIL.Image, sys
-from itertools import count
 from ctypes import *
+from itertools import count
+import PIL.Image
+import struct
+import sys
 
 _lib = cdll.LoadLibrary('libopenslide.so.0')
 
-PROPERTY_NAME_COMMENT		= 'openslide.comment'
-PROPERTY_NAME_VENDOR		= 'openslide.vendor'
-PROPERTY_NAME_QUICKHASH1	= 'openslide.quickhash-1'
-PROPERTY_NAME_BACKGROUND_COLOR	= 'openslide.background-color'
+PROPERTY_NAME_COMMENT          = 'openslide.comment'
+PROPERTY_NAME_VENDOR           = 'openslide.vendor'
+PROPERTY_NAME_QUICKHASH1       = 'openslide.quickhash-1'
+PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
 
 # validating class to make sure we correctly pass an OpenSlide handle
 class _OpenSlide(c_void_p):
     @classmethod
     def from_param(cls, obj):
-	if not obj: raise ValueError("Passing undefined slide object")
-	if obj.__class__ != cls: raise ValueError("Not an OpenSlide reference")
-	return super(_OpenSlide, cls).from_param(obj)
+        if not obj:
+            raise ValueError("Passing undefined slide object")
+        if obj.__class__ != cls:
+            raise ValueError("Not an OpenSlide reference")
+        return super(_OpenSlide, cls).from_param(obj)
 
 # check if the library got into an error state after each library call
 def _errcheck(result, func, args):
     err = get_error(args[0])
     if err is not None:
-	raise RuntimeError(err)
+        raise RuntimeError(err)
     return result
 
 can_open = _lib.openslide_can_open
@@ -97,9 +101,10 @@ def _checknamelist(result, func, args):
     _errcheck(result, func, args)
     names = []
     for i in count():
-	name = result[i]
-	if not name: break
-	names.append(name)
+        name = result[i]
+        if not name:
+            break
+        names.append(name)
     return names
 
 get_property_names = _lib.openslide_get_property_names
@@ -148,5 +153,3 @@ _rawmode = (sys.byteorder == 'little') and 'BGRA' or 'ARGB'
 def _aRGB_to_RGBa(buf, size):
     i = PIL.Image.frombuffer('RGBA', size, buf.raw, 'raw', _rawmode, 0, 1)
     return PIL.Image.frombuffer('RGBA', size, i.tostring(), 'raw', 'RGBa', 0, 1)
-
-# vim:set sw=4 sts=4 noet:
