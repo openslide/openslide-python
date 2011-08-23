@@ -30,6 +30,9 @@ PROPERTY_NAME_VENDOR           = 'openslide.vendor'
 PROPERTY_NAME_QUICKHASH1       = 'openslide.quickhash-1'
 PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
 
+class OpenSlideError(Exception):
+    pass
+
 # validating class to make sure we correctly pass an OpenSlide handle
 class _OpenSlide(c_void_p):
     @classmethod
@@ -44,7 +47,7 @@ class _OpenSlide(c_void_p):
 def _errcheck(result, func, args):
     err = get_error(args[0])
     if err is not None:
-        raise RuntimeError(err)
+        raise OpenSlideError(err)
     return result
 
 can_open = _lib.openslide_can_open
