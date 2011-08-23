@@ -43,6 +43,12 @@ class _OpenSlide(c_void_p):
             raise ValueError("Not an OpenSlide reference")
         return super(_OpenSlide, cls).from_param(obj)
 
+# check for errors opening an image file
+def _check_open(result, func, args):
+    if result.value is None:
+        raise OpenSlideError("Could not open image file")
+    return result
+
 # check if the library got into an error state after each library call
 def _check_error(result, func, args):
     err = get_error(args[0])
@@ -68,6 +74,7 @@ can_open.argtypes = [ c_char_p ]
 open = _lib.openslide_open
 open.restype = _OpenSlide
 open.argtypes = [ c_char_p ]
+open.errcheck = _check_open
 
 close = _lib.openslide_close
 close.restype = None
