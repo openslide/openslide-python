@@ -107,9 +107,8 @@ _read_region = _func('openslide_read_region', None,
         [_OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64,
         c_int64])
 def read_region(slide, x, y, layer, w, h):
-    buf = create_string_buffer(w * h * 4)
-    dest = cast(buf, POINTER(c_uint32))
-    _read_region(slide, dest, x, y, layer, w, h)
+    buf = (w * h * c_uint32)()
+    _read_region(slide, buf, x, y, layer, w, h)
     return _load_image(buf, (w, h))
 
 get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], None)
@@ -136,7 +135,6 @@ _read_associated_image = _func('openslide_read_associated_image', None,
 def read_associated_image(slide, name):
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
-    buf = create_string_buffer(w.value * h.value * 4)
-    dest = cast(buf, POINTER(c_uint32))
-    _read_associated_image(slide, name, dest)
+    buf = (w.value * h.value * c_uint32)()
+    _read_associated_image(slide, name, buf)
     return _load_image(buf, (w.value, h.value))
