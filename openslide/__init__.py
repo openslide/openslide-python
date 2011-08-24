@@ -18,3 +18,8 @@
 #
 
 from openslide._version import __version__
+
+PROPERTY_NAME_COMMENT          = 'openslide.comment'
+PROPERTY_NAME_VENDOR           = 'openslide.vendor'
+PROPERTY_NAME_QUICKHASH1       = 'openslide.quickhash-1'
+PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
