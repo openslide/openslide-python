@@ -70,6 +70,17 @@ def _func(name, restype, argtypes, errcheck=_check_error):
         func.errcheck = errcheck
     return func
 
+def _load_image(buf, size):
+    '''buf can be a string, but should be a ctypes buffer to avoid an extra
+    copy in the caller.'''
+    # First reorder the bytes in a pixel from native-endian aRGB to
+    # big-endian RGBa to work around limitations in RGBa loader
+    rawmode = (sys.byteorder == 'little') and 'BGRA' or 'ARGB'
+    buf = PIL.Image.frombuffer('RGBA', size, buf, 'raw', rawmode, 0,
+            1).tostring()
+    # Now load the image as RGBA, undoing premultiplication
+    return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBa', 0, 1)
+
 can_open = _func('openslide_can_open', c_bool, [c_char_p], None)
 
 open = _func('openslide_open', _OpenSlide, [c_char_p], _check_open)
@@ -99,7 +110,7 @@ def read_region(slide, x, y, layer, w, h):
     buf = create_string_buffer(w * h * 4)
     dest = cast(buf, POINTER(c_uint32))
     _read_region(slide, dest, x, y, layer, w, h)
-    return _aRGB_to_RGBa(buf, (w, h))
+    return _load_image(buf, (w, h))
 
 get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], None)
 
@@ -128,10 +139,4 @@ def read_associated_image(slide, name):
     buf = create_string_buffer(w.value * h.value * 4)
     dest = cast(buf, POINTER(c_uint32))
     _read_associated_image(slide, name, dest)
-    return _aRGB_to_RGBa(buf, (w.value, h.value))
-
-# repack buffer from native-endian aRGB to big-endian RGBa and return PIL.Image
-_rawmode = (sys.byteorder == 'little') and 'BGRA' or 'ARGB'
-def _aRGB_to_RGBa(buf, size):
-    i = PIL.Image.frombuffer('RGBA', size, buf.raw, 'raw', _rawmode, 0, 1)
-    return PIL.Image.frombuffer('RGBA', size, i.tostring(), 'raw', 'RGBa', 0, 1)
+    return _load_image(buf, (w.value, h.value))
