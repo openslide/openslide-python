@@ -19,7 +19,7 @@
 
 from collections import Mapping
 
-import openslide.lowlevel as _ll
+from openslide import lowlevel
 
 # For the benefit of library users
 from openslide.lowlevel import OpenSlideError
@@ -32,7 +32,7 @@ PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
 
 class OpenSlide(object):
     def __init__(self, filename):
-        self._osr = _ll.open(filename)
+        self._osr = lowlevel.open(filename)
         self.properties = _PropertyMap(self._osr)
         self.associated_images = _AssociatedImageMap(self._osr)
 
@@ -49,19 +49,19 @@ class OpenSlide(object):
 
     @classmethod
     def can_open(self, filename):
-        return _ll.can_open(filename)
+        return lowlevel.can_open(filename)
 
     def close(self):
-        _ll.close(self._osr)
+        lowlevel.close(self._osr)
         self._osr = None
 
     @property
     def layer_count(self):
-        return _ll.get_layer_count(self._osr)
+        return lowlevel.get_layer_count(self._osr)
 
     @property
     def layer_dimensions(self):
-        return tuple(_ll.get_layer_dimensions(self._osr, i)
+        return tuple(lowlevel.get_layer_dimensions(self._osr, i)
                 for i in range(self.layer_count))
 
     @property
@@ -70,14 +70,14 @@ class OpenSlide(object):
 
     @property
     def layer_downsample(self):
-        return tuple(_ll.get_layer_downsample(self._osr, i)
+        return tuple(lowlevel.get_layer_downsample(self._osr, i)
                 for i in range(self.layer_count))
 
     def get_best_layer_for_downsample(self, downsample):
-        return _ll.get_best_layer_for_downsample(self._osr, downsample)
+        return lowlevel.get_best_layer_for_downsample(self._osr, downsample)
 
     def read_region(self, x, y, layer, w, h):
-        return _ll.read_region(self._osr, x, y, layer, w, h)
+        return lowlevel.read_region(self._osr, x, y, layer, w, h)
 
 
 class _OpenSlideMap(Mapping):
@@ -99,10 +99,10 @@ class _OpenSlideMap(Mapping):
 
 class _PropertyMap(_OpenSlideMap):
     def keys(self):
-        return _ll.get_property_names(self._osr)
+        return lowlevel.get_property_names(self._osr)
 
     def __getitem__(self, key):
-        v = _ll.get_property_value(self._osr, key)
+        v = lowlevel.get_property_value(self._osr, key)
         if v is None:
             raise KeyError()
         return v
@@ -110,12 +110,12 @@ class _PropertyMap(_OpenSlideMap):
 
 class _AssociatedImageMap(_OpenSlideMap):
     def keys(self):
-        return _ll.get_associated_image_names(self._osr)
+        return lowlevel.get_associated_image_names(self._osr)
 
     def __getitem__(self, key):
         if key not in self.keys():
             raise KeyError()
-        return _ll.read_associated_image(self._osr, key)
+        return lowlevel.read_associated_image(self._osr, key)
 
 
 if __name__ == '__main__':
