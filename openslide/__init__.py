@@ -82,8 +82,9 @@ class OpenSlide(object):
     def get_best_layer_for_downsample(self, downsample):
         return lowlevel.get_best_layer_for_downsample(self._osr, downsample)
 
-    def read_region(self, x, y, layer, w, h):
-        return lowlevel.read_region(self._osr, x, y, layer, w, h)
+    def read_region(self, location, layer, size):
+        return lowlevel.read_region(self._osr, location[0], location[1],
+                layer, size[0], size[1])
 
 
 class _OpenSlideMap(Mapping):
