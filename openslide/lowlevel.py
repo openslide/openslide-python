@@ -38,13 +38,13 @@ class _OpenSlide(c_void_p):
         return super(_OpenSlide, cls).from_param(obj)
 
 # check for errors opening an image file
-def _check_open(result, func, args):
+def _check_open(result, _func, _args):
     if result.value is None:
         raise OpenSlideError("Could not open image file")
     return result
 
 # check if the library got into an error state after each library call
-def _check_error(result, func, args):
+def _check_error(result, _func, args):
     err = get_error(args[0])
     if err is not None:
         raise OpenSlideError(err)
