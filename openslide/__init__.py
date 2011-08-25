@@ -48,7 +48,7 @@ class OpenSlide(object):
             self.close()
 
     @classmethod
-    def can_open(self, filename):
+    def can_open(cls, filename):
         return lowlevel.can_open(filename)
 
     def close(self):
