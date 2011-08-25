@@ -1,0 +1,3 @@
+* Support loading libopenslide on Windows
+
+* Support Python 3
