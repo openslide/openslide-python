@@ -17,6 +17,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+"""
+Low-level interface to the OpenSlide library.
+
+Most users should use the openslide.OpenSlide class rather than this
+module.
+
+This module provides nearly direct equivalents to the OpenSlide C API.
+(As an implementation detail, conversion of premultiplied image data
+returned by OpenSlide into a non-premultiplied PIL.Image happens here
+rather than in the high-level interface.)
+"""
+
 from ctypes import *
 from itertools import count
 import PIL.Image
@@ -25,7 +37,10 @@ import sys
 _lib = cdll.LoadLibrary('libopenslide.so.0')
 
 class OpenSlideError(Exception):
-    pass
+    """An error produced by the OpenSlide library.
+
+    Import this from openslide rather than from openslide.lowlevel.
+    """
 
 # validating class to make sure we correctly pass an OpenSlide handle
 class _OpenSlide(c_void_p):

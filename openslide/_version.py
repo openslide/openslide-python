@@ -17,4 +17,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+"""The openslide package version.
+
+This module is an implementation detail.  The package version should be
+obtained from openslide.__version__."""
+
 __version__ = '0.1'
