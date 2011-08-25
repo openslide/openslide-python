@@ -33,8 +33,6 @@ PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
 class OpenSlide(object):
     def __init__(self, filename):
         self._osr = lowlevel.open(filename)
-        self.properties = _PropertyMap(self._osr)
-        self.associated_images = _AssociatedImageMap(self._osr)
 
     def __enter__(self):
         return self
@@ -72,6 +70,14 @@ class OpenSlide(object):
     def layer_downsample(self):
         return tuple(lowlevel.get_layer_downsample(self._osr, i)
                 for i in range(self.layer_count))
+
+    @property
+    def properties(self):
+        return _PropertyMap(self._osr)
+
+    @property
+    def associated_images(self):
+        return _AssociatedImageMap(self._osr)
 
     def get_best_layer_for_downsample(self, downsample):
         return lowlevel.get_best_layer_for_downsample(self._osr, downsample)
