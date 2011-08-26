@@ -94,7 +94,7 @@ class OpenSlide(object):
         return self.layer_dimensions[0]
 
     @property
-    def layer_downsample(self):
+    def layer_downsamples(self):
         """A list of downsampling factors for each layer of the image.
 
         layer_downsample[n] contains the downsample factor of layer n."""
