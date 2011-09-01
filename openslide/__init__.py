@@ -252,10 +252,117 @@ class _AssociatedImageMap(_OpenSlideMap):
         return lowlevel.read_associated_image(self._osr, key)
 
 
+class ImageSlide(AbstractSlide):
+    """A wrapper for a PIL.Image that provides the OpenSlide interface."""
+
+    def __init__(self, file):
+        """Open an image file.
+
+        file can be a filename or a PIL.Image."""
+        AbstractSlide.__init__(self)
+        if isinstance(file, Image.Image):
+            self._image = file
+        else:
+            self._image = Image.open(file)
+
+    @classmethod
+    def can_open(cls, filename):
+        """Return True if PIL can read the specified file."""
+        try:
+            Image.open(filename)
+            return True
+        except IOError:
+            return False
+
+    def close(self):
+        """Close the slide object."""
+        self._image = None
+
+    @property
+    def layer_count(self):
+        """The number of layers in the image."""
+        return 1
+
+    @property
+    def layer_dimensions(self):
+        """A list of (width, height) tuples, one for each layer of the image.
+
+        layer_dimensions[n] contains the dimensions of layer n."""
+        return (self._image.size,)
+
+    @property
+    def layer_downsamples(self):
+        """A list of downsampling factors for each layer of the image.
+
+        layer_downsample[n] contains the downsample factor of layer n."""
+        return (1.0,)
+
+    @property
+    def properties(self):
+        """Metadata about the image.
+
+        This is a map: property name -> property value."""
+        return {}
+
+    @property
+    def associated_images(self):
+        """Images associated with this whole-slide image.
+
+        This is a map: image name -> PIL.Image."""
+        return {}
+
+    def get_best_layer_for_downsample(self, _downsample):
+        """Return the best layer for displaying the given downsample."""
+        return 0
+
+    def read_region(self, location, layer, size):
+        """Return a PIL.Image containing the contents of the region.
+
+        location: (x, y) tuple giving the top left pixel in the layer 0
+                  reference frame.
+        layer:    the layer number.
+        size:     (width, height) tuple giving the region size."""
+        if layer != 0:
+            raise ValueError("Invalid layer")
+        for s in size:
+            if s <= 0:
+                raise ValueError("Size must be positive")
+        # Any corner of the requested region may be outside the bounds of
+        # the image.  Create a transparent tile of the correct size and
+        # paste the valid part of the region into the correct location.
+        image_topleft = [max(0, min(l, limit - 1))
+                    for l, limit in zip(location, self._image.size)]
+        image_bottomright = [max(0, min(l + s - 1, limit - 1))
+                    for l, s, limit in zip(location, size, self._image.size)]
+        tile = Image.new("RGBA", size, (0,) * 4)
+        if 0 not in [br - tl for tl, br in
+                zip(image_topleft, image_bottomright)]:
+            # Crop size is greater than zero in both dimensions.
+            # PIL thinks the bottom right is the first *excluded* pixel
+            crop = self._image.crop(image_topleft +
+                    [d + 1 for d in image_bottomright])
+            tile_offset = tuple(il - l for il, l in
+                    zip(image_topleft, location))
+            tile.paste(crop, tile_offset)
+        return tile
+
+
+def open_slide(filename):
+    """Open a whole-slide or regular image.
+
+    Return an OpenSlide object for whole-slide images and an ImageSlide
+    object for other types of images."""
+    if OpenSlide.can_open(filename):
+        return OpenSlide(filename)
+    else:
+        return ImageSlide(filename)
+
+
 if __name__ == '__main__':
     import sys
-    print "Can open:", OpenSlide.can_open(sys.argv[1])
-    with OpenSlide(sys.argv[1]) as _slide:
+    print "OpenSlide can open:", OpenSlide.can_open(sys.argv[1])
+    print "PIL can open:", ImageSlide.can_open(sys.argv[1])
+    with open_slide(sys.argv[1]) as _slide:
         print "Dimensions:", _slide.dimensions
         print "Layers:", _slide.layer_count
         print "Layer dimensions:", _slide.layer_dimensions
