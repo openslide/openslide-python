@@ -40,7 +40,94 @@ PROPERTY_NAME_VENDOR           = 'openslide.vendor'
 PROPERTY_NAME_QUICKHASH1       = 'openslide.quickhash-1'
 PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
 
-class OpenSlide(object):
+class AbstractSlide(object):
+    """The base class of a slide object."""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    @classmethod
+    def can_open(cls, filename):
+        """Return True if the specified file can be read."""
+        raise NotImplementedError
+
+    def close(self):
+        """Close the slide."""
+        raise NotImplementedError
+
+    @property
+    def layer_count(self):
+        """The number of layers in the image."""
+        raise NotImplementedError
+
+    @property
+    def layer_dimensions(self):
+        """A list of (width, height) tuples, one for each layer of the image.
+
+        layer_dimensions[n] contains the dimensions of layer n."""
+        raise NotImplementedError
+
+    @property
+    def dimensions(self):
+        """A (width, height) tuple for layer 0 of the image."""
+        return self.layer_dimensions[0]
+
+    @property
+    def layer_downsamples(self):
+        """A list of downsampling factors for each layer of the image.
+
+        layer_downsample[n] contains the downsample factor of layer n."""
+        raise NotImplementedError
+
+    @property
+    def properties(self):
+        """Metadata about the image.
+
+        This is a map: property name -> property value."""
+        raise NotImplementedError
+
+    @property
+    def associated_images(self):
+        """Images associated with this whole-slide image.
+
+        This is a map: image name -> PIL.Image."""
+        raise NotImplementedError
+
+    def get_best_layer_for_downsample(self, downsample):
+        """Return the best layer for displaying the given downsample."""
+        raise NotImplementedError
+
+    def read_region(self, location, layer, size):
+        """Return a PIL.Image containing the contents of the region.
+
+        location: (x, y) tuple giving the top left pixel in the layer 0
+                  reference frame.
+        layer:    the layer number.
+        size:     (width, height) tuple giving the region size."""
+        raise NotImplementedError
+
+    def get_thumbnail(self, size):
+        """Return a PIL.Image containing an RGB thumbnail of the image.
+
+        size:     the maximum size of the thumbnail."""
+        downsample = max(*[dim / thumb for dim, thumb in
+                zip(self.dimensions, size)])
+        layer = self.get_best_layer_for_downsample(downsample)
+        tile = self.read_region((0, 0), layer, self.layer_dimensions[layer])
+        # Apply on solid background
+        bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR,
+                'ffffff')
+        thumb = Image.new('RGB', tile.size, bg_color)
+        thumb.paste(tile, None, tile)
+        thumb.thumbnail(size, Image.ANTIALIAS)
+        return thumb
+
+
+class OpenSlide(AbstractSlide):
     """An open whole-slide image.
 
     close() is called automatically when the object is deleted.  In
@@ -54,14 +141,8 @@ class OpenSlide(object):
 
     def __init__(self, filename):
         """Open a whole-slide image."""
+        AbstractSlide.__init__(self)
         self._osr = lowlevel.open(filename)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-        return False
 
     def __del__(self):
         if getattr(self, '_osr', None) is not None:
@@ -89,11 +170,6 @@ class OpenSlide(object):
         layer_dimensions[n] contains the dimensions of layer n."""
         return tuple(lowlevel.get_layer_dimensions(self._osr, i)
                 for i in range(self.layer_count))
-
-    @property
-    def dimensions(self):
-        """A (width, height) tuple for layer 0 of the image."""
-        return self.layer_dimensions[0]
 
     @property
     def layer_downsamples(self):
@@ -136,22 +212,6 @@ class OpenSlide(object):
         function is not premultiplied."""
         return lowlevel.read_region(self._osr, location[0], location[1],
                 layer, size[0], size[1])
-
-    def get_thumbnail(self, size):
-        """Return a PIL.Image containing an RGB thumbnail of the image.
-
-        size:     the maximum size of the thumbnail."""
-        downsample = max(*[dim / thumb for dim, thumb in
-                zip(self.dimensions, size)])
-        layer = self.get_best_layer_for_downsample(downsample)
-        tile = self.read_region((0, 0), layer, self.layer_dimensions[layer])
-        # Apply on solid background
-        bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR,
-                'ffffff')
-        thumb = Image.new('RGB', tile.size, bg_color)
-        thumb.paste(tile, None, tile)
-        thumb.thumbnail(size, Image.ANTIALIAS)
-        return thumb
 
 
 class _OpenSlideMap(Mapping):
