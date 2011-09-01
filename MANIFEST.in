@@ -1,0 +1,2 @@
+include *.txt
+recursive-include examples *.html *.js *.png *.py
