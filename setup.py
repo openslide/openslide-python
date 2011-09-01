@@ -11,8 +11,8 @@ setup(
     packages = [
         'openslide',
     ],
-    author = 'OpenSlide project',
-    author_email = 'openslide-users@lists.andrew.cmu.edu',
+    maintainer = 'OpenSlide project',
+    maintainer_email = 'openslide-users@lists.andrew.cmu.edu',
     description = 'Python bindings for OpenSlide library',
     license = 'GNU Lesser General Public License, version 2.1',
     keywords = 'openslide whole-slide image library',
