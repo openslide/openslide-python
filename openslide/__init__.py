@@ -181,6 +181,6 @@ if __name__ == '__main__':
         print "Dimensions:", _slide.dimensions
         print "Layers:", _slide.layer_count
         print "Layer dimensions:", _slide.layer_dimensions
-        print "Layer downsamples:", _slide.layer_downsample
+        print "Layer downsamples:", _slide.layer_downsamples
         print "Properties:", _slide.properties
         print "Associated images:", _slide.associated_images
