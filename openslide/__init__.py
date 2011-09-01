@@ -25,7 +25,9 @@ documentation on the OpenSlide API, see:
 http://openslide.org/api/openslide_8h.html
 """
 
+from __future__ import division
 from collections import Mapping
+from PIL import Image
 
 from openslide import lowlevel
 
@@ -134,6 +136,22 @@ class OpenSlide(object):
         function is not premultiplied."""
         return lowlevel.read_region(self._osr, location[0], location[1],
                 layer, size[0], size[1])
+
+    def get_thumbnail(self, size):
+        """Return a PIL.Image containing an RGB thumbnail of the image.
+
+        size:     the maximum size of the thumbnail."""
+        downsample = max(*[dim / thumb for dim, thumb in
+                zip(self.dimensions, size)])
+        layer = self.get_best_layer_for_downsample(downsample)
+        tile = self.read_region((0, 0), layer, self.layer_dimensions[layer])
+        # Apply on solid background
+        bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR,
+                'ffffff')
+        thumb = Image.new('RGB', tile.size, bg_color)
+        thumb.paste(tile, None, tile)
+        thumb.thumbnail(size, Image.ANTIALIAS)
+        return thumb
 
 
 class _OpenSlideMap(Mapping):
