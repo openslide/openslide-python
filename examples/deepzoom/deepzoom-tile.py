@@ -21,7 +21,7 @@
 """An example program to generate a Deep Zoom directory tree from a slide."""
 
 from multiprocessing import Process, JoinableQueue
-from openslide import open_slide
+from openslide import open_slide, ImageSlide
 from openslide.deepzoom import DeepZoomGenerator
 from optparse import OptionParser
 import os
@@ -35,26 +35,39 @@ class TileWorker(Process):
         self._slidepath = slidepath
         self._tile_size = tile_size
         self._overlap = overlap
+        self._slide = None
 
     def run(self):
-        dz = DeepZoomGenerator(open_slide(self._slidepath), self._tile_size,
-                    self._overlap)
+        self._slide = open_slide(self._slidepath)
+        last_associated = None
+        dz = self._get_dz()
         while True:
             data = self._queue.get()
             if data is None:
                 self._queue.task_done()
                 break
-            level, address, outfile = data
+            associated, level, address, outfile = data
+            if last_associated != associated:
+                dz = self._get_dz(associated)
+                last_associated = associated
             tile = dz.get_tile(level, address)
             tile.save(outfile, optimize=True, quality=90)
             self._queue.task_done()
 
+    def _get_dz(self, associated=None):
+        if associated is not None:
+            image = ImageSlide(self._slide.associated_images[associated])
+        else:
+            image = self._slide
+        return DeepZoomGenerator(image, self._tile_size, self._overlap)
+
 
 class DeepZoomImageTiler(object):
-    def __init__(self, dz, basename, format, queue):
+    def __init__(self, dz, basename, format, associated, queue):
         self._dz = dz
         self._basename = basename
         self._format = format
+        self._associated = associated
         self._queue = queue
         self._processed = 0
 
@@ -73,14 +86,16 @@ class DeepZoomImageTiler(object):
                     tilename = os.path.join(tiledir, '%d_%d.%s' % (
                                     col, row, self._format))
                     if not os.path.exists(tilename):
-                        self._queue.put((level, (col, row), tilename))
+                        self._queue.put((self._associated, level, (col, row),
+                                    tilename))
                     self._tile_done()
 
     def _tile_done(self):
         self._processed += 1
         count, total = self._processed, self._dz.tile_count
         if count % 100 == 0 or count == total:
-            print >> sys.stderr, "Wrote %d/%d tiles\r" % (count, total),
+            print >> sys.stderr, "Tiling %s: wrote %d/%d tiles\r" % (
+                        self._associated or 'slide', count, total),
             if count == total:
                 print
 
@@ -91,7 +106,7 @@ class DeepZoomImageTiler(object):
 
 class DeepZoomStaticTiler(object):
     def __init__(self, slidepath, basename, format, tile_size, overlap,
-                workers):
+                workers, with_viewer):
         self._slide = open_slide(slidepath)
         self._basename = basename
         self._format = format
@@ -99,15 +114,31 @@ class DeepZoomStaticTiler(object):
         self._overlap = overlap
         self._queue = JoinableQueue(2 * workers)
         self._workers = workers
+        self._with_viewer = with_viewer
         for _i in range(workers):
             TileWorker(self._queue, slidepath, tile_size, overlap).start()
 
     def run(self):
-        dz = DeepZoomGenerator(self._slide, self._tile_size, self._overlap)
-        tiler = DeepZoomImageTiler(dz, self._basename, self._format,
-                    self._queue)
-        tiler.run()
+        self._run_image()
+        if self._with_viewer:
+            for name in self._slide.associated_images:
+                self._run_image(name)
         self._shutdown()
+
+    def _run_image(self, associated=None):
+        """Run a single image from self._slide."""
+        if associated is None:
+            image = self._slide
+            if self._with_viewer:
+                basename = os.path.join(self._basename, 'slide')
+            else:
+                basename = self._basename
+        else:
+            image = ImageSlide(self._slide.associated_images[associated])
+            basename = os.path.join(self._basename, associated)
+        dz = DeepZoomGenerator(image, self._tile_size, self._overlap)
+        DeepZoomImageTiler(dz, basename, self._format, associated,
+                    self._queue).run()
 
     def _shutdown(self):
         for _i in range(self._workers):
@@ -128,6 +159,9 @@ if __name__ == '__main__':
                 help='number of worker processes to start [4]')
     parser.add_option('-o', '--output', metavar='NAME', dest='basename',
                 help='base name of output file')
+    parser.add_option('-r', '--viewer', dest='with_viewer',
+                action='store_true',
+                help='generate directory tree with HTML viewer')
     parser.add_option('-s', '--size', metavar='PIXELS', dest='tile_size',
                 type='int', default=256,
                 help='tile size [256]')
@@ -141,4 +175,5 @@ if __name__ == '__main__':
         opts.basename = os.path.splitext(os.path.basename(slidepath))[0]
 
     DeepZoomStaticTiler(slidepath, opts.basename, opts.format,
-                opts.tile_size, opts.overlap, opts.workers).run()
+                opts.tile_size, opts.overlap, opts.workers,
+                opts.with_viewer).run()
