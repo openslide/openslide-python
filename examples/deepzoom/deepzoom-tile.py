@@ -26,6 +26,7 @@ from openslide.deepzoom import DeepZoomGenerator
 from optparse import OptionParser
 import os
 import re
+import shutil
 import sys
 from unicodedata import normalize
 
@@ -125,6 +126,7 @@ class DeepZoomStaticTiler(object):
         if self._with_viewer:
             for name in self._slide.associated_images:
                 self._run_image(name)
+            self._write_static()
         self._shutdown()
 
     def _run_image(self, associated=None):
@@ -141,6 +143,22 @@ class DeepZoomStaticTiler(object):
         dz = DeepZoomGenerator(image, self._tile_size, self._overlap)
         DeepZoomImageTiler(dz, basename, self._format, associated,
                     self._queue).run()
+
+    def _write_static(self):
+        basesrc = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                    'static')
+        basedst = os.path.join(self._basename, 'static')
+        self._copydir(basesrc, basedst)
+        self._copydir(os.path.join(basesrc, 'images'),
+                    os.path.join(basedst, 'images'))
+
+    def _copydir(self, src, dest):
+        if not os.path.exists(dest):
+            os.makedirs(dest)
+        for name in os.listdir(src):
+            srcpath = os.path.join(src, name)
+            if os.path.isfile(srcpath):
+                shutil.copy(srcpath, os.path.join(dest, name))
 
     _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
     @classmethod
