@@ -50,22 +50,17 @@ class TileWorker(Process):
             self._queue.task_done()
 
 
-class DeepZoomStaticTiler(object):
-    def __init__(self, slidepath, basename, format, tile_size, overlap,
-                workers):
+class DeepZoomImageTiler(object):
+    def __init__(self, dz, basename, format, queue):
+        self._dz = dz
         self._basename = basename
         self._format = format
+        self._queue = queue
         self._processed = 0
-        self._queue = JoinableQueue(2 * workers)
-        self._workers = workers
-        for _i in range(workers):
-            TileWorker(self._queue, slidepath, tile_size, overlap).start()
-        self._dz = DeepZoomGenerator(open_slide(slidepath), tile_size, overlap)
 
     def run(self):
         self._write_tiles()
         self._write_dzi()
-        self._shutdown()
 
     def _write_tiles(self):
         for level in xrange(self._dz.level_count):
@@ -92,6 +87,27 @@ class DeepZoomStaticTiler(object):
     def _write_dzi(self):
         with open('%s.dzi' % self._basename, 'w') as fh:
             fh.write(self._dz.get_dzi(self._format))
+
+
+class DeepZoomStaticTiler(object):
+    def __init__(self, slidepath, basename, format, tile_size, overlap,
+                workers):
+        self._slide = open_slide(slidepath)
+        self._basename = basename
+        self._format = format
+        self._tile_size = tile_size
+        self._overlap = overlap
+        self._queue = JoinableQueue(2 * workers)
+        self._workers = workers
+        for _i in range(workers):
+            TileWorker(self._queue, slidepath, tile_size, overlap).start()
+
+    def run(self):
+        dz = DeepZoomGenerator(self._slide, self._tile_size, self._overlap)
+        tiler = DeepZoomImageTiler(dz, self._basename, self._format,
+                    self._queue)
+        tiler.run()
+        self._shutdown()
 
     def _shutdown(self):
         for _i in range(self._workers):
