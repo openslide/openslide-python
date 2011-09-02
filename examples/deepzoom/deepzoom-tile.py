@@ -28,16 +28,16 @@ import os
 import sys
 
 class TileWorker(Process):
-    def __init__(self, queue, slide, tile_size, overlap):
+    def __init__(self, queue, slidepath, tile_size, overlap):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
         self._queue = queue
-        self._slide = slide
+        self._slidepath = slidepath
         self._tile_size = tile_size
         self._overlap = overlap
 
     def run(self):
-        dz = DeepZoomGenerator(open_slide(self._slide), self._tile_size,
+        dz = DeepZoomGenerator(open_slide(self._slidepath), self._tile_size,
                     self._overlap)
         while True:
             data = self._queue.get()
@@ -51,15 +51,16 @@ class TileWorker(Process):
 
 
 class DeepZoomStaticTiler(object):
-    def __init__(self, slide, basename, format, tile_size, overlap, workers):
+    def __init__(self, slidepath, basename, format, tile_size, overlap,
+                workers):
         self._basename = basename
         self._format = format
         self._processed = 0
         self._queue = JoinableQueue(2 * workers)
         self._workers = workers
         for _i in range(workers):
-            TileWorker(self._queue, slide, tile_size, overlap).start()
-        self._dz = DeepZoomGenerator(open_slide(slide), tile_size, overlap)
+            TileWorker(self._queue, slidepath, tile_size, overlap).start()
+        self._dz = DeepZoomGenerator(open_slide(slidepath), tile_size, overlap)
 
     def run(self):
         self._write_tiles()
@@ -117,11 +118,11 @@ if __name__ == '__main__':
 
     (opts, args) = parser.parse_args()
     try:
-        slidefile = args[0]
+        slidepath = args[0]
     except IndexError:
         parser.error('Missing slide argument')
     if opts.basename is None:
-        opts.basename = os.path.splitext(os.path.basename(slidefile))[0]
+        opts.basename = os.path.splitext(os.path.basename(slidepath))[0]
 
-    DeepZoomStaticTiler(slidefile, opts.basename, opts.format,
+    DeepZoomStaticTiler(slidepath, opts.basename, opts.format,
                 opts.tile_size, opts.overlap, opts.workers).run()
