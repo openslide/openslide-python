@@ -25,7 +25,9 @@ from openslide import open_slide, ImageSlide
 from openslide.deepzoom import DeepZoomGenerator
 from optparse import OptionParser
 import os
+import re
 import sys
+from unicodedata import normalize
 
 class TileWorker(Process):
     def __init__(self, queue, slidepath, tile_size, overlap):
@@ -135,10 +137,22 @@ class DeepZoomStaticTiler(object):
                 basename = self._basename
         else:
             image = ImageSlide(self._slide.associated_images[associated])
-            basename = os.path.join(self._basename, associated)
+            basename = os.path.join(self._basename, self._slugify(associated))
         dz = DeepZoomGenerator(image, self._tile_size, self._overlap)
         DeepZoomImageTiler(dz, basename, self._format, associated,
                     self._queue).run()
+
+    _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
+    @classmethod
+    def _slugify(cls, text):
+        """Generates an ASCII-only slug."""
+        # Based on Flask snippet 5
+        result = []
+        for word in cls._punct_re.split(unicode(text, 'UTF-8').lower()):
+            word = normalize('NFKD', word).encode('ascii', 'ignore')
+            if word:
+                result.append(word)
+        return unicode(u'_'.join(result))
 
     def _shutdown(self):
         for _i in range(self._workers):
