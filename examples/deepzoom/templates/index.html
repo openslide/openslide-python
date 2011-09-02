@@ -7,14 +7,16 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
+    var dzi_data = {{ dzi_data|default('{}')|safe }};
     var viewer = new Seadragon.Viewer("view");
-    viewer.openDzi("{{ slide_url }}");
+    viewer.openDzi("{{ slide_url }}", dzi_data["{{ slide_url }}"]);
     viewer.config.animationTime = 0.5;
     viewer.config.blendTime = 0.1;
     $(".load-slide").click(function(ev) {
         $(".current-slide").removeClass("current-slide");
         $(this).parent().addClass("current-slide");
-        viewer.openDzi($(this).attr('data-url'));
+        var url = $(this).attr('data-url');
+        viewer.openDzi(url, dzi_data[url]);
         ev.preventDefault();
     });
 });
