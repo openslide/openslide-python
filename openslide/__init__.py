@@ -323,10 +323,10 @@ class ImageSlide(AbstractSlide):
         layer:    the layer number.
         size:     (width, height) tuple giving the region size."""
         if layer != 0:
-            raise ValueError("Invalid layer")
+            raise OpenSlideError("Invalid layer")
         for s in size:
             if s <= 0:
-                raise ValueError("Size must be positive")
+                raise OpenSlideError("Size must be positive")
         # Any corner of the requested region may be outside the bounds of
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.
