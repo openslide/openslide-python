@@ -324,9 +324,8 @@ class ImageSlide(AbstractSlide):
         size:     (width, height) tuple giving the region size."""
         if layer != 0:
             raise OpenSlideError("Invalid layer")
-        for s in size:
-            if s <= 0:
-                raise OpenSlideError("Size must be positive")
+        if ['fail' for s in size if s < 0]:
+            raise OpenSlideError("Size %s must be non-negative" % (size,))
         # Any corner of the requested region may be outside the bounds of
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.
@@ -335,8 +334,8 @@ class ImageSlide(AbstractSlide):
         image_bottomright = [max(0, min(l + s - 1, limit - 1))
                     for l, s, limit in zip(location, size, self._image.size)]
         tile = Image.new("RGBA", size, (0,) * 4)
-        if 0 not in [br - tl for tl, br in
-                zip(image_topleft, image_bottomright)]:
+        if not ['fail' for tl, br in zip(image_topleft, image_bottomright)
+                if br - tl < 0]:  # "< 0" not a typo
             # Crop size is greater than zero in both dimensions.
             # PIL thinks the bottom right is the first *excluded* pixel
             crop = self._image.crop(image_topleft +

@@ -122,6 +122,15 @@ _read_region = _func('openslide_read_region', None,
         [_OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64,
         c_int64])
 def read_region(slide, x, y, layer, w, h):
+    if w < 0 or h < 0:
+        # OpenSlide would catch this, but not before we tried to allocate
+        # a negative-size buffer
+        raise OpenSlideError(
+                "negative width (%d) or negative height (%d) not allowed" % (
+                w, h))
+    if w == 0 or h == 0:
+        # PIL.Image.frombuffer() would raise an exception
+        return PIL.Image.new('RGBA', (w, h))
     buf = (w * h * c_uint32)()
     _read_region(slide, buf, x, y, layer, w, h)
     return _load_image(buf, (w, h))
