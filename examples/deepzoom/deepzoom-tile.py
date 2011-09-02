@@ -31,6 +31,8 @@ import sys
 from unicodedata import normalize
 
 class TileWorker(Process):
+    """A child process that generates and writes tiles."""
+
     def __init__(self, queue, slidepath, tile_size, overlap):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
@@ -66,6 +68,8 @@ class TileWorker(Process):
 
 
 class DeepZoomImageTiler(object):
+    """Handles generation of tiles and metadata for a single image."""
+
     def __init__(self, dz, basename, format, associated, queue):
         self._dz = dz
         self._basename = basename
@@ -108,6 +112,8 @@ class DeepZoomImageTiler(object):
 
 
 class DeepZoomStaticTiler(object):
+    """Handles generation of tiles and metadata for all images in a slide."""
+
     def __init__(self, slidepath, basename, format, tile_size, overlap,
                 workers, with_viewer):
         self._slide = open_slide(slidepath)
