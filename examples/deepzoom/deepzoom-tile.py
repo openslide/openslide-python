@@ -30,6 +30,8 @@ import shutil
 import sys
 from unicodedata import normalize
 
+VIEWER_SLIDE_NAME = 'slide'
+
 class TileWorker(Process):
     """A child process that generates and writes tiles."""
 
@@ -141,7 +143,7 @@ class DeepZoomStaticTiler(object):
         if associated is None:
             image = self._slide
             if self._with_viewer:
-                basename = os.path.join(self._basename, 'slide')
+                basename = os.path.join(self._basename, VIEWER_SLIDE_NAME)
             else:
                 basename = self._basename
         else:
@@ -151,14 +153,21 @@ class DeepZoomStaticTiler(object):
         DeepZoomImageTiler(dz, basename, self._format, associated,
                     self._queue).run()
 
+    def _url_for(self, associated):
+        if associated is None:
+            base = VIEWER_SLIDE_NAME
+        else:
+            base = self._slugify(associated)
+        return '%s.dzi' % base
+
     def _write_html(self):
         import jinja2
         env = jinja2.Environment(loader=jinja2.PackageLoader(__name__),
                     autoescape=True)
         template = env.get_template('index.html')
-        associated_urls = dict((n, '%s.dzi' % self._slugify(n))
+        associated_urls = dict((n, self._url_for(n))
                     for n in self._slide.associated_images)
-        data = template.render(slide_url='slide.dzi',
+        data = template.render(slide_url=self._url_for(None),
                     associated=associated_urls,
                     properties=self._slide.properties)
         with open(os.path.join(self._basename, 'index.html'), 'w') as fh:
