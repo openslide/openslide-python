@@ -126,6 +126,7 @@ class DeepZoomStaticTiler(object):
         if self._with_viewer:
             for name in self._slide.associated_images:
                 self._run_image(name)
+            self._write_html()
             self._write_static()
         self._shutdown()
 
@@ -143,6 +144,19 @@ class DeepZoomStaticTiler(object):
         dz = DeepZoomGenerator(image, self._tile_size, self._overlap)
         DeepZoomImageTiler(dz, basename, self._format, associated,
                     self._queue).run()
+
+    def _write_html(self):
+        import jinja2
+        env = jinja2.Environment(loader=jinja2.PackageLoader(__name__),
+                    autoescape=True)
+        template = env.get_template('index.html')
+        associated_urls = dict((n, '%s.dzi' % self._slugify(n))
+                    for n in self._slide.associated_images)
+        data = template.render(slide_url='slide.dzi',
+                    associated=associated_urls,
+                    properties=self._slide.properties)
+        with open(os.path.join(self._basename, 'index.html'), 'w') as fh:
+            fh.write(data)
 
     def _write_static(self):
         basesrc = os.path.join(os.path.dirname(os.path.abspath(__file__)),
