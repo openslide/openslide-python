@@ -1,0 +1,6 @@
+Notable Changes in OpenSlide Python
+===================================
+
+Version 0.2.0, 2011-09-02
+ * Initial library release
+ * Example static Deep Zoom tiler and web viewer applications
