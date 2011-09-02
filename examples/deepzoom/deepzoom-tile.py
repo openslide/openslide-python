@@ -63,6 +63,7 @@ class DeepZoomStaticTiler(object):
     def run(self):
         self._write_tiles()
         self._write_dzi()
+        self._shutdown()
 
     def _write_tiles(self):
         for level in xrange(self._dz.level_count):
@@ -77,9 +78,6 @@ class DeepZoomStaticTiler(object):
                     if not os.path.exists(tilename):
                         self._queue.put((level, (col, row), tilename))
                     self._tile_done()
-        for _i in range(self._workers):
-            self._queue.put(None)
-        self._queue.join()
 
     def _tile_done(self):
         self._processed += 1
@@ -92,6 +90,11 @@ class DeepZoomStaticTiler(object):
     def _write_dzi(self):
         with open('%s.dzi' % self._basename, 'w') as fh:
             fh.write(self._dz.get_dzi(self._format))
+
+    def _shutdown(self):
+        for _i in range(self._workers):
+            self._queue.put(None)
+        self._queue.join()
 
 
 if __name__ == '__main__':
