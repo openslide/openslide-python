@@ -30,6 +30,7 @@ import sys
 class TileWorker(Process):
     def __init__(self, queue, slide, tile_size, overlap):
         Process.__init__(self, name='TileWorker')
+        self.daemon = True
         self._queue = queue
         self._slide = slide
         self._tile_size = tile_size
