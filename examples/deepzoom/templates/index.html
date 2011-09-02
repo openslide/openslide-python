@@ -89,7 +89,7 @@ div#properties dd {
     {% if associated %}
         <ul class="associated-images">
             {% for name in associated %}
-                <li><a class="load-slide" href="{{ associated_urls[name] }}">
+                <li><a class="load-slide" href="{{ associated[name] }}">
                     {{ name }}
                 </a>
             {% endfor %}

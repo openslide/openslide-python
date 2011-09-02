@@ -66,8 +66,7 @@ def index():
     associated_urls = dict((name, url_for('dzi', slug=slugify(name)))
             for name in app.associated_images)
     return render_template('index.html', slide_url=slide_url,
-            associated=app.associated_images, associated_urls=associated_urls,
-            properties=app.slide_properties)
+            associated=associated_urls, properties=app.slide_properties)
 
 
 @app.route('/<slug>.dzi')
