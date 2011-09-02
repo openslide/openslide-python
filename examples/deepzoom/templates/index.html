@@ -14,7 +14,7 @@ $(document).ready(function() {
     $(".load-slide").click(function(ev) {
         $(".current-slide").removeClass("current-slide");
         $(this).parent().addClass("current-slide");
-        viewer.openDzi(this.href);
+        viewer.openDzi($(this).attr('data-url'));
         ev.preventDefault();
     });
 });
@@ -83,13 +83,14 @@ div#properties dd {
 <div id="images">
     <h1>View</h1>
     <div class="current-slide">
-        <a class="load-slide" href="{{ slide_url }}">Slide</a>
+        <a class="load-slide" href="#" data-url="{{ slide_url }}">Slide</a>
     </div>
     <h2>Associated images</h2>
     {% if associated %}
         <ul class="associated-images">
             {% for name in associated %}
-                <li><a class="load-slide" href="{{ associated[name] }}">
+                <li><a class="load-slide" href="#"
+                        data-url="{{ associated[name] }}">
                     {{ name }}
                 </a>
             {% endfor %}
