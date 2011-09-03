@@ -96,7 +96,7 @@ def tile(slug, level, col, row, format):
         # Invalid level or coordinates
         abort(404)
     buf = StringIO()
-    tile.save(buf, format, optimize=True, quality=75)
+    tile.save(buf, format, quality=75)
     resp = make_response(buf.getvalue())
     resp.mimetype = 'image/%s' % format
     return resp

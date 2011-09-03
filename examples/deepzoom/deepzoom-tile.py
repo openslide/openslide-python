@@ -59,7 +59,7 @@ class TileWorker(Process):
                 dz = self._get_dz(associated)
                 last_associated = associated
             tile = dz.get_tile(level, address)
-            tile.save(outfile, optimize=True, quality=90)
+            tile.save(outfile, quality=90)
             self._queue.task_done()
 
     def _get_dz(self, associated=None):
