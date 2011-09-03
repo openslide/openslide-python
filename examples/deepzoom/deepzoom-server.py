@@ -129,6 +129,9 @@ if __name__ == '__main__':
     parser.add_option('-l', '--listen', metavar='ADDRESS', dest='host',
                 default='127.0.0.1',
                 help='address to listen on [127.0.0.1]')
+    parser.add_option('-p', '--port', metavar='PORT', dest='port',
+                type='int', default=5000,
+                help='port to listen on [5000]')
     parser.add_option('-s', '--size', metavar='PIXELS',
                 dest='DEEPZOOM_TILE_SIZE', type='int',
                 help='tile size [256]')
@@ -149,4 +152,4 @@ if __name__ == '__main__':
         pass
     load_slide()
 
-    app.run(host=opts.host)
+    app.run(host=opts.host, port=opts.port)
