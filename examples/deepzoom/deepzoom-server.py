@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 #
 # deepzoom-server - Example web application for serving whole-slide images
 #
