@@ -122,6 +122,9 @@ class DeepZoomStaticTiler(object):
 
     def __init__(self, slidepath, basename, format, tile_size, overlap,
                 workers, with_viewer):
+        if with_viewer:
+            # Check extra dependency before doing a bunch of work
+            import jinja2
         self._slide = open_slide(slidepath)
         self._basename = basename
         self._format = format
