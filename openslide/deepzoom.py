@@ -117,8 +117,21 @@ class DeepZoomGenerator(object):
         address:   the address of the tile within the level as a (col, row)
                    tuple."""
 
-        t_location = address
+        # Read tile
+        args, z_size = self._get_tile_info(level, address)
+        tile = self._osr.read_region(*args)
 
+        # Apply on solid background
+        bg = Image.new('RGB', tile.size, self._bg_color)
+        tile = Image.composite(tile, bg, tile)
+
+        # Scale to the correct size
+        if tile.size != z_size:
+            tile.thumbnail(z_size, Image.ANTIALIAS)
+
+        return tile
+
+    def _get_tile_info(self, level, t_location):
         # Check parameters
         if level < 0 or level >= self._levels:
             raise ValueError("Invalid level")
@@ -135,14 +148,14 @@ class DeepZoomGenerator(object):
         z_overlap_br = tuple(self._z_overlap * int(t != t_lim - 1)
                     for t, t_lim in zip(t_location, self.level_tiles[level]))
 
-        # Get final size of this tile
+        # Get final size of the tile
         z_size = tuple(min(self._z_t_downsample,
                     z_lim - self._z_t_downsample * t) + z_tl + z_br
                     for t, z_lim, z_tl, z_br in
                     zip(t_location, self._z_dimensions[level], z_overlap_tl,
                     z_overlap_br))
 
-        # Obtain the region
+        # Obtain the region coordinates
         z_location = [self._z_from_t(t) for t in t_location]
         l_location = [self._l_from_z(level, z) - z_tl
                     for z, z_tl in zip(z_location, z_overlap_tl)]
@@ -152,17 +165,9 @@ class DeepZoomGenerator(object):
                     l_lim - math.ceil(l)))
                     for l, dz, l_lim in
                     zip(l_location, z_size, self._l_dimensions[layer])]
-        tile = self._osr.read_region(l0_location, layer, l_size)
 
-        # Apply on solid background
-        bg = Image.new('RGB', tile.size, self._bg_color)
-        tile = Image.composite(tile, bg, tile)
-
-        # Scale to the correct size
-        if tile.size != z_size:
-            tile.thumbnail(z_size, Image.ANTIALIAS)
-
-        return tile
+        # Return read_region() parameters plus tile size for final scaling
+        return ((l0_location, layer, l_size), z_size)
 
     def _l0_from_l(self, layer, l):
         return self._l0_l_downsamples[layer] * l
