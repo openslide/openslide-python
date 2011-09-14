@@ -178,6 +178,25 @@ class DeepZoomGenerator(object):
     def _z_from_t(self, t):
         return self._z_t_downsample * t
 
+    def get_tile_coordinates(self, level, address):
+        """Return the OpenSlide.read_region() arguments for the specified tile.
+
+        Most users should call get_tile() rather than calling
+        OpenSlide.read_region() directly.
+
+        level:     the Deep Zoom level.
+        address:   the address of the tile within the level as a (col, row)
+                   tuple."""
+        return self._get_tile_info(level, address)[0]
+
+    def get_tile_dimensions(self, level, address):
+        """Return a (pixels_x, pixels_y) tuple for the specified tile.
+
+        level:     the Deep Zoom level.
+        address:   the address of the tile within the level as a (col, row)
+                   tuple."""
+        return self._get_tile_info(level, address)[1]
+
     def get_dzi(self, format):
         """Return a string containing the XML metadata for the .dzi file.
 
