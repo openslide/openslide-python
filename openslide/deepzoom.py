@@ -160,11 +160,12 @@ class DeepZoomGenerator(object):
         l_location = [self._l_from_z(level, z) - z_tl
                     for z, z_tl in zip(z_location, z_overlap_tl)]
         # Round location down and size up
-        l0_location = [int(self._l0_from_l(layer, l)) for l in l_location]
-        l_size = [int(min(math.ceil(self._l_from_z(level, dz)),
+        l0_location = tuple(int(self._l0_from_l(layer, l))
+                    for l in l_location)
+        l_size = tuple(int(min(math.ceil(self._l_from_z(level, dz)),
                     l_lim - math.ceil(l)))
                     for l, dz, l_lim in
-                    zip(l_location, z_size, self._l_dimensions[layer])]
+                    zip(l_location, z_size, self._l_dimensions[layer]))
 
         # Return read_region() parameters plus tile size for final scaling
         return ((l0_location, layer, l_size), z_size)
