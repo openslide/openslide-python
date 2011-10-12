@@ -32,9 +32,13 @@ rather than in the high-level interface.)
 from ctypes import *
 from itertools import count
 import PIL.Image
+import platform
 import sys
 
-_lib = cdll.LoadLibrary('libopenslide.so.0')
+if platform.system() == 'Windows':
+    _lib = cdll.LoadLibrary('libopenslide-0.dll')
+else:
+    _lib = cdll.LoadLibrary('libopenslide.so.0')
 
 class OpenSlideError(Exception):
     """An error produced by the OpenSlide library.
