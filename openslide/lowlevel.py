@@ -46,21 +46,25 @@ class OpenSlideError(Exception):
     Import this from openslide rather than from openslide.lowlevel.
     """
 
-# validating class to make sure we correctly pass an OpenSlide handle
-class _OpenSlide(c_void_p):
+class _OpenSlide(object):
+    """Wrapper class to make sure we correctly pass an OpenSlide handle."""
+
+    def __init__(self, ptr):
+        self._as_parameter_ = ptr
+
     @classmethod
     def from_param(cls, obj):
-        if not obj:
-            raise ValueError("Passing undefined slide object")
         if obj.__class__ != cls:
             raise ValueError("Not an OpenSlide reference")
-        return super(_OpenSlide, cls).from_param(obj)
+        if not obj._as_parameter_:
+            raise ValueError("Passing undefined slide object")
+        return obj
 
-# check for errors opening an image file
+# check for errors opening an image file and wrap the resulting handle
 def _check_open(result, _func, _args):
-    if result.value is None:
+    if result is None:
         raise OpenSlideError("Could not open image file")
-    return result
+    return _OpenSlide(result)
 
 # check if the library got into an error state after each library call
 def _check_error(result, _func, args):
@@ -102,7 +106,7 @@ def _load_image(buf, size):
 
 can_open = _func('openslide_can_open', c_bool, [c_char_p], None)
 
-open = _func('openslide_open', _OpenSlide, [c_char_p], _check_open)
+open = _func('openslide_open', c_void_p, [c_char_p], _check_open)
 
 close = _func('openslide_close', None, [_OpenSlide], None)
 
