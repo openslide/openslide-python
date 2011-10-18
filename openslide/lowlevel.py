@@ -51,6 +51,17 @@ class _OpenSlide(object):
 
     def __init__(self, ptr):
         self._as_parameter_ = ptr
+        self._valid = True
+        # Retain a reference to close() to avoid GC problems during
+        # interpreter shutdown
+        self._close = close
+
+    def __del__(self):
+        if self._valid:
+            self._close(self)
+
+    def invalidate(self):
+        self._valid = False
 
     @classmethod
     def from_param(cls, obj):
@@ -58,6 +69,8 @@ class _OpenSlide(object):
             raise ValueError("Not an OpenSlide reference")
         if not obj._as_parameter_:
             raise ValueError("Passing undefined slide object")
+        if not obj._valid:
+            raise ValueError("Passing closed slide object")
         return obj
 
 # check for errors opening an image file and wrap the resulting handle
@@ -65,6 +78,10 @@ def _check_open(result, _func, _args):
     if result is None:
         raise OpenSlideError("Could not open image file")
     return _OpenSlide(result)
+
+# prevent further operations on slide handle after it is closed
+def _check_close(_result, _func, args):
+    args[0].invalidate()
 
 # check if the library got into an error state after each library call
 def _check_error(result, _func, args):
@@ -108,7 +125,7 @@ can_open = _func('openslide_can_open', c_bool, [c_char_p], None)
 
 open = _func('openslide_open', c_void_p, [c_char_p], _check_open)
 
-close = _func('openslide_close', None, [_OpenSlide], None)
+close = _func('openslide_close', None, [_OpenSlide], _check_close)
 
 get_layer_count = _func('openslide_get_layer_count', c_int32, [_OpenSlide])
 

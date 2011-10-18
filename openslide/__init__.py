@@ -144,10 +144,6 @@ class OpenSlide(AbstractSlide):
         AbstractSlide.__init__(self)
         self._osr = lowlevel.open(filename)
 
-    def __del__(self):
-        if getattr(self, '_osr', None) is not None:
-            self.close()
-
     @classmethod
     def can_open(cls, filename):
         """Return True if OpenSlide can read the specified file."""
@@ -156,7 +152,6 @@ class OpenSlide(AbstractSlide):
     def close(self):
         """Close the OpenSlide object."""
         lowlevel.close(self._osr)
-        self._osr = None
 
     @property
     def layer_count(self):
