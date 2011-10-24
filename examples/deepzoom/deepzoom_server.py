@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# deepzoom-server - Example web application for serving whole-slide images
+# deepzoom_server - Example web application for serving whole-slide images
 #
 # Copyright (c) 2010-2011 Carnegie Mellon University
 #

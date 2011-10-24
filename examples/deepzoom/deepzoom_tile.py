@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# deepzoom-tile - Convert whole-slide images to Deep Zoom format
+# deepzoom_tile - Convert whole-slide images to Deep Zoom format
 #
 # Copyright (c) 2010-2011 Carnegie Mellon University
 #
