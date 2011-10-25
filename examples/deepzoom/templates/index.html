@@ -1,36 +1,5 @@
 <!doctype html>
 <title>Slide Viewer</title>
-<script type="text/javascript" src="static/jquery.js"></script>
-<script type="text/javascript" src="static/OpenSeadragon.js"></script>
-
-<script type="text/javascript">
-$(document).ready(function() {
-    var dzi_data = {{ dzi_data|default('{}')|safe }};
-    var viewer;
-
-    function open_slide(url) {
-        if (viewer) {
-            // Never reuse an existing viewer to avoid a timer leak
-            // (OpenSeadragon issue #14)
-            viewer.close();
-            $("#view").text("");
-        }
-        viewer = new Seadragon.Viewer("view");
-        viewer.config.animationTime = 0.5;
-        viewer.config.blendTime = 0.1;
-        viewer.config.zoomPerScroll = 2;
-        viewer.openDzi(url, dzi_data[url]);
-    }
-
-    open_slide("{{ slide_url }}");
-    $(".load-slide").click(function(ev) {
-        $(".current-slide").removeClass("current-slide");
-        $(this).parent().addClass("current-slide");
-        open_slide($(this).attr('data-url'));
-        ev.preventDefault();
-    });
-});
-</script>
 
 <style type="text/css">
 h1 {
@@ -127,3 +96,34 @@ div#properties dd {
         <span class="notice">None</span>
     {% endif %}
 </div>
+
+<script type="text/javascript" src="static/jquery.js"></script>
+<script type="text/javascript" src="static/OpenSeadragon.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    var dzi_data = {{ dzi_data|default('{}')|safe }};
+    var viewer;
+
+    function open_slide(url) {
+        if (viewer) {
+            // Never reuse an existing viewer to avoid a timer leak
+            // (OpenSeadragon issue #14)
+            viewer.close();
+            $("#view").text("");
+        }
+        viewer = new Seadragon.Viewer("view");
+        viewer.config.animationTime = 0.5;
+        viewer.config.blendTime = 0.1;
+        viewer.config.zoomPerScroll = 2;
+        viewer.openDzi(url, dzi_data[url]);
+    }
+
+    open_slide("{{ slide_url }}");
+    $(".load-slide").click(function(ev) {
+        $(".current-slide").removeClass("current-slide");
+        $(this).parent().addClass("current-slide");
+        open_slide($(this).attr('data-url'));
+        ev.preventDefault();
+    });
+});
+</script>
