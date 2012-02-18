@@ -75,7 +75,7 @@ div#properties dd {
     <h2>Associated images</h2>
     {% if associated %}
         <ul class="associated-images">
-            {% for name in associated %}
+            {% for name in associated|sort %}
                 <li><a class="load-slide" href="#"
                         data-url="{{ associated[name] }}">
                     {{ name }}
