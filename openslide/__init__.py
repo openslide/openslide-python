@@ -60,27 +60,27 @@ class AbstractSlide(object):
         raise NotImplementedError
 
     @property
-    def layer_count(self):
-        """The number of layers in the image."""
+    def level_count(self):
+        """The number of levels in the image."""
         raise NotImplementedError
 
     @property
-    def layer_dimensions(self):
-        """A list of (width, height) tuples, one for each layer of the image.
+    def level_dimensions(self):
+        """A list of (width, height) tuples, one for each level of the image.
 
-        layer_dimensions[n] contains the dimensions of layer n."""
+        level_dimensions[n] contains the dimensions of level n."""
         raise NotImplementedError
 
     @property
     def dimensions(self):
-        """A (width, height) tuple for layer 0 of the image."""
-        return self.layer_dimensions[0]
+        """A (width, height) tuple for level 0 of the image."""
+        return self.level_dimensions[0]
 
     @property
-    def layer_downsamples(self):
-        """A list of downsampling factors for each layer of the image.
+    def level_downsamples(self):
+        """A list of downsampling factors for each level of the image.
 
-        layer_downsample[n] contains the downsample factor of layer n."""
+        level_downsample[n] contains the downsample factor of level n."""
         raise NotImplementedError
 
     @property
@@ -97,16 +97,16 @@ class AbstractSlide(object):
         This is a map: image name -> PIL.Image."""
         raise NotImplementedError
 
-    def get_best_layer_for_downsample(self, downsample):
-        """Return the best layer for displaying the given downsample."""
+    def get_best_level_for_downsample(self, downsample):
+        """Return the best level for displaying the given downsample."""
         raise NotImplementedError
 
-    def read_region(self, location, layer, size):
+    def read_region(self, location, level, size):
         """Return a PIL.Image containing the contents of the region.
 
-        location: (x, y) tuple giving the top left pixel in the layer 0
+        location: (x, y) tuple giving the top left pixel in the level 0
                   reference frame.
-        layer:    the layer number.
+        level:    the level number.
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
@@ -116,8 +116,8 @@ class AbstractSlide(object):
         size:     the maximum size of the thumbnail."""
         downsample = max(*[dim / thumb for dim, thumb in
                 zip(self.dimensions, size)])
-        layer = self.get_best_layer_for_downsample(downsample)
-        tile = self.read_region((0, 0), layer, self.layer_dimensions[layer])
+        level = self.get_best_level_for_downsample(downsample)
+        tile = self.read_region((0, 0), level, self.level_dimensions[level])
         # Apply on solid background
         bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR,
                 'ffffff')
@@ -154,25 +154,25 @@ class OpenSlide(AbstractSlide):
         lowlevel.close(self._osr)
 
     @property
-    def layer_count(self):
-        """The number of layers in the image."""
-        return lowlevel.get_layer_count(self._osr)
+    def level_count(self):
+        """The number of levels in the image."""
+        return lowlevel.get_level_count(self._osr)
 
     @property
-    def layer_dimensions(self):
-        """A list of (width, height) tuples, one for each layer of the image.
+    def level_dimensions(self):
+        """A list of (width, height) tuples, one for each level of the image.
 
-        layer_dimensions[n] contains the dimensions of layer n."""
-        return tuple(lowlevel.get_layer_dimensions(self._osr, i)
-                for i in range(self.layer_count))
+        level_dimensions[n] contains the dimensions of level n."""
+        return tuple(lowlevel.get_level_dimensions(self._osr, i)
+                for i in range(self.level_count))
 
     @property
-    def layer_downsamples(self):
-        """A list of downsampling factors for each layer of the image.
+    def level_downsamples(self):
+        """A list of downsampling factors for each level of the image.
 
-        layer_downsample[n] contains the downsample factor of layer n."""
-        return tuple(lowlevel.get_layer_downsample(self._osr, i)
-                for i in range(self.layer_count))
+        level_downsample[n] contains the downsample factor of level n."""
+        return tuple(lowlevel.get_level_downsample(self._osr, i)
+                for i in range(self.level_count))
 
     @property
     def properties(self):
@@ -191,22 +191,22 @@ class OpenSlide(AbstractSlide):
         are not premultiplied."""
         return _AssociatedImageMap(self._osr)
 
-    def get_best_layer_for_downsample(self, downsample):
-        """Return the best layer for displaying the given downsample."""
-        return lowlevel.get_best_layer_for_downsample(self._osr, downsample)
+    def get_best_level_for_downsample(self, downsample):
+        """Return the best level for displaying the given downsample."""
+        return lowlevel.get_best_level_for_downsample(self._osr, downsample)
 
-    def read_region(self, location, layer, size):
+    def read_region(self, location, level, size):
         """Return a PIL.Image containing the contents of the region.
 
-        location: (x, y) tuple giving the top left pixel in the layer 0
+        location: (x, y) tuple giving the top left pixel in the level 0
                   reference frame.
-        layer:    the layer number.
+        level:    the level number.
         size:     (width, height) tuple giving the region size.
 
         Unlike in the C interface, the image data returned by this
         function is not premultiplied."""
         return lowlevel.read_region(self._osr, location[0], location[1],
-                layer, size[0], size[1])
+                level, size[0], size[1])
 
 
 class _OpenSlideMap(Mapping):
@@ -274,22 +274,22 @@ class ImageSlide(AbstractSlide):
         self._image = None
 
     @property
-    def layer_count(self):
-        """The number of layers in the image."""
+    def level_count(self):
+        """The number of levels in the image."""
         return 1
 
     @property
-    def layer_dimensions(self):
-        """A list of (width, height) tuples, one for each layer of the image.
+    def level_dimensions(self):
+        """A list of (width, height) tuples, one for each level of the image.
 
-        layer_dimensions[n] contains the dimensions of layer n."""
+        level_dimensions[n] contains the dimensions of level n."""
         return (self._image.size,)
 
     @property
-    def layer_downsamples(self):
-        """A list of downsampling factors for each layer of the image.
+    def level_downsamples(self):
+        """A list of downsampling factors for each level of the image.
 
-        layer_downsample[n] contains the downsample factor of layer n."""
+        level_downsample[n] contains the downsample factor of level n."""
         return (1.0,)
 
     @property
@@ -306,19 +306,19 @@ class ImageSlide(AbstractSlide):
         This is a map: image name -> PIL.Image."""
         return {}
 
-    def get_best_layer_for_downsample(self, _downsample):
-        """Return the best layer for displaying the given downsample."""
+    def get_best_level_for_downsample(self, _downsample):
+        """Return the best level for displaying the given downsample."""
         return 0
 
-    def read_region(self, location, layer, size):
+    def read_region(self, location, level, size):
         """Return a PIL.Image containing the contents of the region.
 
-        location: (x, y) tuple giving the top left pixel in the layer 0
+        location: (x, y) tuple giving the top left pixel in the level 0
                   reference frame.
-        layer:    the layer number.
+        level:    the level number.
         size:     (width, height) tuple giving the region size."""
-        if layer != 0:
-            raise OpenSlideError("Invalid layer")
+        if level != 0:
+            raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:
             raise OpenSlideError("Size %s must be non-negative" % (size,))
         # Any corner of the requested region may be outside the bounds of
@@ -358,8 +358,8 @@ if __name__ == '__main__':
     print "PIL can open:", ImageSlide.can_open(sys.argv[1])
     with open_slide(sys.argv[1]) as _slide:
         print "Dimensions:", _slide.dimensions
-        print "Layers:", _slide.layer_count
-        print "Layer dimensions:", _slide.layer_dimensions
-        print "Layer downsamples:", _slide.layer_downsamples
+        print "Levels:", _slide.level_count
+        print "Level dimensions:", _slide.level_dimensions
+        print "Level downsamples:", _slide.level_downsamples
         print "Properties:", _slide.properties
         print "Associated images:", _slide.associated_images

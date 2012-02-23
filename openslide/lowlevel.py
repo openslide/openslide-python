@@ -127,26 +127,26 @@ open = _func('openslide_open', c_void_p, [c_char_p], _check_open)
 
 close = _func('openslide_close', None, [_OpenSlide], _check_close)
 
-get_layer_count = _func('openslide_get_layer_count', c_int32, [_OpenSlide])
+get_level_count = _func('openslide_get_level_count', c_int32, [_OpenSlide])
 
-_get_layer_dimensions = _func('openslide_get_layer_dimensions', None,
+_get_level_dimensions = _func('openslide_get_level_dimensions', None,
         [_OpenSlide, c_int32, POINTER(c_int64), POINTER(c_int64)])
-def get_layer_dimensions(slide, layer):
+def get_level_dimensions(slide, level):
     w, h = c_int64(), c_int64()
-    _get_layer_dimensions(slide, layer, byref(w), byref(h))
+    _get_level_dimensions(slide, level, byref(w), byref(h))
     return w.value, h.value
 
-get_layer_downsample = _func('openslide_get_layer_downsample', c_double,
+get_level_downsample = _func('openslide_get_level_downsample', c_double,
         [_OpenSlide, c_int32])
 
-get_best_layer_for_downsample = \
-        _func('openslide_get_best_layer_for_downsample', c_int32,
+get_best_level_for_downsample = \
+        _func('openslide_get_best_level_for_downsample', c_int32,
         [_OpenSlide, c_double])
 
 _read_region = _func('openslide_read_region', None,
         [_OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64,
         c_int64])
-def read_region(slide, x, y, layer, w, h):
+def read_region(slide, x, y, level, w, h):
     if w < 0 or h < 0:
         # OpenSlide would catch this, but not before we tried to allocate
         # a negative-size buffer
@@ -157,7 +157,7 @@ def read_region(slide, x, y, layer, w, h):
         # PIL.Image.frombuffer() would raise an exception
         return PIL.Image.new('RGBA', (w, h))
     buf = (w * h * c_uint32)()
-    _read_region(slide, buf, x, y, layer, w, h)
+    _read_region(slide, buf, x, y, level, w, h)
     return _load_image(buf, (w, h))
 
 get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], None)

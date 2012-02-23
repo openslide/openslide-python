@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2010-2011 Carnegie Mellon University
+# Copyright (c) 2010-2012 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -44,18 +44,18 @@ class DeepZoomGenerator(object):
         # We have four coordinate planes:
         # - Row and column of the tile within the Deep Zoom level (t_)
         # - Pixel coordinates within the Deep Zoom level (z_)
-        # - Pixel coordinates within the slide layer (l_)
-        # - Pixel coordinates within slide layer 0 (l0_)
+        # - Pixel coordinates within the slide level (l_)
+        # - Pixel coordinates within slide level 0 (l0_)
 
         self._osr = osr
         self._z_t_downsample = tile_size
         self._z_overlap = overlap
 
         # Precompute dimensions
-        # Layer
-        self._l_dimensions = osr.layer_dimensions
+        # Slide level
+        self._l_dimensions = osr.level_dimensions
         self._l0_dimensions = self._l_dimensions[0]
-        # Level
+        # Deep Zoom level
         z_size = self._l0_dimensions
         z_dimensions = [z_size]
         while z_size[0] > 1 or z_size[1] > 1:
@@ -67,24 +67,24 @@ class DeepZoomGenerator(object):
         self._t_dimensions = tuple((tiles(z_w), tiles(z_h))
                     for z_w, z_h in self._z_dimensions)
 
-        # Level count
-        self._levels = len(self._z_dimensions)
+        # Deep Zoom level count
+        self._dz_levels = len(self._z_dimensions)
 
-        # Total downsamples for each level
-        l0_z_downsamples = tuple(2 ** (self._levels - level - 1)
-                    for level in xrange(self._levels))
+        # Total downsamples for each Deep Zoom level
+        l0_z_downsamples = tuple(2 ** (self._dz_levels - dz_level - 1)
+                    for dz_level in xrange(self._dz_levels))
 
-        # Preferred layers for each level
-        self._layer_from_level = tuple(
-                    self._osr.get_best_layer_for_downsample(d)
+        # Preferred slide levels for each Deep Zoom level
+        self._slide_from_dz_level = tuple(
+                    self._osr.get_best_level_for_downsample(d)
                     for d in l0_z_downsamples)
 
         # Piecewise downsamples
-        self._l0_l_downsamples = self._osr.layer_downsamples
+        self._l0_l_downsamples = self._osr.level_downsamples
         self._l_z_downsamples = tuple(
-                    l0_z_downsamples[level] /
-                    self._l0_l_downsamples[self._layer_from_level[level]]
-                    for level in range(self._levels))
+                    l0_z_downsamples[dz_level] /
+                    self._l0_l_downsamples[self._slide_from_dz_level[dz_level]]
+                    for dz_level in range(self._dz_levels))
 
         # Slide background color
         self._bg_color = '#' + self._osr.properties.get(
@@ -93,7 +93,7 @@ class DeepZoomGenerator(object):
     @property
     def level_count(self):
         """The number of Deep Zoom levels in the image."""
-        return self._levels
+        return self._dz_levels
 
     @property
     def level_tiles(self):
@@ -131,50 +131,51 @@ class DeepZoomGenerator(object):
 
         return tile
 
-    def _get_tile_info(self, level, t_location):
+    def _get_tile_info(self, dz_level, t_location):
         # Check parameters
-        if level < 0 or level >= self._levels:
+        if dz_level < 0 or dz_level >= self._dz_levels:
             raise ValueError("Invalid level")
-        for t, t_lim in zip(t_location, self._t_dimensions[level]):
+        for t, t_lim in zip(t_location, self._t_dimensions[dz_level]):
             if t < 0 or t >= t_lim:
                 raise ValueError("Invalid address")
 
-        # Get preferred layer
-        layer = self._layer_from_level[level]
+        # Get preferred slide level
+        slide_level = self._slide_from_dz_level[dz_level]
 
         # Calculate top/left and bottom/right overlap
         z_overlap_tl = tuple(self._z_overlap * int(t != 0)
                     for t in t_location)
         z_overlap_br = tuple(self._z_overlap * int(t != t_lim - 1)
-                    for t, t_lim in zip(t_location, self.level_tiles[level]))
+                    for t, t_lim in
+                    zip(t_location, self.level_tiles[dz_level]))
 
         # Get final size of the tile
         z_size = tuple(min(self._z_t_downsample,
                     z_lim - self._z_t_downsample * t) + z_tl + z_br
                     for t, z_lim, z_tl, z_br in
-                    zip(t_location, self._z_dimensions[level], z_overlap_tl,
-                    z_overlap_br))
+                    zip(t_location, self._z_dimensions[dz_level],
+                    z_overlap_tl, z_overlap_br))
 
         # Obtain the region coordinates
         z_location = [self._z_from_t(t) for t in t_location]
-        l_location = [self._l_from_z(level, z) - z_tl
+        l_location = [self._l_from_z(dz_level, z) - z_tl
                     for z, z_tl in zip(z_location, z_overlap_tl)]
         # Round location down and size up
-        l0_location = tuple(int(self._l0_from_l(layer, l))
+        l0_location = tuple(int(self._l0_from_l(slide_level, l))
                     for l in l_location)
-        l_size = tuple(int(min(math.ceil(self._l_from_z(level, dz)),
+        l_size = tuple(int(min(math.ceil(self._l_from_z(dz_level, dz)),
                     l_lim - math.ceil(l)))
                     for l, dz, l_lim in
-                    zip(l_location, z_size, self._l_dimensions[layer]))
+                    zip(l_location, z_size, self._l_dimensions[slide_level]))
 
         # Return read_region() parameters plus tile size for final scaling
-        return ((l0_location, layer, l_size), z_size)
+        return ((l0_location, slide_level, l_size), z_size)
 
-    def _l0_from_l(self, layer, l):
-        return self._l0_l_downsamples[layer] * l
+    def _l0_from_l(self, slide_level, l):
+        return self._l0_l_downsamples[slide_level] * l
 
-    def _l_from_z(self, level, z):
-        return self._l_z_downsamples[level] * z
+    def _l_from_z(self, dz_level, z):
+        return self._l_z_downsamples[dz_level] * z
 
     def _z_from_t(self, t):
         return self._z_t_downsample * t
