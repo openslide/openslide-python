@@ -35,6 +35,8 @@ from openslide import lowlevel
 from openslide.lowlevel import OpenSlideError
 from openslide._version import __version__
 
+__library_version__ = lowlevel.get_version()
+
 PROPERTY_NAME_COMMENT          = 'openslide.comment'
 PROPERTY_NAME_VENDOR           = 'openslide.vendor'
 PROPERTY_NAME_QUICKHASH1       = 'openslide.quickhash-1'

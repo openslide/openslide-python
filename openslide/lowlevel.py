@@ -187,3 +187,5 @@ def read_associated_image(slide, name):
     buf = (w.value * h.value * c_uint32)()
     _read_associated_image(slide, name, buf)
     return _load_image(buf, (w.value, h.value))
+
+get_version = _func('openslide_get_version', c_char_p, [], None)
