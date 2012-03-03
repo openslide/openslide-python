@@ -37,6 +37,8 @@ import sys
 
 if platform.system() == 'Windows':
     _lib = cdll.LoadLibrary('libopenslide-0.dll')
+elif platform.system() == 'Darwin':
+    _lib = cdll.LoadLibrary('libopenslide.0.dylib')
 else:
     _lib = cdll.LoadLibrary('libopenslide.so.0')
 
