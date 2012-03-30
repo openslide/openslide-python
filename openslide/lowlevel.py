@@ -123,6 +123,11 @@ def _load_image(buf, size):
     # Now load the image as RGBA, undoing premultiplication
     return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBa', 0, 1)
 
+try:
+    get_version = _func('openslide_get_version', c_char_p, [], None)
+except AttributeError:
+    raise OpenSlideError('OpenSlide >= 3.3.0 required')
+
 can_open = _func('openslide_can_open', c_bool, [c_char_p], None)
 
 open = _func('openslide_open', c_void_p, [c_char_p], _check_open)
@@ -189,5 +194,3 @@ def read_associated_image(slide, name):
     buf = (w.value * h.value * c_uint32)()
     _read_associated_image(slide, name, buf)
     return _load_image(buf, (w.value, h.value))
-
-get_version = _func('openslide_get_version', c_char_p, [], None)
