@@ -79,7 +79,11 @@ class _OpenSlide(object):
 def _check_open(result, _func, _args):
     if result is None:
         raise OpenSlideError("Could not open image file")
-    return _OpenSlide(c_void_p(result))
+    slide = _OpenSlide(c_void_p(result))
+    err = get_error(slide)
+    if err is not None:
+        raise OpenSlideError(err)
+    return slide
 
 # prevent further operations on slide handle after it is closed
 def _check_close(_result, _func, args):
