@@ -41,6 +41,9 @@ PROPERTY_NAME_COMMENT          = 'openslide.comment'
 PROPERTY_NAME_VENDOR           = 'openslide.vendor'
 PROPERTY_NAME_QUICKHASH1       = 'openslide.quickhash-1'
 PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
+PROPERTY_NAME_OBJECTIVE_POWER  = 'openslide.objective-power'
+PROPERTY_NAME_MPP_X            = 'openslide.mpp-x'
+PROPERTY_NAME_MPP_Y            = 'openslide.mpp-y'
 
 class AbstractSlide(object):
     """The base class of a slide object."""
