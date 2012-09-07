@@ -193,8 +193,7 @@ def get_associated_image_dimensions(slide, name):
 _read_associated_image = _func('openslide_read_associated_image', None,
         [_OpenSlide, c_char_p, POINTER(c_uint32)])
 def read_associated_image(slide, name):
-    w, h = c_int64(), c_int64()
-    _get_associated_image_dimensions(slide, name, byref(w), byref(h))
-    buf = (w.value * h.value * c_uint32)()
+    w, h = get_associated_image_dimensions(slide, name)
+    buf = (w * h * c_uint32)()
     _read_associated_image(slide, name, buf)
-    return _load_image(buf, (w.value, h.value))
+    return _load_image(buf, (w, h))
