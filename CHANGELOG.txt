@@ -1,6 +1,13 @@
 Notable Changes in OpenSlide Python
 ===================================
 
+Version 0.4.0, 2012-09-08
+ * Require OpenSlide 3.3.0
+ * Rename "layer" to "level" throughout API
+ * Provide OpenSlide version in openslide.__library_version__
+ * Properly report openslide_open() errors on OpenSlide 3.3.0
+ * Fix library loading on Mac OS X
+
 Version 0.3.0, 2011-12-16
  * Fix segfault if properties/associated images accessed after
    OpenSlide is closed
