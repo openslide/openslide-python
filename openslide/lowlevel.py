@@ -48,6 +48,12 @@ class OpenSlideError(Exception):
     Import this from openslide rather than from openslide.lowlevel.
     """
 
+class OpenSlideUnsupportedFormatError(OpenSlideError):
+    """OpenSlide does not support the requested file.
+
+    Import this from openslide rather than from openslide.lowlevel.
+    """
+
 class _OpenSlide(object):
     """Wrapper class to make sure we correctly pass an OpenSlide handle."""
 
@@ -78,7 +84,8 @@ class _OpenSlide(object):
 # check for errors opening an image file and wrap the resulting handle
 def _check_open(result, _func, _args):
     if result is None:
-        raise OpenSlideError("Could not open image file")
+        raise OpenSlideUnsupportedFormatError(
+                "Unsupported or missing image file")
     slide = _OpenSlide(c_void_p(result))
     err = get_error(slide)
     if err is not None:

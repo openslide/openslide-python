@@ -32,7 +32,7 @@ from PIL import Image
 from openslide import lowlevel
 
 # For the benefit of library users
-from openslide.lowlevel import OpenSlideError
+from openslide.lowlevel import OpenSlideError, OpenSlideUnsupportedFormatError
 from openslide._version import __version__
 
 __library_version__ = lowlevel.get_version()
