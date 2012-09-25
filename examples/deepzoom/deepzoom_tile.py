@@ -36,13 +36,14 @@ VIEWER_SLIDE_NAME = 'slide'
 class TileWorker(Process):
     """A child process that generates and writes tiles."""
 
-    def __init__(self, queue, slidepath, tile_size, overlap):
+    def __init__(self, queue, slidepath, tile_size, overlap, quality):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
         self._queue = queue
         self._slidepath = slidepath
         self._tile_size = tile_size
         self._overlap = overlap
+        self._quality = quality
         self._slide = None
 
     def run(self):
@@ -59,7 +60,7 @@ class TileWorker(Process):
                 dz = self._get_dz(associated)
                 last_associated = associated
             tile = dz.get_tile(level, address)
-            tile.save(outfile, quality=90)
+            tile.save(outfile, quality=self._quality)
             self._queue.task_done()
 
     def _get_dz(self, associated=None):
@@ -121,7 +122,7 @@ class DeepZoomStaticTiler(object):
     """Handles generation of tiles and metadata for all images in a slide."""
 
     def __init__(self, slidepath, basename, format, tile_size, overlap,
-                workers, with_viewer):
+                quality, workers, with_viewer):
         if with_viewer:
             # Check extra dependency before doing a bunch of work
             import jinja2
@@ -135,7 +136,7 @@ class DeepZoomStaticTiler(object):
         self._with_viewer = with_viewer
         self._dzi_data = {}
         for _i in range(workers):
-            TileWorker(self._queue, slidepath, tile_size, overlap).start()
+            TileWorker(self._queue, slidepath, tile_size, overlap, quality).start()
 
     def run(self):
         self._run_image()
@@ -234,6 +235,9 @@ if __name__ == '__main__':
                 help='number of worker processes to start [4]')
     parser.add_option('-o', '--output', metavar='NAME', dest='basename',
                 help='base name of output file')
+    parser.add_option('-q', '--quality', metavar='QUALITY', dest='quality',
+                type='int', default=90,
+                help='JPEG compression quality [90]')
     parser.add_option('-r', '--viewer', dest='with_viewer',
                 action='store_true',
                 help='generate directory tree with HTML viewer')
@@ -250,5 +254,5 @@ if __name__ == '__main__':
         opts.basename = os.path.splitext(os.path.basename(slidepath))[0]
 
     DeepZoomStaticTiler(slidepath, opts.basename, opts.format,
-                opts.tile_size, opts.overlap, opts.workers,
+                opts.tile_size, opts.overlap, opts.quality, opts.workers,
                 opts.with_viewer).run()

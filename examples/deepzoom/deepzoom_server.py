@@ -30,6 +30,7 @@ DEEPZOOM_SLIDE = None
 DEEPZOOM_FORMAT = 'jpeg'
 DEEPZOOM_TILE_SIZE = 256
 DEEPZOOM_OVERLAP = 1
+DEEPZOOM_TILE_QUALITY = 75
 SLIDE_NAME = 'slide'
 
 app = Flask(__name__)
@@ -96,7 +97,7 @@ def tile(slug, level, col, row, format):
         # Invalid level or coordinates
         abort(404)
     buf = StringIO()
-    tile.save(buf, format, quality=75)
+    tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
     resp = make_response(buf.getvalue())
     resp.mimetype = 'image/%s' % format
     return resp
@@ -132,6 +133,9 @@ if __name__ == '__main__':
     parser.add_option('-p', '--port', metavar='PORT', dest='port',
                 type='int', default=5000,
                 help='port to listen on [5000]')
+    parser.add_option('-q', '--quality', metavar='QUALITY',
+                dest='DEEPZOOM_TILE_QUALITY', type='int',
+                help='JPEG compression quality [75]')
     parser.add_option('-s', '--size', metavar='PIXELS',
                 dest='DEEPZOOM_TILE_SIZE', type='int',
                 help='tile size [256]')
