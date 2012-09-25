@@ -235,7 +235,7 @@ if __name__ == '__main__':
                 help='number of worker processes to start [4]')
     parser.add_option('-o', '--output', metavar='NAME', dest='basename',
                 help='base name of output file')
-    parser.add_option('-q', '--quality', metavar='QUALITY', dest='quality',
+    parser.add_option('-Q', '--quality', metavar='QUALITY', dest='quality',
                 type='int', default=90,
                 help='JPEG compression quality [90]')
     parser.add_option('-r', '--viewer', dest='with_viewer',

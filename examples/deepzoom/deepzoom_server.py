@@ -133,7 +133,7 @@ if __name__ == '__main__':
     parser.add_option('-p', '--port', metavar='PORT', dest='port',
                 type='int', default=5000,
                 help='port to listen on [5000]')
-    parser.add_option('-q', '--quality', metavar='QUALITY',
+    parser.add_option('-Q', '--quality', metavar='QUALITY',
                 dest='DEEPZOOM_TILE_QUALITY', type='int',
                 help='JPEG compression quality [75]')
     parser.add_option('-s', '--size', metavar='PIXELS',
