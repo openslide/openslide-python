@@ -156,4 +156,4 @@ if __name__ == '__main__':
         pass
     load_slide()
 
-    app.run(host=opts.host, port=opts.port)
+    app.run(host=opts.host, port=opts.port, threaded=True)
