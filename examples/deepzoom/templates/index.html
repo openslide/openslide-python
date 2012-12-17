@@ -106,6 +106,18 @@ div#properties dd {
 <script type="text/javascript" src="static/jquery.js"></script>
 <script type="text/javascript" src="static/OpenSeadragon.js"></script>
 <script type="text/javascript">
+// Override hardcoded icon paths
+var UnwrappedConfig = Seadragon.Config;
+Seadragon.Config = function() {
+    UnwrappedConfig.apply(this);
+    $.each(this.navImages, function(k, v) {
+        $.each(v, function(kk, vv) {
+            var elements = vv.split('/');
+            v[kk] = 'static/images/' + elements[elements.length - 1];
+        });
+    });
+};
+
 $(document).ready(function() {
     var dzi_data = {{ dzi_data|default('{}')|safe }};
     var viewer;
