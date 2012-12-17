@@ -1,4 +1,4 @@
-// http://openseadragon.codeplex.com/
+// OpenSeadragon 0.7.2, http://openseadragon.codeplex.com/
 /*!
  * New BSD License
  *
@@ -30,5 +30,4231 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-// (c) 2010 OpenSeadragon, (c) 2010 CodePlex Foundation
-Array.prototype.add=function(a,b){a[a.length]=b};Array.prototype.clear=function(a){a.length=0};Array.prototype.clone=function(a){return a.length===1?[a[0]]:Array.apply(null,a)};SArray=Array();if(!window.Function)window.Function={};Function.prototype.createDelegate=function(b,a){return function(){if(arguments===undefined)arguments=[];return a.apply(b,arguments)}};function String(){}String.format=function(){return String._toFormattedString(false,arguments)};String._toFormattedString=function(l,j){for(var c="",e=j[0],a=0;true;){var f=e.indexOf("{",a),d=e.indexOf("}",a);if(f<0&&d<0){c+=e.slice(a);break}if(d>0&&(d<f||f<0)){c+=e.slice(a,d+1);a=d+2;continue}c+=e.slice(a,f);a=f+1;if(e.charAt(a)==="{"){c+="{";a++;continue}if(d<0)break;var h=e.substring(a,d),g=h.indexOf(":"),k=parseInt(g<0?h:h.substring(0,g),10)+1,i=g<0?"":h.substring(g+1),b=j[k];if(typeof b==="undefined"||b===null)b="";if(b.toFormattedString)c+=b.toFormattedString(i);else if(l&&b.localeFormat)c+=b.localeFormat(i);else if(b.format)c+=b.format(i);else c+=b.toString();a=d+1}return c};function Observer(){}Observer.prototype={_getContext:function(b,c){var a=b._observerContext;return a?a():c?(b._observerContext=this._createContext())():null},_createContext:function(){var a={events:new EventHandlerList};return function(){return a}}};var EventHandlerList=function(){this._list={}};EventHandlerList.prototype={_addHandler:function(b,a){SArray.add(this._getEvent(b,true),a)},addHandler:function(b,a){this._addHandler(b,a)},_removeHandler:function(c,b){var a=this._getEvent(c);if(!a)return;SArray.remove(a,b)},_removeHandlers:function(b){if(!b)this._list={};else{var a=this._getEvent(b);if(!a)return;a.length=0}},removeHandler:function(b,a){this._removeHandler(b,a)},getHandler:function(b){var a=this._getEvent(b);if(!a||!a.length)return null;a=SArray.clone(a);return function(c,d){for(var b=0,e=a.length;b<e;b++)a[b](c,d)}},_getEvent:function(b,c){var a=this._list[b];if(!a){if(!c)return null;this._list[b]=a=[]}return a}};var Seadragon=new function(){};Seadragon.Utils=function(){var a=null,f="number",i=true,e=false,b=this,d={UNKNOWN:0,IE:1,FIREFOX:2,SAFARI:3,CHROME:4,OPERA:5};Seadragon.Browser=d;var c=b,l=["Msxml2.XMLHTTP","Msxml3.XMLHTTP","Microsoft.XMLHTTP"],n={bmp:e,jpeg:i,jpg:i,png:i,tif:e,wdp:e},g=d.UNKNOWN,h=0,j=e,m={};(function(){var e=navigator.appName,r=navigator.appVersion,a=navigator.userAgent;if(e=="Microsoft Internet Explorer"&&!!window.attachEvent&&!!window.ActiveXObject){var l=a.indexOf("MSIE");g=d.IE;h=parseFloat(a.substring(l+5,a.indexOf(";",l)))}else if(e=="Netscape"&&!!window.addEventListener){var k=a.indexOf("Firefox"),b=a.indexOf("Safari"),o=a.indexOf("Chrome");if(k>=0){g=d.FIREFOX;h=parseFloat(a.substring(k+8))}else if(b>=0){var q=a.substring(0,b).lastIndexOf("/");g=o>=0?d.CHROME:d.SAFARI;h=parseFloat(a.substring(q+1,b))}}else if(e=="Opera"&&!!window.opera&&!!window.attachEvent){g=d.OPERA;h=parseFloat(r)}for(var p=window.location.search.substring(1),n=p.split("&"),i=0;i<n.length;i++){var c=n[i],f=c.indexOf("=");if(f>0)m[c.substring(0,f)]=decodeURIComponent(c.substring(f+1))}j=g==d.IE||g==d.CHROME&&h<2})();function k(a,b){return b&&a!=document.body?document.body:a.offsetParent}b.getBrowser=function(){return g};b.getBrowserVersion=function(){return h};b.getElement=function(a){if(typeof a=="string")a=document.getElementById(a);return a};b.getElementPosition=function(a){var a=c.getElement(a),b=new Seadragon.Point,d=c.getElementStyle(a).position=="fixed",e=k(a,d);while(e){b.x+=a.offsetLeft;b.y+=a.offsetTop;if(d)b=b.plus(c.getPageScroll());a=e;d=c.getElementStyle(a).position=="fixed";e=k(a,d)}return b};b.getElementSize=function(a){var a=c.getElement(a);return new Seadragon.Point(a.clientWidth,a.clientHeight)};b.getElementStyle=function(a){var a=c.getElement(a);if(a.currentStyle)return a.currentStyle;else if(window.getComputedStyle)return window.getComputedStyle(a,"");else Seadragon.Debug.fail("Unknown element style, no known technique.")};b.getEvent=function(a){return a?a:window.event};b.getMousePosition=function(a){var a=c.getEvent(a),b=new Seadragon.Point;if(typeof a.pageX==f){b.x=a.pageX;b.y=a.pageY}else if(typeof a.clientX==f){b.x=a.clientX+document.body.scrollLeft+document.documentElement.scrollLeft;b.y=a.clientY+document.body.scrollTop+document.documentElement.scrollTop}else Seadragon.Debug.fail("Unknown event mouse position, no known technique.");return b};b.getPageScroll=function(){var a=new Seadragon.Point,b=document.documentElement||{},c=document.body||{};if(typeof window.pageXOffset==f){a.x=window.pageXOffset;a.y=window.pageYOffset}else if(c.scrollLeft||c.scrollTop){a.x=c.scrollLeft;a.y=c.scrollTop}else if(b.scrollLeft||b.scrollTop){a.x=b.scrollLeft;a.y=b.scrollTop}return a};b.getWindowSize=function(){var a=new Seadragon.Point,b=document.documentElement||{},c=document.body||{};if(typeof window.innerWidth==f){a.x=window.innerWidth;a.y=window.innerHeight}else if(b.clientWidth||b.clientHeight){a.x=b.clientWidth;a.y=b.clientHeight}else if(c.clientWidth||c.clientHeight){a.x=c.clientWidth;a.y=c.clientHeight}else Seadragon.Debug.fail("Unknown window size, no known technique.");return a};b.imageFormatSupported=function(a){var a=a?a:"";return!!n[a.toLowerCase()]};b.makeCenteredNode=function(g){var b="border:none; margin:0px; padding:0px;",g=Seadragon.Utils.getElement(g),d=c.makeNeutralElement("div"),a=[];a.push('<div style="display:table; height:100%; width:100%;');a.push(b);a.push('#position:relative; overflow:hidden; text-align:left;">');a.push('<div style="#position:absolute; #top:50%; width:100%; ');a.push(b);a.push('display:table-cell; vertical-align:middle;">');a.push('<div style="#position:relative; #top:-50%; width:100%; ');a.push(b);a.push('text-align:center;"></div></div></div>');d.innerHTML=a.join("");d=d.firstChild;var f=d,e=d.getElementsByTagName("div");while(e.length>0){f=e[0];e=f.getElementsByTagName("div")}f.appendChild(g);return d};b.makeNeutralElement=function(c){var b=document.createElement(c),a=b.style;a.background="transparent none";a.border="none";a.margin="0px";a.padding="0px";a.position="static";return b};b.makeTransparentImage=function(f){var e=c.makeNeutralElement("img"),b=a;if(g==d.IE&&h<7){b=c.makeNeutralElement("span");b.style.display="inline-block";e.onload=function(){b.style.width=b.style.width||e.width+"px";b.style.height=b.style.height||e.height+"px";e.onload=a;e=a};e.src=f;b.style.filter="progid:DXImageTransform.Microsoft.AlphaImageLoader(src='"+f+"', sizingMethod='scale')"}else{b=e;b.src=f}return b};b.setElementOpacity=function(a,b,g){var a=c.getElement(a);if(g&&j)b=Math.round(b);if(b<1)a.style.opacity=b;else a.style.opacity="";if(b==1){var f=a.style.filter||"";a.style.filter=f.replace(/alpha\(.*?\)/g,"");return}var d=Math.round(100*b),e=" alpha(opacity="+d+") ";try{if(a.filters&&a.filters.alpha)a.filters.alpha.opacity=d;else a.style.filter+=e}catch(h){a.style.filter+=e}};b.addEvent=function(a,d,e,b){var a=c.getElement(a);if(a.addEventListener)a.addEventListener(d,e,b);else if(a.attachEvent){a.attachEvent("on"+d,e);b&&a.setCapture&&a.setCapture()}else Seadragon.Debug.fail("Unable to attach event handler, no known technique.")};b.removeEvent=function(a,d,e,b){var a=c.getElement(a);if(a.removeEventListener)a.removeEventListener(d,e,b);else if(a.detachEvent){a.detachEvent("on"+d,e);b&&a.releaseCapture&&a.releaseCapture()}else Seadragon.Debug.fail("Unable to detach event handler, no known technique.")};b.cancelEvent=function(a){var a=c.getEvent(a);a.preventDefault&&a.preventDefault();a.cancel=i;a.returnValue=e};b.stopEvent=function(a){var a=c.getEvent(a);a.stopPropagation&&a.stopPropagation();a.cancelBubble=i};b.createCallback=function(d,c){for(var b=[],a=2;a<arguments.length;a++)b.push(arguments[a]);return function(){for(var e=b.concat([]),a=0;a<arguments.length;a++)e.push(arguments[a]);return c.apply(d,e)}};b.getUrlParameter=function(c){var b=m[c];return b?b:a};b.makeAjaxRequest=function(g,d){var c=typeof d=="function",b=a;if(c)var f=d,d=function(){window.setTimeout(Seadragon.Utils.createCallback(a,f,b),1)};if(window.ActiveXObject)for(var e=0;e<l.length;e++)try{b=new ActiveXObject(l[e]);break}catch(h){continue}else if(window.XMLHttpRequest)b=new XMLHttpRequest;!b&&Seadragon.Debug.fail("Browser doesn't support XMLHttpRequest.");if(c)b.onreadystatechange=function(){if(b.readyState==4){b.onreadystatechange=new function(){};d()}};try{b.open("GET",g,c);b.send(a)}catch(h){Seadragon.Debug.log(h.name+" while making AJAX request: "+h.message);b.onreadystatechange=a;b=a;c&&d()}return c?a:b};b.parseXml=function(c){var b=a;if(window.ActiveXObject)try{b=new ActiveXObject("Microsoft.XMLDOM");b.async=e;b.loadXML(c)}catch(f){Seadragon.Debug.log(f.name+" while parsing XML (ActiveX): "+f.message)}else if(window.DOMParser)try{var d=new DOMParser;b=d.parseFromString(c,"text/xml")}catch(f){Seadragon.Debug.log(f.name+" while parsing XML (DOMParser): "+f.message)}else Seadragon.Debug.fail("Browser doesn't support XML DOM.");return b}};Seadragon.Utils=new Seadragon.Utils;(function(){var c="mouseup",d="mousedown",b=true,a=false;if(Seadragon.MouseTracker)return;var f=Seadragon.Utils.getBrowser()==Seadragon.Browser.IE,i=a,l=a,k={},g=[];function j(a){return Seadragon.Utils.getMousePosition(a)}function e(b,d){var c=Seadragon.Utils.getMousePosition(b),a=Seadragon.Utils.getElementPosition(d);return c.minus(a)}function h(c,b){var d=document.body;while(b&&c!=b&&d!=b)try{b=b.parentNode}catch(e){return a}return c==b}function m(){i=b}function n(){i=a}(function(){if(f){Seadragon.Utils.addEvent(document,d,m,a);Seadragon.Utils.addEvent(document,c,n,a)}else{Seadragon.Utils.addEvent(window,d,m,b);Seadragon.Utils.addEvent(window,c,n,b)}})();Seadragon.MouseTracker=function(m,K,J){var p="function",q="mousemove",v="mousewheel",u="DOMMouseScroll",t="mouseout",s="mouseover",o=null,r=this,n=r,D=o,I=Math.random(),m=Seadragon.Utils.getElement(m),A=a,w=a,y=a,z=a,C=o,M=o,L=o,K=K,J=J;r.target=m;r.enterHandler=o;r.exitHandler=o;r.pressHandler=o;r.releaseHandler=o;r.scrollHandler=o;r.clickHandler=o;r.dragHandler=o;function U(){if(!A){Seadragon.Utils.addEvent(m,s,G,a);Seadragon.Utils.addEvent(m,t,H,a);Seadragon.Utils.addEvent(m,d,R,a);Seadragon.Utils.addEvent(m,c,x,a);Seadragon.Utils.addEvent(m,"click",Q,a);Seadragon.Utils.addEvent(m,u,B,a);Seadragon.Utils.addEvent(m,v,B,a);A=b;k[I]=D}}function W(){if(A){Seadragon.Utils.removeEvent(m,s,G,a);Seadragon.Utils.removeEvent(m,t,H,a);Seadragon.Utils.removeEvent(m,d,R,a);Seadragon.Utils.removeEvent(m,c,x,a);Seadragon.Utils.removeEvent(m,"click",Q,a);Seadragon.Utils.removeEvent(m,u,B,a);Seadragon.Utils.removeEvent(m,v,B,a);E();A=a;delete k[I]}}function V(){if(!w){if(f){Seadragon.Utils.removeEvent(m,c,x,a);Seadragon.Utils.addEvent(m,c,S,b);Seadragon.Utils.addEvent(m,q,O,b)}else{Seadragon.Utils.addEvent(window,c,N,b);Seadragon.Utils.addEvent(window,q,F,b)}w=b}}function E(){if(w){if(f){Seadragon.Utils.removeEvent(m,q,O,b);Seadragon.Utils.removeEvent(m,c,S,b);Seadragon.Utils.addEvent(m,c,x,a)}else{Seadragon.Utils.removeEvent(window,q,F,b);Seadragon.Utils.removeEvent(window,c,N,b)}w=a}}function P(c,d){var b=k;for(var a in b)b.hasOwnProperty(a)&&I!=a&&b[a][c](d)}function X(){return z}function G(a){var a=Seadragon.Utils.getEvent(a);f&&w&&!h(a.srcElement,m)&&P("onMouseOver",a);var d=a.target?a.target:a.srcElement,c=a.relatedTarget?a.relatedTarget:a.fromElement;if(!h(m,d)||h(m,c))return;z=b;if(typeof n.enterHandler==p)try{n.enterHandler(n,e(a,m),y,i)}catch(g){Seadragon.Debug.error(g.name+" while executing enter handler: "+g.message,g)}}function H(b){var b=Seadragon.Utils.getEvent(b);f&&w&&!h(b.srcElement,m)&&P("onMouseOut",b);var c=b.target?b.target:b.srcElement,d=b.relatedTarget?b.relatedTarget:b.toElement;if(!h(m,c)||h(m,d))return;z=a;if(typeof n.exitHandler==p)try{n.exitHandler(n,e(b,m),y,i)}catch(g){Seadragon.Debug.error(g.name+" while executing exit handler: "+g.message,g)}}function R(a){var a=Seadragon.Utils.getEvent(a);if(a.button==2)return;y=b;C=j(a);L=C;M=(new Date).getTime();if(typeof n.pressHandler==p)try{n.pressHandler(n,e(a,m))}catch(c){Seadragon.Debug.error(c.name+" while executing press handler: "+c.message,c)}(n.pressHandler||n.dragHandler)&&Seadragon.Utils.cancelEvent(a);if(!f||!l){V();l=b;g=[D]}else f&&g.push(D)}function x(b){var b=Seadragon.Utils.getEvent(b),d=y,c=z;if(b.button==2)return;y=a;if(typeof n.releaseHandler==p)try{n.releaseHandler(n,e(b,m),d,c)}catch(f){Seadragon.Debug.error(f.name+" while executing release handler: "+f.message,f)}d&&c&&T(b)}function S(b){var b=Seadragon.Utils.getEvent(b);if(b.button==2)return;for(var c=0;c<g.length;c++){var d=g[c];if(!d.hasMouse())d.onMouseUp(b)}E();l=a;b.srcElement.fireEvent("on"+b.type,document.createEventObject(b));Seadragon.Utils.stopEvent(b)}function N(a){!z&&x(a);E()}function Q(a){n.clickHandler&&Seadragon.Utils.cancelEvent(a)}function B(a){var b=0;if(!a)a=window.event;if(a.wheelDelta){b=a.wheelDelta;if(window.opera)b=-b}else if(a.detail)b=-a.detail;b=b>0?1:-1;if(typeof n.scrollHandler==p){try{n.scrollHandler(n,e(a,m),b,a.shiftKey)}catch(c){Seadragon.Debug.error(c.name+" while executing scroll handler: "+c.message,c)}Seadragon.Utils.cancelEvent(a)}}function T(a){var a=Seadragon.Utils.getEvent(a);if(a.button==2)return;var f=(new Date).getTime()-M,c=j(a),b=L.distanceTo(c),d=f<=K&&b<=J;if(typeof n.clickHandler==p)try{n.clickHandler(n,e(a,m),d,a.shiftKey)}catch(g){Seadragon.Debug.error(g.name+" while executing click handler: "+g.message,g)}}function F(a){var a=Seadragon.Utils.getEvent(a),b=j(a),c=b.minus(C);C=b;if(typeof n.dragHandler==p){try{n.dragHandler(n,e(a,m),c,a.shiftKey)}catch(d){Seadragon.Debug.error(d.name+" while executing drag handler: "+d.message,d)}Seadragon.Utils.cancelEvent(a)}}function O(b){for(var a=0;a<g.length;a++)g[a].onMouseMove(b);Seadragon.Utils.stopEvent(b)}(function(){D={hasMouse:X,onMouseOver:G,onMouseOut:H,onMouseUp:x,onMouseMove:F}})();r.isTracking=function(){return A};r.setTracking=function(a){if(a)U();else W()}}})();if(!window.SIGNAL)window.SIGNAL="----seadragon----";Seadragon.ControlAnchor=function(){throw Error.invalidOperation();};Seadragon.ControlAnchor={NONE:0,TOP_LEFT:1,TOP_RIGHT:2,BOTTOM_RIGHT:3,BOTTOM_LEFT:4};Seadragon.ControlAnchor=Seadragon.ControlAnchor;Seadragon.OverlayPlacement=function(){throw Error.invalidOperation();};Seadragon.OverlayPlacement={CENTER:0,TOP_LEFT:1,TOP:2,TOP_RIGHT:3,RIGHT:4,BOTTOM_RIGHT:5,BOTTOM:6,BOTTOM_LEFT:7,LEFT:8};Seadragon.OverlayPlacement=Seadragon.OverlayPlacement;Seadragon.NavControl=function(c){var b=null,a=this;a._group=b;a._zooming=false;a._zoomFactor=b;a._lastZoomTime=b;a._viewer=c;a.config=a._viewer.config;a.elmt=b;a.initialize()};Seadragon.NavControl.prototype={initialize:function(){var a=this,e=Function.createDelegate(a,a._beginZoomingIn),c=Function.createDelegate(a,a._endZooming),g=Function.createDelegate(a,a._doSingleZoomIn),d=Function.createDelegate(a,a._beginZoomingOut),f=Function.createDelegate(a,a._doSingleZoomOut),i=Function.createDelegate(a,a._onHome),h=Function.createDelegate(a,a._onFullPage),b=a._viewer.config.navImages,m=new Seadragon.Button({config:a._viewer.config,tooltip:Seadragon.Strings.getString("Tooltips.ZoomIn"),srcRest:a._resolveUrl(b.zoomIn.REST),srcGroup:a._resolveUrl(b.zoomIn.GROUP),srcHover:a._resolveUrl(b.zoomIn.HOVER),srcDown:a._resolveUrl(b.zoomIn.DOWN)},{onPress:e,onRelease:c,onClick:g,onEnter:e,onExit:c}),k=new Seadragon.Button({config:a._viewer.config,tooltip:Seadragon.Strings.getString("Tooltips.ZoomOut"),srcRest:a._resolveUrl(b.zoomOut.REST),srcGroup:a._resolveUrl(b.zoomOut.GROUP),srcHover:a._resolveUrl(b.zoomOut.HOVER),srcDown:a._resolveUrl(b.zoomOut.DOWN)},{onPress:d,onRelease:c,onClick:f,onEnter:d,onExit:c}),l=new Seadragon.Button({config:a._viewer.config,tooltip:Seadragon.Strings.getString("Tooltips.Home"),srcRest:a._resolveUrl(b.home.REST),srcGroup:a._resolveUrl(b.home.GROUP),srcHover:a._resolveUrl(b.home.HOVER),srcDown:a._resolveUrl(b.home.DOWN)},{onRelease:i}),j=new Seadragon.Button({config:a._viewer.config,tooltip:Seadragon.Strings.getString("Tooltips.FullPage"),srcRest:a._resolveUrl(b.fullpage.REST),srcGroup:a._resolveUrl(b.fullpage.GROUP),srcHover:a._resolveUrl(b.fullpage.HOVER),srcDown:a._resolveUrl(b.fullpage.DOWN)},{onRelease:h});a._group=new Seadragon.ButtonGroup({config:a._viewer.config,buttons:[m,k,l,j]});a.elmt=a._group.get_element();a.elmt[SIGNAL]=true;a._viewer.add_open(Function.createDelegate(a,a._lightUp))},dispose:function(){},get_events:function(){return this._events},set_events:function(a){this._events=a},_resolveUrl:function(a){return String.format("{1}",this._viewer.get_prefixUrl(),a)},_beginZoomingIn:function(){var a=this;a._lastZoomTime=(new Date).getTime();a._zoomFactor=a.config.zoomPerSecond;a._zooming=true;a._scheduleZoom()},_beginZoomingOut:function(){var a=this;a._lastZoomTime=(new Date).getTime();a._zoomFactor=1/a.config.zoomPerSecond;a._zooming=true;a._scheduleZoom()},_endZooming:function(){this._zooming=false},_scheduleZoom:function(){window.setTimeout(Function.createDelegate(this,this._doZoom),10)},_doZoom:function(){var a=this;if(a._zooming&&a._viewer.viewport){var b=(new Date).getTime(),d=b-a._lastZoomTime,c=Math.pow(a._zoomFactor,d/1e3);a._viewer.viewport.zoomBy(c);a._viewer.viewport.applyConstraints();a._lastZoomTime=b;a._scheduleZoom()}},_doSingleZoomIn:function(){var a=this;if(a._viewer.viewport){a._zooming=false;a._viewer.viewport.zoomBy(a.config.zoomPerClick/1);a._viewer.viewport.applyConstraints()}},_doSingleZoomOut:function(){var a=this;if(a._viewer.viewport){a._zooming=false;a._viewer.viewport.zoomBy(1/a.config.zoomPerClick);a._viewer.viewport.applyConstraints()}},_lightUp:function(){this._group.emulateEnter();this._group.emulateExit()},_onHome:function(){this._viewer.viewport&&this._viewer.viewport.goHome()},_onFullPage:function(){var a=this;a._viewer.setFullPage(!a._viewer.isFullPage());a._group.emulateExit();a._viewer.viewport&&a._viewer.viewport.applyConstraints()}};Seadragon.Control=function(d,c,b){var a=this;a.elmt=d;a.anchor=c;a.container=b;a.wrapper=Seadragon.Utils.makeNeutralElement("span");a.wrapper.style.display="inline-block";a.wrapper.appendChild(a.elmt);if(a.anchor==Seadragon.ControlAnchor.NONE)a.wrapper.style.width=a.wrapper.style.height="100%";if(a.anchor==Seadragon.ControlAnchor.TOP_RIGHT||a.anchor==Seadragon.ControlAnchor.BOTTOM_RIGHT)a.container.insertBefore(a.wrapper,a.container.firstChild);else a.container.appendChild(a.wrapper)};Seadragon.Control.prototype={destroy:function(){var a=this;a.wrapper.removeChild(a.elmt);a.container.removeChild(a.wrapper)},isVisible:function(){return this.wrapper.style.display!="none"},setVisible:function(a){this.wrapper.style.display=a?"inline-block":"none"},setOpacity:function(a){if(this.elmt[SIGNAL]&&Seadragon.Utils.getBrowser()==Seadragon.Browser.IE)Seadragon.Utils.setElementOpacity(this.elmt,a,true);else Seadragon.Utils.setElementOpacity(this.wrapper,a,true)}};Seadragon.Viewer=function(h,g,d,e,f,c){var b=null,a=this;a.config=new Seadragon.Config;a._prefixUrl=d?d:"";a._element=document.getElementById(h);a._controls=e?e:[];a._customControls=[];a._overlays=f?f:[];a._overlayControls=c?c:[];a._container=b;a._canvas=b;a._controlsTL=b;a._controlsTR=b;a._controlsBR=b;a._controlsBL=b;a._bodyWidth=b;a._bodyHeight=b;a._bodyOverflow=b;a._docOverflow=b;a._fsBoundsDelta=b;a._prevContainerSize=b;a._lastOpenStartTime=0;a._lastOpenEndTime=0;a._animating=false;a._forceRedraw=false;a._mouseInside=false;a._xmlPath=g?g:undefined;a.source=b;a.drawer=b;a.viewport=b;a.profiler=b;a.initialize()};Seadragon.Viewer.prototype={initialize:function(){var n="absolute",b="0px",h="100%",d="div",a=this;a._observer=new Observer;a._container=Seadragon.Utils.makeNeutralElement(d);a._canvas=Seadragon.Utils.makeNeutralElement(d);a._controlsTL=Seadragon.Utils.makeNeutralElement(d);a._controlsTR=Seadragon.Utils.makeNeutralElement(d);a._controlsBR=Seadragon.Utils.makeNeutralElement(d);a._controlsBL=Seadragon.Utils.makeNeutralElement(d);var f=new Seadragon.MouseTracker(a._canvas,a.config.clickTimeThreshold,a.config.clickDistThreshold),g=new Seadragon.MouseTracker(a._container,a.config.clickTimeThreshold,a.config.clickDistThreshold);a._bodyWidth=document.body.style.width;a._bodyHeight=document.body.style.height;a._bodyOverflow=document.body.style.overflow;a._docOverflow=document.documentElement.style.overflow;a._fsBoundsDelta=new Seadragon.Point(1,1);var e=a._canvas.style,c=a._container.style,l=a._controlsTL.style,m=a._controlsTR.style,k=a._controlsBR.style,j=a._controlsBL.style;c.width=h;c.height=h;c.position="relative";c.left=b;c.top=b;c.textAlign="left";e.width=h;e.height=h;e.overflow="hidden";e.position=n;e.top=b;e.left=b;l.position=m.position=k.position=j.position=n;l.top=m.top=b;l.left=j.left=b;m.right=k.right=b;j.bottom=k.bottom=b;f.clickHandler=Function.createDelegate(a,a._onCanvasClick);f.dragHandler=Function.createDelegate(a,a._onCanvasDrag);f.releaseHandler=Function.createDelegate(a,a._onCanvasRelease);f.scrollHandler=Function.createDelegate(a,a._onCanvasScroll);f.setTracking(true);if(a.get_showNavigationControl()){navControl=(new Seadragon.NavControl(a)).elmt;navControl.style.marginRight="4px";navControl.style.marginBottom="4px";a.addControl(navControl,Seadragon.ControlAnchor.BOTTOM_RIGHT)}for(var i=0;i<a._customControls.length;i++)a.addControl(a._customControls[i].id,a._customControls[i].anchor);g.enterHandler=Function.createDelegate(a,a._onContainerEnter);g.exitHandler=Function.createDelegate(a,a._onContainerExit);g.releaseHandler=Function.createDelegate(a,a._onContainerRelease);g.setTracking(true);window.setTimeout(Function.createDelegate(a,a._beginControlsAutoHide),1);a._container.appendChild(a._canvas);a._container.appendChild(a._controlsTL);a._container.appendChild(a._controlsTR);a._container.appendChild(a._controlsBR);a._container.appendChild(a._controlsBL);a.get_element().appendChild(a._container);a._xmlPath&&a.openDzi(a._xmlPath)},get_events:function(){return this._observer._getContext(this,true).events},_raiseEvent:function(c,a){var b=this.get_events().getHandler(c);if(b){if(!a)a={};b(this,a)}},_beginControlsAutoHide:function(){var a=this;if(!a.config.autoHideControls)return;a._controlsShouldFade=true;a._controlsFadeBeginTime=(new Date).getTime()+a._controlsFadeDelay;window.setTimeout(Function.createDelegate(a,a._scheduleControlsFade),a._controlsFadeDelay)},_scheduleControlsFade:function(){window.setTimeout(Function.createDelegate(this,this._updateControlsFade),20)},_updateControlsFade:function(){var b=this;if(b._controlsShouldFade){var d=(new Date).getTime(),e=d-b._controlsFadeBeginTime,a=1-e/b._controlsFadeLength;a=Math.min(1,a);a=Math.max(0,a);for(var c=b._controls.length-1;c>=0;c--)b._controls[c].setOpacity(a);a>0&&b._scheduleControlsFade()}},_onCanvasClick:function(g,c,e,f){var a=this;if(a.viewport&&e){var b=a.config.zoomPerClick,d=f?1/b:b;a.viewport.zoomBy(d,a.viewport.pointFromPixel(c,true));a.viewport.applyConstraints()}},_onCanvasDrag:function(c,b,a){this.viewport&&this.viewport.panBy(this.viewport.deltaPointsFromPixels(a.negate()))},_onCanvasRelease:function(d,c,a){a&&this.viewport&&this.viewport.applyConstraints()},_onCanvasScroll:function(e,b,d){var a=this;if(a.viewport){var c=Math.pow(a.config.zoomPerScroll,d);a.viewport.zoomBy(c,a.viewport.pointFromPixel(b,true));a.viewport.applyConstraints()}},_onContainerExit:function(d,c,a){if(!a){this._mouseInside=false;!this._animating&&this._beginControlsAutoHide()}},_onContainerRelease:function(d,c,b,a){if(!a){this._mouseInside=false;!this._animating&&this._beginControlsAutoHide()}},_getControlIndex:function(b){for(var a=this._controls.length-1;a>=0;a--)if(this._controls[a].elmt==b)return a;return-1},_abortControlsAutoHide:function(){this._controlsShouldFade=false;for(var a=this._controls.length-1;a>=0;a--)this._controls[a].setOpacity(1)},_onContainerEnter:function(){this._mouseInside=true;this._abortControlsAutoHide()},_updateOnce:function(){var a=this;if(!a.source)return;a.profiler.beginUpdate();var c=Seadragon.Utils.getElementSize(a._container);if(!c.equals(a._prevContainerSize)){a.viewport.resize(c,true);a._prevContainerSize=c;a._raiseEvent("resize",a)}var b=a.viewport.update();if(!a._animating&&b){a._raiseEvent("animationstart",self);a._abortControlsAutoHide()}if(b){a.drawer.update();a._raiseEvent("animation",self)}else if(a._forceRedraw||a.drawer.needsUpdate()){a.drawer.update();a._forceRedraw=false}else a.drawer.idle();if(a._animating&&!b){a._raiseEvent("animationfinish",a);!a._mouseInside&&a._beginControlsAutoHide()}a._animating=b;a.profiler.endUpdate()},_onClose:function(){var b=null,a=this;a.source=b;a.viewport=b;a.drawer=b;a.profiler=b;a._canvas.innerHTML=""},_beforeOpen:function(){var a=this;a.source&&a._onClose();a._lastOpenStartTime=(new Date).getTime();window.setTimeout(Function.createDelegate(a,function(){this._lastOpenStartTime>this._lastOpenEndTime&&this._setMessage(Seadragon.Strings.getString("Messages.Loading"))}),2e3);return a._lastOpenStartTime},_setMessage:function(d){var b="normal",c=document.createTextNode(d);this._canvas.innerHTML="";this._canvas.appendChild(Seadragon.Utils.makeCenteredNode(c));var a=c.parentNode.style;a.color="white";a.fontFamily="verdana";a.fontSize="13px";a.fontSizeAdjust="none";a.fontStyle=b;a.fontStretch=b;a.fontVariant=b;a.fontWeight=b;a.lineHeight="1em";a.textAlign="center";a.textDecoration="none"},_onOpen:function(f,d,e){var a=this;a._lastOpenEndTime=(new Date).getTime();if(f<a._lastOpenStartTime){Seadragon.Debug.log("Ignoring out-of-date open.");a._raiseEvent("ignore");return}else if(!d){a._setMessage(e);a._raiseEvent("error");return}a._canvas.innerHTML="";a._prevContainerSize=Seadragon.Utils.getElementSize(a._container);a.source=d;a.viewport=new Seadragon.Viewport(a._prevContainerSize,a.source.dimensions,a.config);a.drawer=new Seadragon.Drawer(a.source,a.viewport,a._canvas);a.profiler=new Seadragon.Profiler;a._animating=false;a._forceRedraw=true;a._scheduleUpdate(a._updateMulti);for(var c=0;c<a._overlayControls.length;c++){var b=a._overlayControls[c];if(b.point!=null)a.drawer.addOverlay(b.id,new Seadragon.Point(b.point.X,b.point.Y),Seadragon.OverlayPlacement.TOP_LEFT);else a.drawer.addOverlay(b.id,new Seadragon.Rect(b.rect.Point.X,b.rect.Point.Y,b.rect.Width,b.rect.Height),b.placement)}a._raiseEvent("open")},_scheduleUpdate:function(c,a){if(this._animating)return window.setTimeout(Function.createDelegate(this,c),1);var b=(new Date).getTime(),a=a?a:b,d=a+1e3/60,e=Math.max(1,d-b);return window.setTimeout(Function.createDelegate(this,c),e)},_updateMulti:function(){if(!this.source)return;var a=(new Date).getTime();this._updateOnce();this._scheduleUpdate(arguments.callee,a)},_updateOnce:function(){var a=this;if(!a.source)return;a.profiler.beginUpdate();var c=Seadragon.Utils.getElementSize(a._container);if(!c.equals(a._prevContainerSize)){a.viewport.resize(c,true);a._prevContainerSize=c;a._raiseEvent("resize")}var b=a.viewport.update();if(!a._animating&&b){a._raiseEvent("animationstart");a._abortControlsAutoHide()}if(b){a.drawer.update();a._raiseEvent("animation")}else if(a._forceRedraw||a.drawer.needsUpdate()){a.drawer.update();a._forceRedraw=false}else a.drawer.idle();if(a._animating&&!b){a._raiseEvent("animationfinish");!a._mouseInside&&a._beginControlsAutoHide()}a._animating=b;a.profiler.endUpdate()},getNavControl:function(){return this._navControl},get_element:function(){return this._element},get_xmlPath:function(){return this._xmlPath},set_xmlPath:function(a){this._xmlPath=a},get_debugMode:function(){return this.config.debugMode},set_debugMode:function(a){this.config.debugMode=a},get_animationTime:function(){return this.config.animationTime},set_animationTime:function(a){this.config.animationTime=a},get_blendTime:function(){return this.config.blendTime},set_blendTime:function(a){this.config.blendTime=a},get_alwaysBlend:function(){return this.config.alwaysBlend},set_alwaysBlend:function(a){this.config.alwaysBlend=a},get_autoHideControls:function(){return this.config.autoHideControls},set_autoHideControls:function(a){this.config.autoHideControls=a},get_immediateRender:function(){return this.config.immediateRender},set_immediateRender:function(a){this.config.immediateRender=a},get_wrapHorizontal:function(){return this.config.wrapHorizontal},set_wrapHorizontal:function(a){this.config.wrapHorizontal=a},get_wrapVertical:function(){return this.config.wrapVertical},set_wrapVertical:function(a){this.config.wrapVertical=a},get_minZoomImageRatio:function(){return this.config.minZoomImageRatio},set_minZoomImageRatio:function(a){this.config.minZoomImageRatio=a},get_maxZoomPixelRatio:function(){return this.config.maxZoomPixelRatio},set_maxZoomPixelRatio:function(a){this.config.maxZoomPixelRatio=a},get_visibilityRatio:function(){return this.config.visibilityRatio},set_visibilityRatio:function(a){this.config.visibilityRatio=a},get_springStiffness:function(){return this.config.springStiffness},set_springStiffness:function(a){this.config.springStiffness=a},get_imageLoaderLimit:function(){return this.config.imageLoaderLimit},set_imageLoaderLimit:function(a){this.config.imageLoaderLimit=a},get_clickTimeThreshold:function(){return this.config.clickTimeThreshold},set_clickTimeThreshold:function(a){this.config.clickTimeThreshold=a},get_clickDistThreshold:function(){return this.config.clickDistThreshold},set_clickDistThreshold:function(a){this.config.clickDistThreshold=a},get_zoomPerClick:function(){return this.config.zoomPerClick},set_zoomPerClick:function(a){this.config.zoomPerClick=a},get_zoomPerSecond:function(){return this.config.zoomPerSecond},set_zoomPerSecond:function(a){this.config.zoomPerSecond=a},get_zoomPerScroll:function(){return this.config.zoomPerScroll},set_zoomPerScroll:function(a){this.config.zoomPerScroll=a},get_maxImageCacheCount:function(){return this.config.maxImageCacheCount},set_maxImageCacheCount:function(a){this.config.maxImageCacheCount=a},get_showNavigationControl:function(){return this.config.showNavigationControl},set_showNavigationControl:function(a){this.config.showNavigationControl=a},get_minPixelRatio:function(){return this.config.minPixelRatio},set_minPixelRatio:function(a){this.config.minPixelRatio=a},get_mouseNavEnabled:function(){return this.config.mouseNavEnabled},set_mouseNavEnabled:function(a){this.config.mouseNavEnabled=a},get_controls:function(){return this._customControls},set_controls:function(a){this._customControls=a},get_overlays:function(){return this._overlayControls},set_overlays:function(a){this._overlayControls=a},get_prefixUrl:function(){return this._prefixUrl},set_prefixUrl:function(a){this._prefixUrl=a},add_open:function(a){this.get_events().addHandler("open",a)},remove_open:function(a){this.get_events().removeHandler("open",a)},add_error:function(a){this.get_events().addHandler("error",a)},remove_error:function(a){this.get_events().removeHandler("error",a)},add_ignore:function(a){this.get_events().addHandler("ignore",a)},remove_ignore:function(a){this.get_events().removeHandler("ignore",a)},add_resize:function(a){this.get_events().addHandler("resize",a)},remove_resize:function(a){this.get_events().removeHandler("resize",a)},add_animationstart:function(a){this.get_events().addHandler("animationstart",a)},remove_animationstart:function(a){this.get_events().removeHandler("animationstart",a)},add_animation:function(a){this.get_events().addHandler("animation",a)},remove_animation:function(a){this.get_events().removeHandler("animation",a)},add_animationfinish:function(a){this.get_events().addHandler("animationfinish",a)},remove_animationfinish:function(a){this.get_events().removeHandler("animationfinish",a)},addControl:function(a,e){var d="relative",b=this,a=Seadragon.Utils.getElement(a);if(b._getControlIndex(a)>=0)return;var c=null;switch(e){case Seadragon.ControlAnchor.TOP_RIGHT:c=b._controlsTR;a.style.position=d;break;case Seadragon.ControlAnchor.BOTTOM_RIGHT:c=b._controlsBR;a.style.position=d;break;case Seadragon.ControlAnchor.BOTTOM_LEFT:c=b._controlsBL;a.style.position=d;break;case Seadragon.ControlAnchor.TOP_LEFT:c=b._controlsTL;a.style.position=d;break;case Seadragon.ControlAnchor.NONE:default:c=b._container;a.style.position="absolute"}b._controls.push(new Seadragon.Control(a,e,c));a.style.display="inline-block"},isOpen:function(){return!!this.source},openDzi:function(c,b){var a=this._beforeOpen();Seadragon.DziTileSourceHelper.createFromXml(c,b,Seadragon.Utils.createCallback(null,Function.createDelegate(this,this._onOpen),a))},openTileSource:function(b){var a=beforeOpen();window.setTimeout(Function.createDelegate(this,function(){onOpen(a,b)}),1)},close:function(){if(!this.source)return;this._onClose()},removeControl:function(b){var b=Seadragon.Utils.getElement(b),a=this._getControlIndex(b);if(a>=0){this._controls[a].destroy();this._controls.splice(a,1)}},clearControls:function(){while(this._controls.length>0)this._controls.pop().destroy()},isDashboardEnabled:function(){for(var a=this._controls.length-1;a>=0;a--)if(this._controls[a].isVisible())return true;return false},isFullPage:function(){return this._container.parentNode==document.body},isMouseNavEnabled:function(){return this._innerTracker.isTracking()},isVisible:function(){return this._container.style.visibility!="hidden"},setDashboardEnabled:function(b){for(var a=this._controls.length-1;a>=0;a--)this._controls[a].setVisible(b)},setFullPage:function(f){var a=this;if(f==a.isFullPage())return;var i=document.body,b=i.style,e=document.documentElement.style,c=a._container.style,d=a._canvas.style;if(f){bodyOverflow=b.overflow;docOverflow=e.overflow;b.overflow="hidden";e.overflow="hidden";bodyWidth=b.width;bodyHeight=b.height;b.width="100%";b.height="100%";d.backgroundColor="black";d.color="white";c.position="fixed";c.zIndex="99999999";i.appendChild(a._container);a._prevContainerSize=Seadragon.Utils.getWindowSize();a._onContainerEnter()}else{b.overflow=bodyOverflow;e.overflow=docOverflow;b.width=bodyWidth;b.height=bodyHeight;d.backgroundColor="";d.color="";c.position="relative";c.zIndex="";a.get_element().appendChild(a._container);a._prevContainerSize=Seadragon.Utils.getElementSize(a.get_element());a._onContainerExit()}if(a.viewport){var h=a.viewport.getBounds();a.viewport.resize(a._prevContainerSize);var g=a.viewport.getBounds();if(f)a._fsBoundsDelta=new Seadragon.Point(g.width/h.width,g.height/h.height);else{a.viewport.update();a.viewport.zoomBy(Math.max(a._fsBoundsDelta.x,a._fsBoundsDelta.y),null,true)}a._forceRedraw=true;a._raiseEvent("resize",a);a._updateOnce()}},setMouseNavEnabled:function(a){this._innerTracker.setTracking(a)},setVisible:function(a){this._container.style.visibility=a?"":"hidden"}};Seadragon.Strings={Errors:{Failure:"Sorry, but Seadragon Ajax can't run on your browser!\nPlease try using IE 7 or Firefox 3.\n",Dzc:"Sorry, we don't support Deep Zoom Collections!",Dzi:"Hmm, this doesn't appear to be a valid Deep Zoom Image.",Xml:"Hmm, this doesn't appear to be a valid Deep Zoom Image.",Empty:"You asked us to open nothing, so we did just that.",ImageFormat:"Sorry, we don't support {0}-based Deep Zoom Images.",Security:"It looks like a security restriction stopped us from loading this Deep Zoom Image.",Status:"This space unintentionally left blank ({0} {1}).",Unknown:"Whoops, something inexplicably went wrong. Sorry!"},Messages:{Loading:"Loading..."},Tooltips:{FullPage:"Toggle full page",Home:"Go home",ZoomIn:"Zoom in",ZoomOut:"Zoom out"},getString:function(e){for(var c=e.split("."),a=Seadragon.Strings,b=0;b<c.length;b++)a=a[c[b]]||{};if(typeof a!="string")a="";var d=arguments;return a.replace(/\{\d+\}/g,function(b){var a=parseInt(b.match(/\d+/))+1;return a<d.length?d[a]:""})},setString:function(e,d){for(var c=e.split("."),b=Seadragon.Strings,a=0;a<c.length-1;a++){if(!b[c[a]])b[c[a]]={};b=b[c[a]]}b[c[a]]=d}};Seadragon.Strings=Seadragon.Strings;Seadragon.Point=Seadragon.Point=function(a,b){this.x=typeof a=="number"?a:0;this.y=typeof b=="number"?b:0};Seadragon.Point.prototype={plus:function(a){return new Seadragon.Point(this.x+a.x,this.y+a.y)},minus:function(a){return new Seadragon.Point(this.x-a.x,this.y-a.y)},times:function(a){return new Seadragon.Point(this.x*a,this.y*a)},divide:function(a){return new Seadragon.Point(this.x/a,this.y/a)},negate:function(){return new Seadragon.Point(-this.x,-this.y)},distanceTo:function(a){return Math.sqrt(Math.pow(this.x-a.x,2)+Math.pow(this.y-a.y,2))},apply:function(a){return new Seadragon.Point(a(this.x),a(this.y))},equals:function(a){return a instanceof Seadragon.Point&&this.x===a.x&&this.y===a.y},toString:function(){return"("+this.x+","+this.y+")"}};Seadragon.Profiler=function(){var a=this;a._midUpdate=false;a._numUpdates=0;a._lastBeginTime=null;a._lastEndTime=null;a._minUpdateTime=Infinity;a._avgUpdateTime=0;a._maxUpdateTime=0;a._minIdleTime=Infinity;a._avgIdleTime=0;a._maxIdleTime=0};Seadragon.Profiler.prototype={getAvgUpdateTime:function(){return this._avgUpdateTime},getMinUpdateTime:function(){return this._minUpdateTime},getMaxUpdateTime:function(){return this._maxUpdateTime},getAvgIdleTime:function(){return this._avgIdleTime},getMinIdleTime:function(){return this._minIdleTime},getMaxIdleTime:function(){return this._maxIdleTime},isMidUpdate:function(){return this._midUpdate},getNumUpdates:function(){return this._numUpdates},beginUpdate:function(){var a=this;a._midUpdate&&a.endUpdate();a._midUpdate=true;a._lastBeginTime=(new Date).getTime();if(a._numUpdates<1)return;var b=a._lastBeginTime-a._lastEndTime;a._avgIdleTime=(a._avgIdleTime*(a._numUpdates-1)+b)/a._numUpdates;if(b<a._minIdleTime)a._minIdleTime=b;if(b>a._maxIdleTime)a._maxIdleTime=b},endUpdate:function(){var a=this;if(!a._midUpdate)return;a._lastEndTime=(new Date).getTime();a._midUpdate=false;var b=a._lastEndTime-a._lastBeginTime;a._numUpdates++;a._avgUpdateTime=(a._avgUpdateTime*(a._numUpdates-1)+b)/a._numUpdates;if(b<a._minUpdateTime)a._minUpdateTime=b;if(b>a._maxUpdateTime)a._maxUpdateTime=b},clearProfile:function(){var a=this;a._midUpdate=false;a._numUpdates=0;a._lastBeginTime=null;a._lastEndTime=null;a._minUpdateTime=Infinity;a._avgUpdateTime=0;a._maxUpdateTime=0;a._minIdleTime=Infinity;a._avgIdleTime=0;a._maxIdleTime=0}};Seadragon.Job=function(c,b){var a=this;a._image=null;a._timeout=null;a._src=c;a._callback=b;a.TIMEOUT=5e3};Seadragon.Job.prototype={_finish:function(d){var b=null,a=this;a._image.onload=b;a._image.onabort=b;a._image.onerror=b;a._timeout&&window.clearTimeout(a._timeout);var e=a._image,c=a._callback;window.setTimeout(function(){c(this._src,d?e:b)},1)},_onloadHandler:function(){this._finish(true)},_onerrorHandler:function(){this._finish(false)},start:function(){var a=this;a._image=new Image;a._image.onload=Function.createDelegate(a,a._onloadHandler);a._image.onabort=Function.createDelegate(a,a._onerrorHandler);a._image.onerror=Function.createDelegate(a,a._onerrorHandler);a._timeout=window.setTimeout(Function.createDelegate(a,a._onerrorHandler),a.TIMEOUT);a._image.src=a._src}};Seadragon.ImageLoader=function(a){this._downloading=0;this.imageLoaderLimit=a};Seadragon.ImageLoader.prototype={_onComplete:function(a,c,b){this._downloading--;if(typeof a=="function")try{a(b)}catch(d){Seadragon.Debug.error(d.name+" while executing "+c+" callback: "+d.message,d)}},loadImage:function(e,b){var a=this;if(a._downloading>=a.imageLoaderLimit)return false;var c=Seadragon.Utils.createCallback(null,Function.createDelegate(a,a._onComplete),b),d=new Seadragon.Job(e,c);a._downloading++;d.start();return true}};Seadragon.TileSource=function(c,b,g,d,f,e){var a=this;a.aspectRatio=c/b;a.dimensions=new Seadragon.Point(c,b);a.minLevel=f?f:0;a.maxLevel=e?e:Math.ceil(Math.log(Math.max(c,b))/Math.log(2));a.tileSize=g?g:0;a.tileOverlap=d?d:0};Seadragon.TileSource.prototype={getLevelScale:function(a){return 1/(1<<this.maxLevel-a)},getNumTiles:function(c){var a=this,b=a.getLevelScale(c),d=Math.ceil(b*a.dimensions.x/a.tileSize),e=Math.ceil(b*a.dimensions.y/a.tileSize);return new Seadragon.Point(d,e)},getPixelRatio:function(b){var a=this.dimensions.times(this.getLevelScale(b)),c=1/a.x,d=1/a.y;return new Seadragon.Point(c,d)},getTileAtPoint:function(c,d){var a=this,b=d.times(a.dimensions.x).times(a.getLevelScale(c)),e=Math.floor(b.x/a.tileSize),f=Math.floor(b.y/a.tileSize);return new Seadragon.Point(e,f)},getTileBounds:function(j,f,g){var a=this,c=a.dimensions.times(a.getLevelScale(j)),h=f===0?0:a.tileSize*f-a.tileOverlap,i=g===0?0:a.tileSize*g-a.tileOverlap,d=a.tileSize+(f===0?1:2)*a.tileOverlap,e=a.tileSize+(g===0?1:2)*a.tileOverlap;d=Math.min(d,c.x-h);e=Math.min(e,c.y-i);var b=1/c.x;return new Seadragon.Rect(h*b,i*b,d*b,e*b)},getTileUrl:function(){throw new Error("Method not implemented.");},tileExists:function(a,c,d){var b=this.getNumTiles(a);return a>=this.minLevel&&a<=this.maxLevel&&c>=0&&d>=0&&c<b.x&&d<b.y}};Seadragon.DziError=function(a){Error.apply(this,arguments);this.message=a};Seadragon.DziError.prototype=new Error;Seadragon.DziError.constructor=Seadragon.DziError;Seadragon.DziTileSource=function(h,g,e,c,f,d,b){var a=this;Seadragon.TileSource.call(a,h,g,e,c,null,null);a._levelRects={};a.tilesUrl=f;a.fileFormat=d;a.displayRects=b;a.initialize()};Seadragon.DziTileSource.prototype=new Seadragon.TileSource;Seadragon.DziTileSource.prototype.constructor=Seadragon.DziTileSource;Seadragon.DziTileSource.prototype.initialize=function(){var a=this;if(!a.displayRects)return;for(var d=a.displayRects.length-1;d>=0;d--)for(var c=a.displayRects[d],b=c.minLevel;b<=c.maxLevel;b++){if(!a._levelRects[b])a._levelRects[b]=[];a._levelRects[b].push(c)}};Seadragon.DziTileSource.prototype.getTileUrl=function(a,b,c){return[this.tilesUrl,a,"/",b,"_",c,".",this.fileFormat].join("")};Seadragon.DziTileSource.prototype.tileExists=function(c,k,l){var a=this,d=a._levelRects[c];if(!d||!d.length)return true;for(var j=d.length-1;j>=0;j--){var b=d[j];if(c<b.minLevel||c>b.maxLevel)continue;var e=a.getLevelScale(c),f=b.x*e,g=b.y*e,h=f+b.width*e,i=g+b.height*e;f=Math.floor(f/a.tileSize);g=Math.floor(g/a.tileSize);h=Math.ceil(h/a.tileSize);i=Math.ceil(i/a.tileSize);if(f<=k&&k<h&&g<=l&&l<i)return true}return false};Seadragon._DziTileSourceHelper=function(){};Seadragon._DziTileSourceHelper.prototype={createFromXml:function(h,e,f){var b=null,a=this,i=typeof f=="function",d=b;if(!h){a.error=Seadragon.Strings.getString("Errors.Empty");if(i){window.setTimeout(function(){f(b,d)},1);return b}throw new Seadragon.DziError(d);}var c=h.split("/"),j=c[c.length-1],l=j.lastIndexOf(".");if(l>-1)c[c.length-1]=j.slice(0,l);var m=c.join("/")+"_files/";function g(a,c){try{return a(c,m)}catch(e){if(i){d=this.getError(e).message;return b}else throw this.getError(e);}}if(i){if(e){var k=Function.createDelegate(a,a.processXml);window.setTimeout(function(){var a=g(k,Seadragon.Utils.parseXml(e));f(a,d)},1)}else{var k=Function.createDelegate(a,a.processResponse);Seadragon.Utils.makeAjaxRequest(h,function(b){var a=g(k,b);f(a,d)})}return b}return e?g(Function.createDelegate(a,a.processXml),Seadragon.Utils.parseXml(e)):g(Function.createDelegate(a,a.processResponse),Seadragon.Utils.makeAjaxRequest(h))},processResponse:function(a,e){if(!a)throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Security"));else if(a.status!==200&&a.status!==0){var c=a.status,d=c==404?"Not Found":a.statusText;throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Status",c,d));}var b=null;if(a.responseXML&&a.responseXML.documentElement)b=a.responseXML;else if(a.responseText)b=Seadragon.Utils.parseXml(a.responseText);return this.processXml(b,e)},processXml:function(c,e){var a="Errors.Dzi";if(!c||!c.documentElement)throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Xml"));var d=c.documentElement,b=d.tagName;if(b=="Image")try{return this.processDzi(d,e)}catch(g){var f=Seadragon.Strings.getString(a);throw g instanceof Seadragon.DziError?g:new Seadragon.DziError(f);}else if(b=="Collection")throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Dzc"));else if(b=="Error")return this.processError(d);throw new Seadragon.DziError(Seadragon.Strings.getString(a));},processDzi:function(a,k){var c=a.getAttribute("Format");if(!Seadragon.Utils.imageFormatSupported(c))throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.ImageFormat",c.toUpperCase()));for(var h=a.getElementsByTagName("Size")[0],e=a.getElementsByTagName("DisplayRect"),m=parseInt(h.getAttribute("Width"),10),l=parseInt(h.getAttribute("Height"),10),j=parseInt(a.getAttribute("TileSize")),i=parseInt(a.getAttribute("Overlap")),g=[],d=0;d<e.length;d++){var f=e[d],b=f.getElementsByTagName("Rect")[0];g.push(new Seadragon.DisplayRect(parseInt(b.getAttribute("X"),10),parseInt(b.getAttribute("Y"),10),parseInt(b.getAttribute("Width"),10),parseInt(b.getAttribute("Height"),10),0,parseInt(f.getAttribute("MaxLevel"),10)))}return new Seadragon.DziTileSource(m,l,j,i,k,c,g)},processError:function(b){var a=b.getElementsByTagName("Message")[0],c=a.firstChild.nodeValue;throw new Seadragon.DziError(c);},getError:function(a){if(!(a instanceof DziError)){Seadragon.Debug.error(a.name+" while creating DZI from XML: "+a.message);a=new Seadragon.DziError(Seadragon.Strings.getString("Errors.Unknown"))}}};Seadragon.DziTileSourceHelper=new Seadragon._DziTileSourceHelper;Seadragon.ButtonState=function(){throw Error.invalidOperation();};Seadragon.ButtonState={REST:0,GROUP:1,HOVER:2,DOWN:3};Seadragon.Button=function(b,c){var a=this;a._tooltip=b.tooltip;a._srcRest=b.srcRest;a._srcGroup=b.srcGroup;a._srcHover=b.srcHover;a._srcDown=b.srcDown;a._button=b.button;a.config=b.config;a.initialize(c)};Seadragon.Button.prototype={initialize:function(b){var a=this;a._observer=new Observer;b.onPress!=undefined&&a.add_onPress(b.onPress);b.onRelease!=undefined&&a.add_onRelease(b.onRelease);b.onClick!=undefined&&a.add_onClick(b.onClick);b.onEnter!=undefined&&a.add_onEnter(b.onEnter);b.onExit!=undefined&&a.add_onExit(b.onExit);a._button=Seadragon.Utils.makeNeutralElement("span");a._currentState=Seadragon.ButtonState.GROUP;a._tracker=new Seadragon.MouseTracker(a._button,a.config.clickTimeThreshold,a.config.clickDistThreshold);a._imgRest=Seadragon.Utils.makeTransparentImage(a._srcRest);a._imgGroup=Seadragon.Utils.makeTransparentImage(a._srcGroup);a._imgHover=Seadragon.Utils.makeTransparentImage(a._srcHover);a._imgDown=Seadragon.Utils.makeTransparentImage(a._srcDown);a._fadeDelay=0;a._fadeLength=2e3;a._fadeBeginTime=null;a._shouldFade=false;a._button.style.display="inline-block";a._button.style.position="relative";a._button.title=a._tooltip;a._button.appendChild(a._imgRest);a._button.appendChild(a._imgGroup);a._button.appendChild(a._imgHover);a._button.appendChild(a._imgDown);var f=a._imgRest.style,e=a._imgGroup.style,c=a._imgHover.style,d=a._imgDown.style;e.position=c.position=d.position="absolute";e.top=c.top=d.top="0px";e.left=c.left=d.left="0px";c.visibility=d.visibility="hidden";if(Seadragon.Utils.getBrowser()==Seadragon.Browser.FIREFOX&&Seadragon.Utils.getBrowserVersion()<3)e.top=c.top=d.top="";a._tracker.enterHandler=Function.createDelegate(a,a._enterHandler);a._tracker.exitHandler=Function.createDelegate(a,a._exitHandler);a._tracker.pressHandler=Function.createDelegate(a,a._pressHandler);a._tracker.releaseHandler=Function.createDelegate(a,a._releaseHandler);a._tracker.clickHandler=Function.createDelegate(a,a._clickHandler);a._tracker.setTracking(true);a._outTo(Seadragon.ButtonState.REST)},dispose:function(){},_scheduleFade:function(){window.setTimeout(Function.createDelegate(this,this._updateFade),20)},_updateFade:function(){var b=this;if(b._shouldFade){var c=(new Date).getTime(),d=c-b._fadeBeginTime,a=1-d/b._fadeLength;a=Math.min(1,a);a=Math.max(0,a);Seadragon.Utils.setElementOpacity(b._imgGroup,a,true);a>0&&b._scheduleFade()}},_beginFading:function(){var a=this;a._shouldFade=true;a._fadeBeginTime=(new Date).getTime()+a._fadeDelay;window.setTimeout(Function.createDelegate(a,a._scheduleFade),a._fadeDelay)},_stopFading:function(){this._shouldFade=false;Seadragon.Utils.setElementOpacity(this._imgGroup,1,true)},_inTo:function(b){var a=this;if(b>=Seadragon.ButtonState.GROUP&&a._currentState==Seadragon.ButtonState.REST){a._stopFading();a._currentState=Seadragon.ButtonState.GROUP}if(b>=Seadragon.ButtonState.HOVER&&a._currentState==Seadragon.ButtonState.GROUP){a._imgHover.style.visibility="";a._currentState=Seadragon.ButtonState.HOVER}if(b>=Seadragon.ButtonState.DOWN&&a._currentState==Seadragon.ButtonState.HOVER){a._imgDown.style.visibility="";a._currentState=Seadragon.ButtonState.DOWN}},_outTo:function(b){var a=this;if(b<=Seadragon.ButtonState.HOVER&&a._currentState==Seadragon.ButtonState.DOWN){a._imgDown.style.visibility="hidden";a._currentState=Seadragon.ButtonState.HOVER}if(b<=Seadragon.ButtonState.GROUP&&a._currentState==Seadragon.ButtonState.HOVER){a._imgHover.style.visibility="hidden";a._currentState=Seadragon.ButtonState.GROUP}if(a._newState<=Seadragon.ButtonState.REST&&a._currentState==Seadragon.ButtonState.GROUP){a._beginFading();a._currentState=Seadragon.ButtonState.REST}},_enterHandler:function(e,d,b,c){var a=this;if(b){a._inTo(Seadragon.ButtonState.DOWN);a._raiseEvent("onEnter",a)}else!c&&a._inTo(Seadragon.ButtonState.HOVER)},_exitHandler:function(d,c,a){this._outTo(Seadragon.ButtonState.GROUP);a&&this._raiseEvent("onExit",this)},_pressHandler:function(){this._inTo(Seadragon.ButtonState.DOWN);this._raiseEvent("onPress",this)},_releaseHandler:function(e,d,b,c){var a=this;if(b&&c){a._outTo(Seadragon.ButtonState.HOVER);a._raiseEvent("onRelease",a)}else if(b)a._outTo(Seadragon.ButtonState.GROUP);else a._inTo(Seadragon.ButtonState.HOVER)},_clickHandler:function(c,b,a){a&&this._raiseEvent("onClick",this)},get_events:function(){return this._observer._getContext(this,true).events},_raiseEvent:function(c,a){var b=this.get_events().getHandler(c);if(b){if(!a)a={};b(this,a)}},get_element:function(){return this._button},get_tooltip:function(){return this._tooltip},set_tooltip:function(a){this._tooltip=a},get_config:function(){return this.config},set_config:function(a){this.config=a},get_srcRest:function(){return this._srcRest},set_srcRest:function(a){this._srcRest=a},get_srcGroup:function(){return this._srcGroup},set_srcGroup:function(a){this._srcGroup=a},get_srcHover:function(){return this._srcHover},set_srcHover:function(a){this._srcHover=a},get_srcDown:function(){return this._srcDown},set_srcDown:function(a){this._srcDown=a},add_onPress:function(a){this.get_events().addHandler("onPress",a)},remove_onPress:function(a){this.get_events().removeHandler("onPress",a)},add_onClick:function(a){this.get_events().addHandler("onClick",a)},remove_onClick:function(a){this.get_events().removeHandler("onClick",a)},add_onEnter:function(a){this.get_events().addHandler("onEnter",a)},remove_onEnter:function(a){this.get_events().removeHandler("onEnter",a)},add_onRelease:function(a){this.get_events().addHandler("onRelease",a)},remove_onRelease:function(a){this.get_events().removeHandler("onRelease",a)},add_onExit:function(a){this.get_events().addHandler("onExit",a)},remove_onExit:function(a){this.get_events().removeHandler("onExit",a)},notifyGroupEnter:function(){this._inTo(Seadragon.ButtonState.GROUP)},notifyGroupExit:function(){this._outTo(Seadragon.ButtonState.REST)}};Seadragon.ButtonGroup=function(b){var a=this;a._buttons=b.buttons;a._group=b.group;a.config=b.config;a.initialize()};Seadragon.ButtonGroup.prototype={initialize:function(){var a=this;a._group=Seadragon.Utils.makeNeutralElement("span");var d=a._buttons.concat([]),b=new Seadragon.MouseTracker(a._group,a.config.clickTimeThreshold,a.config.clickDistThreshold);a._group.style.display="inline-block";for(var c=0;c<d.length;c++)a._group.appendChild(d[c].get_element());b.enterHandler=Function.createDelegate(a,a._enterHandler);b.exitHandler=Function.createDelegate(a,a._exitHandler);b.releaseHandler=Function.createDelegate(a,a._releaseHandler);b.setTracking(true)},dispose:function(){},get_buttons:function(){return this._buttons},set_buttons:function(a){this._buttons=a},get_element:function(){return this._group},get_config:function(){return this.config},set_config:function(a){this.config=a},_enterHandler:function(){for(var a=0;a<this._buttons.length;a++)this._buttons[a].notifyGroupEnter()},_exitHandler:function(e,d,b){if(!b)for(var a=0;a<this._buttons.length;a++)this._buttons[a].notifyGroupExit()},_releaseHandler:function(e,d,c,b){if(!b)for(var a=0;a<this._buttons.length;a++)this._buttons[a].notifyGroupExit()},emulateEnter:function(){this._enterHandler()},emulateExit:function(){this._exitHandler()}};Seadragon.Config=function(){var c=false,b=true,a=this;a.debugMode=b;a.animationTime=1.5;a.blendTime=.5;a.alwaysBlend=c;a.autoHideControls=b;a.immediateRender=c;a.wrapHorizontal=c;a.wrapVertical=c;a.minZoomImageRatio=.8;a.maxZoomPixelRatio=2;a.visibilityRatio=.5;a.springStiffness=5;a.imageLoaderLimit=2;a.clickTimeThreshold=200;a.clickDistThreshold=5;a.zoomPerClick=2;a.zoomPerScroll=1.2;a.zoomPerSecond=2;a.showNavigationControl=b;a.maxImageCacheCount=100;a.minPixelRatio=.5;a.mouseNavEnabled=b;a.navImages={zoomIn:{REST:"static/images/zoomin_rest.png",GROUP:"static/images/zoomin_grouphover.png",HOVER:"static/images/zoomin_hover.png",DOWN:"static/images/zoomin_pressed.png"},zoomOut:{REST:"static/images/zoomout_rest.png",GROUP:"static/images/zoomout_grouphover.png",HOVER:"static/images/zoomout_hover.png",DOWN:"static/images/zoomout_pressed.png"},home:{REST:"static/images/home_rest.png",GROUP:"static/images/home_grouphover.png",HOVER:"static/images/home_hover.png",DOWN:"static/images/home_pressed.png"},fullpage:{REST:"static/images/fullpage_rest.png",GROUP:"static/images/fullpage_grouphover.png",HOVER:"static/images/fullpage_hover.png",DOWN:"static/images/fullpage_pressed.png"}}};Seadragon.Rect=function(e,f,d,c){var a="number",b=this;b.x=typeof e==a?e:0;b.y=typeof f==a?f:0;b.width=typeof d==a?d:0;b.height=typeof c==a?c:0};Seadragon.Rect.prototype={getAspectRatio:function(){return this.width/this.height},getTopLeft:function(){return new Seadragon.Point(this.x,this.y)},getBottomRight:function(){var a=this;return new Seadragon.Point(a.x+a.width,a.y+a.height)},getCenter:function(){var a=this;return new Seadragon.Point(a.x+a.width/2,a.y+a.height/2)},getSize:function(){return new Seadragon.Point(this.width,this.height)},equals:function(a){var b=this;return a instanceof Seadragon.Rect&&b.x===a.x&&b.y===a.y&&b.width===a.width&&b.height===a.height},toString:function(){var a=this;return"["+a.x+","+a.y+","+a.width+"x"+a.height+"]"}};Seadragon.DisplayRect=function(e,f,d,c,b,a){Seadragon.Rect.apply(this,[e,f,d,c]);this.minLevel=b;this.maxLevel=a};Seadragon.DisplayRect.prototype=new Seadragon.Rect;Seadragon.DisplayRect.prototype.constructor=Seadragon.DisplayRect;Seadragon.Spring=Seadragon.Spring=function(b,c){var a=this;a._currentValue=typeof b=="number"?b:0;a._startValue=a._currentValue;a._targetValue=a._currentValue;a.config=c;a._currentTime=(new Date).getTime();a._startTime=a._currentTime;a._targetTime=a._currentTime};Seadragon.Spring.prototype={_transform:function(b){var a=this.config.springStiffness;return(1-Math.exp(-b*a))/(1-Math.exp(-a))},getCurrent:function(){return this._currentValue},getTarget:function(){return this._targetValue},resetTo:function(b){var a=this;a._targetValue=b;a._targetTime=a._currentTime;a._startValue=a._targetValue;a._startTime=a._targetTime},springTo:function(b){var a=this;a._startValue=a._currentValue;a._startTime=a._currentTime;a._targetValue=b;a._targetTime=a._startTime+1e3*a.config.animationTime},shiftBy:function(a){this._startValue+=a;this._targetValue+=a},update:function(){var a=this;a._currentTime=(new Date).getTime();a._currentValue=a._currentTime>=a._targetTime?a._targetValue:a._startValue+(a._targetValue-a._startValue)*a._transform((a._currentTime-a._startTime)/(a._targetTime-a._startTime))}};var QUOTA=100,MIN_PIXEL_RATIO=.5,browser=Seadragon.Utils.getBrowser(),browserVer=Seadragon.Utils.getBrowserVersion(),subpixelRenders=browser==Seadragon.Browser.FIREFOX||browser==Seadragon.Browser.OPERA||browser==Seadragon.Browser.SAFARI&&browserVer>=4||browser==Seadragon.Browser.CHROME&&browserVer>=2,useCanvas=typeof document.createElement("canvas").getContext=="function"&&subpixelRenders;Seadragon.Tile=function(e,g,h,c,d,f){var b=null,a=this;a.level=e;a.x=g;a.y=h;a.bounds=c;a.exists=d;a.loaded=false;a.loading=false;a.elmt=b;a.image=b;a.url=f;a.style=b;a.position=b;a.size=b;a.blendStart=b;a.opacity=b;a.distance=b;a.visibility=b;a.beingDrawn=false;a.lastTouchTime=0};Seadragon.Tile.prototype={dispose:function(){},toString:function(){return this.level+"/"+this.x+"_"+this.y},drawHTML:function(e){var b="px",a=this;if(!a.loaded){Seadragon.Debug.error("Attempting to draw tile "+a.toString()+" when it's not yet loaded.");return}if(!a.elmt){a.elmt=Seadragon.Utils.makeNeutralElement("img");a.elmt.src=a.url;a.style=a.elmt.style;a.style.position="absolute";a.style.msInterpolationMode="nearest-neighbor"}var d=a.elmt,c=a.style,f=a.position.apply(Math.floor),g=a.size.apply(Math.ceil);d.parentNode!=e&&e.appendChild(d);c.left=f.x+b;c.top=f.y+b;c.width=g.x+b;c.height=g.y+b;Seadragon.Utils.setElementOpacity(d,a.opacity)},drawCanvas:function(c){var a=this;if(!a.loaded){Seadragon.Debug.error("Attempting to draw tile "+a.toString()+" when it's not yet loaded.");return}var b=a.position,d=a.size;c.globalAlpha=a.opacity;c.drawImage(a.image,b.x,b.y,d.x,d.y)},unload:function(){var a=this;a.elmt&&a.elmt.parentNode&&a.elmt.parentNode.removeChild(a.elmt);a.elmt=null;a.image=null;a.loaded=false;a.loading=false}};Seadragon.Overlay=function(c,a,d){var b=this;b.elmt=c;b.scales=a instanceof Seadragon.Rect;b.bounds=new Seadragon.Rect(a.x,a.y,a.width,a.height);b.placement=a instanceof Seadragon.Point?d:Seadragon.OverlayPlacement.TOP_LEFT;b.position=new Seadragon.Point(a.x,a.y);b.size=new Seadragon.Point(a.width,a.height);b.style=c.style};Seadragon.Overlay.prototype={adjust:function(a,b){switch(this.placement){case Seadragon.OverlayPlacement.TOP_LEFT:break;case Seadragon.OverlayPlacement.TOP:a.x-=b.x/2;break;case Seadragon.OverlayPlacement.TOP_RIGHT:a.x-=b.x;break;case Seadragon.OverlayPlacement.RIGHT:a.x-=b.x;a.y-=b.y/2;break;case Seadragon.OverlayPlacement.BOTTOM_RIGHT:a.x-=b.x;a.y-=b.y;break;case Seadragon.OverlayPlacement.BOTTOM:a.x-=b.x/2;a.y-=b.y;break;case Seadragon.OverlayPlacement.BOTTOM_LEFT:a.y-=b.y;break;case Seadragon.OverlayPlacement.LEFT:a.y-=b.y/2;break;case Seadragon.OverlayPlacement.CENTER:default:a.x-=b.x/2;a.y-=b.y/2}},destroy:function(){var b=this.elmt,a=this.style;b.parentNode&&b.parentNode.removeChild(b);a.top="";a.left="";a.position="";if(this.scales){a.width="";a.height=""}},drawHTML:function(g){var e="px",a=this,f=a.elmt,c=a.style,h=a.scales;f.parentNode!=g&&g.appendChild(f);if(!h)a.size=Seadragon.Utils.getElementSize(f);var b=a.position,d=a.size;a.adjust(b,d);b=b.apply(Math.floor);d=d.apply(Math.ceil);c.left=b.x+e;c.top=b.y+e;c.position="absolute";if(h){c.width=d.x+e;c.height=d.y+e}},update:function(a,b){this.scales=a instanceof Seadragon.Rect;this.bounds=new Seadragon.Rect(a.x,a.y,a.width,a.height);this.placement=a instanceof Seadragon.Point?b:Seadragon.OverlayPlacement.TOP_LEFT}};Seadragon.Drawer=function(b,c,d){var a=this;a._container=Seadragon.Utils.getElement(d);a._canvas=Seadragon.Utils.makeNeutralElement(useCanvas?"canvas":"div");a._context=useCanvas?a._canvas.getContext("2d"):null;a._viewport=c;a._source=b;a.config=a._viewport.config;a._imageLoader=new Seadragon.ImageLoader(a.config.imageLoaderLimit);a._profiler=new Seadragon.Profiler;a._minLevel=b.minLevel;a._maxLevel=b.maxLevel;a._tileSize=b.tileSize;a._tileOverlap=b.tileOverlap;a._normHeight=b.dimensions.y/b.dimensions.x;a._cacheNumTiles={};a._cachePixelRatios={};a._tilesMatrix={};a._tilesLoaded=[];a._coverage={};a._overlays=[];a._lastDrawn=[];a._lastResetTime=0;a._midUpdate=false;a._updateAgain=true;a.elmt=a._container;a._init()};Seadragon.Drawer.prototype={dispose:function(){},_init:function(){var a=this;a._canvas.style.width="100%";a._canvas.style.height="100%";a._canvas.style.position="absolute";a._container.style.textAlign="left";a._container.appendChild(a._canvas)},_compareTiles:function(b,a){if(!b)return a;if(a.visibility>b.visibility)return a;else if(a.visibility==b.visibility)if(a.distance<b.distance)return a;return b},_getNumTiles:function(b){var a=this;if(!a._cacheNumTiles[b])a._cacheNumTiles[b]=a._source.getNumTiles(b);return a._cacheNumTiles[b]},_getPixelRatio:function(b){var a=this;if(!a._cachePixelRatios[b])a._cachePixelRatios[b]=a._source.getPixelRatio(b);return a._cachePixelRatios[b]},_getTile:function(b,c,d,l,e,f){var a=this;if(!a._tilesMatrix[b])a._tilesMatrix[b]={};if(!a._tilesMatrix[b][c])a._tilesMatrix[b][c]={};if(!a._tilesMatrix[b][c][d]){var g=(e+c%e)%e,h=(f+d%f)%f,i=a._source.getTileBounds(b,g,h),k=a._source.tileExists(b,g,h),m=a._source.getTileUrl(b,g,h);i.x+=1*(c-g)/e;i.y+=a._normHeight*(d-h)/f;a._tilesMatrix[b][c][d]=new Seadragon.Tile(b,c,d,i,k,m)}var j=a._tilesMatrix[b][c][d];j.lastTouchTime=l;return j},_loadTile:function(a,b){a.loading=this._imageLoader.loadImage(a.url,Seadragon.Utils.createCallback(null,Function.createDelegate(this,this._onTileLoad),a,b))},_onTileLoad:function(b,m,j){var a=this;b.loading=false;if(a._midUpdate){Seadragon.Debug.error("Tile load callback in middle of drawing routine.");return}else if(!j){Seadragon.Debug.log("Tile "+b+" failed to load: "+b.url);b.exists=false;return}else if(m<a._lastResetTime){Seadragon.Debug.log("Ignoring tile "+b+" loaded before reset: "+b.url);return}b.loaded=true;b.image=j;var g=a._tilesLoaded.length;if(a._tilesLoaded.length>=QUOTA){for(var n=Math.ceil(Math.log(a._tileSize)/Math.log(2)),c=null,f=-1,e=a._tilesLoaded.length-1;e>=0;e--){var d=a._tilesLoaded[e];if(d.level<=a._cutoff||d.beingDrawn)continue;else if(!c){c=d;f=e;continue}var i=d.lastTouchTime,h=c.lastTouchTime,l=d.level,k=c.level;if(i<h||i==h&&l>k){c=d;f=e}}if(c&&f>=0){c.unload();g=f}}a._tilesLoaded[g]=b;a._updateAgain=true},_clearTiles:function(){this._tilesMatrix={};this._tilesLoaded=[]},_providesCoverage:function(b,c,f){var a=this;if(!a._coverage[b])return false;if(c===undefined||f===undefined){var e=a._coverage[b];for(var g in e)if(e.hasOwnProperty(g)){var d=e[g];for(var h in d)if(d.hasOwnProperty(h)&&!d[h])return false}return true}return a._coverage[b][c]===undefined||a._coverage[b][c][f]===undefined||a._coverage[b][c][f]===true},_isCovered:function(b,c,d){var a=this;return c===undefined||d===undefined?a._providesCoverage(b+1):a._providesCoverage(b+1,2*c,2*d)&&a._providesCoverage(b+1,2*c,2*d+1)&&a._providesCoverage(b+1,2*c+1,2*d)&&a._providesCoverage(b+1,2*c+1,2*d+1)},_setCoverage:function(a,c,e,d){var b=this;if(!b._coverage[a]){Seadragon.Debug.error("Setting coverage for a tile before its level's coverage has been reset: "+a);return}if(!b._coverage[a][c])b._coverage[a][c]={};b._coverage[a][c][e]=d},_resetCoverage:function(a){this._coverage[a]={}},_compareTiles:function(b,a){if(!b)return a;if(a.visibility>b.visibility)return a;else if(a.visibility==b.visibility)if(a.distance<b.distance)return a;return b},_getOverlayIndex:function(b){for(var a=this._overlays.length-1;a>=0;a--)if(this._overlays[a].elmt==b)return a;return-1},_updateActual:function(){var c=true,e=false,a=this;a._updateAgain=e;var r=a._canvas,Q=a._context,fb=a._container,J=useCanvas,m=a._lastDrawn;while(m.length>0){var b=m.pop();b.beingDrawn=e}var G=a._viewport.getContainerSize(),E=G.x,C=G.y;r.innerHTML="";if(J){r.width=E;r.height=C;Q.clearRect(0,0,E,C)}var B=a._viewport.getBounds(c),h=B.getTopLeft(),g=B.getBottomRight();if(!a.config.wrapHorizontal&&(g.x<0||h.x>1))return;else if(!a.config.wrapVertical&&(g.y<0||h.y>a._normHeight))return;var jb=Math.abs,kb=Math.ceil,T=Math.floor,t=Math.log,x=Math.max,f=Math.min,ab=a.config.alwaysBlend,A=1e3*a.config.blendTime,V=a.config.immediateRender,D=a.config.wrapHorizontal,H=a.config.wrapVertical;if(!D){h.x=x(h.x,0);g.x=f(g.x,1)}if(!H){h.y=x(h.y,0);g.y=f(g.y,a._normHeight)}var s=null,p=e,n=(new Date).getTime(),X=a._viewport.pixelFromPoint(a._viewport.getCenter()),eb=a._viewport.deltaPixelsFromPoints(a._source.getPixelRatio(0),e).x,y=V?1:eb,o=x(a._minLevel,T(t(a.config.minZoomImageRatio)/t(2))),db=a._viewport.deltaPixelsFromPoints(a._source.getPixelRatio(0),c).x,F=f(a._maxLevel,T(t(db/MIN_PIXEL_RATIO)/t(2)));o=f(o,F);for(var d=F;d>=o;d--){var L=e,z=a._viewport.deltaPixelsFromPoints(a._source.getPixelRatio(d),c).x;if(!p&&z>=MIN_PIXEL_RATIO||d==o){L=c;p=c}else if(!p)continue;a._resetCoverage(d);var Y=f(1,(z-.5)/.5),U=a._viewport.deltaPixelsFromPoints(a._source.getPixelRatio(d),e).x,W=y/jb(y-U),S=a._source.getTileAtPoint(d,h),k=a._source.getTileAtPoint(d,g),P=a._getNumTiles(d),M=P.x,N=P.y;if(!D)k.x=f(k.x,M-1);if(!H)k.y=f(k.y,N-1);for(var i=S.x;i<=k.x;i++)for(var j=S.y;j<=k.y;j++){var b=a._getTile(d,i,j,n,M,N),u=L;a._setCoverage(d,i,j,e);if(!b.exists)continue;if(p&&!u)if(a._isCovered(d,i,j))a._setCoverage(d,i,j,c);else u=c;if(!u)continue;var O=b.bounds.getTopLeft(),I=b.bounds.getSize(),gb=a._viewport.pixelFromPoint(O,c),w=a._viewport.deltaPixelsFromPoints(I,c);if(!a._tileOverlap)w=w.plus(new Seadragon.Point(1,1));var hb=a._viewport.pixelFromPoint(O,e),ib=a._viewport.deltaPixelsFromPoints(I,e),cb=hb.plus(ib.divide(2)),Z=X.distanceTo(cb);b.position=gb;b.size=w;b.distance=Z;b.visibility=W;if(b.loaded){if(!b.blendStart)b.blendStart=n;var K=n-b.blendStart,v=f(1,K/A);if(ab)v*=Y;b.opacity=v;m.push(b);if(v==1)a._setCoverage(d,i,j,c);else if(K<A)updateAgain=c}else if(!b.Loading)s=a._compareTiles(s,b)}if(a._providesCoverage(d))break}for(var l=m.length-1;l>=0;l--){var b=m[l];if(J)b.drawCanvas(Q);else b.drawHTML(r);b.beingDrawn=c}for(var bb=a._overlays.length,l=0;l<bb;l++){var q=a._overlays[l],R=q.bounds;q.position=a._viewport.pixelFromPoint(R.getTopLeft(),c);q.size=a._viewport.deltaPixelsFromPoints(R.getSize(),c);q.drawHTML(fb)}if(s){a._loadTile(s,n);a._updateAgain=c}},addOverlay:function(a,c,b){var a=Seadragon.Utils.getElement(a);if(this._getOverlayIndex(a)>=0)return;this._overlays.push(new Seadragon.Overlay(a,c,b));this._updateAgain=true},updateOverlay:function(a,d,c){var a=Seadragon.Utils.getElement(a),b=this._getOverlayIndex(a);if(b>=0){this._overlays[b].update(d,c);this._updateAgain=true}},removeOverlay:function(c){var a=this,c=Seadragon.Utils.getElement(c),b=a._getOverlayIndex(c);if(b>=0){a._overlays[b].destroy();a._overlays.splice(b,1);a._updateAgain=true}},clearOverlays:function(){while(this._overlays.length>0){this._overlays.pop().destroy();this._updateAgain=true}},needsUpdate:function(){return this._updateAgain},numTilesLoaded:function(){return this._tilesLoaded.length},reset:function(){this._clearTiles();this._lastResetTime=(new Date).getTime();this._updateAgain=true},update:function(){var a=this;a._profiler.beginUpdate();a._midUpdate=true;a._updateActual();a._midUpdate=false;a._profiler.endUpdate()},idle:function(){}};Seadragon.Viewport=function(c,b,d){var a=this;a.zoomPoint=null;a.config=d;a._containerSize=c;a._contentSize=b;a._contentAspect=b.x/b.y;a._contentHeight=b.y/b.x;a._centerSpringX=new Seadragon.Spring(0,a.config);a._centerSpringY=new Seadragon.Spring(0,a.config);a._zoomSpring=new Seadragon.Spring(1,a.config);a._homeBounds=new Seadragon.Rect(0,0,1,a._contentHeight);a.goHome(true);a.update()};Seadragon.Viewport.prototype={_getHomeZoom:function(){var a=this._contentAspect/this.getAspectRatio();return a>=1?1:a},_getMinZoom:function(){var a=this._getHomeZoom(),b=this.config.minZoomImageRatio*a;return Math.min(b,a)},_getMaxZoom:function(){var a=this,b=a._contentSize.x*a.config.maxZoomPixelRatio/a._containerSize.x;return Math.max(b,a._getHomeZoom())},getAspectRatio:function(){return this._containerSize.x/this._containerSize.y},getContainerSize:function(){return new Seadragon.Point(this._containerSize.x,this._containerSize.y)},getBounds:function(b){var c=this.getCenter(b),a=1/this.getZoom(b),d=a/this.getAspectRatio();return new Seadragon.Rect(c.x-a/2,c.y-d/2,a,d)},getCenter:function(l){var a=this,b=new Seadragon.Point(a._centerSpringX.getCurrent(),a._centerSpringY.getCurrent()),d=new Seadragon.Point(a._centerSpringX.getTarget(),a._centerSpringY.getTarget());if(l)return b;else if(!a.zoomPoint)return d;var k=a.pixelFromPoint(a.zoomPoint,true),g=a.getZoom(),c=1/g,f=c/a.getAspectRatio(),e=new Seadragon.Rect(b.x-c/2,b.y-f/2,c,f),j=a.zoomPoint.minus(e.getTopLeft()).times(a._containerSize.x/e.width),h=j.minus(k),i=h.divide(a._containerSize.x*g);return d.plus(i)},getZoom:function(a){return a?this._zoomSpring.getCurrent():this._zoomSpring.getTarget()},applyConstraints:function(i){var b=this,j=b.getZoom(),g=Math.max(Math.min(j,b._getMaxZoom()),b._getMinZoom());j!=g&&b.zoomTo(g,b.zoomPoint,i);var a=b.getBounds(),h=b.config.visibilityRatio,c=h*a.width,d=h*a.height,m=a.x+a.width,l=1-a.x,n=a.y+a.height,k=b._contentHeight-a.y,e=0;if(!b.config.wrapHorizontal)if(m<c)e=c-m;else if(l<c)e=l-c;var f=0;if(!b.config.wrapVertical)if(n<d)f=d-n;else if(k<d)f=k-d;if(e||f){a.x+=e;a.y+=f;b.fitBounds(a,i)}},ensureVisible:function(a){this.applyConstraints(a)},fitBounds:function(c,h){var d=true,a=this,f=a.getAspectRatio(),g=c.getCenter(),b=new Seadragon.Rect(c.x,c.y,c.width,c.height);if(b.getAspectRatio()>=f){b.height=c.width/f;b.y=g.y-b.height/2}else{b.width=c.height*f;b.x=g.x-b.width/2}a.panTo(a.getCenter(d),d);a.zoomTo(a.getZoom(d),null,d);var e=a.getBounds(),k=a.getZoom(),i=1/b.width;if(i==k||b.width==e.width){a.panTo(g,h);return}var j=e.getTopLeft().times(a._containerSize.x/e.width).minus(b.getTopLeft().times(a._containerSize.x/b.width)).divide(a._containerSize.x/e.width-a._containerSize.x/b.width);a.zoomTo(i,j,h)},goHome:function(c){var a=this,b=a.getCenter();if(a.config.wrapHorizontal){b.x=(1+b.x%1)%1;a._centerSpringX.resetTo(b.x);a._centerSpringX.update()}if(a.config.wrapVertical){b.y=(a._contentHeight+b.y%a._contentHeight)%a._contentHeight;a._centerSpringY.resetTo(b.y);a._centerSpringY.update()}a.fitBounds(a._homeBounds,c)},panBy:function(c,a){var b=new Seadragon.Point(this._centerSpringX.getTarget(),this._centerSpringY.getTarget());this.panTo(b.plus(c),a)},panTo:function(a,c){var b=this;if(c){b._centerSpringX.resetTo(a.x);b._centerSpringY.resetTo(a.y)}else{b._centerSpringX.springTo(a.x);b._centerSpringY.springTo(a.y)}},zoomBy:function(c,b,a){this.zoomTo(this._zoomSpring.getTarget()*c,b,a)},zoomTo:function(b,a,c){if(c)this._zoomSpring.resetTo(b);else this._zoomSpring.springTo(b);this.zoomPoint=a instanceof Seadragon.Point?a:null},resize:function(c,f){var a=this,d=a.getBounds(),b=d,e=c.x/a._containerSize.x;a._containerSize=new Seadragon.Point(c.x,c.y);if(f){b.width=d.width*e;b.height=b.width/a.getAspectRatio()}a.fitBounds(b,true)},update:function(){var a=this,g=a._centerSpringX.getCurrent(),h=a._centerSpringY.getCurrent(),c=a._zoomSpring.getCurrent();if(a.zoomPoint)var f=a.pixelFromPoint(a.zoomPoint,true);a._zoomSpring.update();if(a.zoomPoint&&a._zoomSpring.getCurrent()!=c){var e=a.pixelFromPoint(a.zoomPoint,true),d=e.minus(f),b=a.deltaPointsFromPixels(d,true);a._centerSpringX.shiftBy(b.x);a._centerSpringY.shiftBy(b.y)}else a.zoomPoint=null;a._centerSpringX.update();a._centerSpringY.update();return a._centerSpringX.getCurrent()!=g||a._centerSpringY.getCurrent()!=h||a._zoomSpring.getCurrent()!=c},deltaPixelsFromPoints:function(a,b){return a.times(this._containerSize.x*this.getZoom(b))},deltaPointsFromPixels:function(a,b){return a.divide(this._containerSize.x*this.getZoom(b))},pixelFromPoint:function(c,b){var a=this.getBounds(b);return c.minus(a.getTopLeft()).times(this._containerSize.x/a.width)},pointFromPixel:function(c,b){var a=this.getBounds(b);return c.divide(this._containerSize.x/a.width).plus(a.getTopLeft())}};
+
+Array.prototype.add = function(array, item) {
+    array[array.length] = item;
+};
+
+Array.prototype.clear = function(array) {
+    array.length = 0;
+};
+
+Array.prototype.clone = function(array) {
+    return array.length === 1 ? [array[0]] : Array.apply(null, array);
+};
+SArray = Array();
+
+if (!window.Function) {
+    window.Function = {};
+}
+Function.prototype.createDelegate = function(object, method) {
+    return function() {
+        if (arguments === undefined)
+            arguments = [];
+        return method.apply(object, arguments);
+    };
+}
+
+function String() {
+
+}
+String.format = function(format, args) {
+    return String._toFormattedString(false, arguments);
+}
+String._toFormattedString = function(useLocale, args) {
+    var result = '';
+    var format = args[0];
+
+    for (var i = 0; ; ) {
+        var open = format.indexOf('{', i);
+        var close = format.indexOf('}', i);
+        if ((open < 0) && (close < 0)) {
+            result += format.slice(i);
+            break;
+        }
+        if ((close > 0) && ((close < open) || (open < 0))) {
+            if (format.charAt(close + 1) !== '}') {
+                throw Error.argument('format', Sys.Res.stringFormatBraceMismatch);
+            }
+            result += format.slice(i, close + 1);
+            i = close + 2;
+            continue;
+        }
+
+        result += format.slice(i, open);
+        i = open + 1;
+
+        if (format.charAt(i) === '{') {
+            result += '{';
+            i++;
+            continue;
+        }
+
+        if (close < 0) throw Error.argument('format', Sys.Res.stringFormatBraceMismatch);
+
+
+        var brace = format.substring(i, close);
+        var colonIndex = brace.indexOf(':');
+        var argNumber = parseInt((colonIndex < 0) ? brace : brace.substring(0, colonIndex), 10) + 1;
+        if (isNaN(argNumber)) throw Error.argument('format', Sys.Res.stringFormatInvalid);
+        var argFormat = (colonIndex < 0) ? '' : brace.substring(colonIndex + 1);
+
+        var arg = args[argNumber];
+        if (typeof (arg) === "undefined" || arg === null) {
+            arg = '';
+        }
+
+        if (arg.toFormattedString) {
+            result += arg.toFormattedString(argFormat);
+        }
+        else if (useLocale && arg.localeFormat) {
+            result += arg.localeFormat(argFormat);
+        }
+        else if (arg.format) {
+            result += arg.format(argFormat);
+        }
+        else
+            result += arg.toString();
+
+        i = close + 1;
+    }
+
+    return result;
+}
+
+function Observer() { }
+Observer.prototype = {
+    _getContext: function(obj, create) {
+        var ctx = obj._observerContext;
+        if (ctx) return ctx();
+        if (create) {
+            return (obj._observerContext = this._createContext())();
+        }
+        return null;
+    },
+    _createContext: function() {
+        var ctx = {
+            events: new EventHandlerList()
+        };
+        return function() {
+            return ctx;
+        }
+    }
+}
+
+var EventHandlerList = function EventHandlerList() {
+    this._list = {};
+}
+EventHandlerList.prototype = {
+    _addHandler: function(id, handler) {
+        SArray.add(this._getEvent(id, true), handler);
+    },
+    addHandler: function(id, handler) {
+        this._addHandler(id, handler);
+    },
+    _removeHandler: function(id, handler) {
+        var evt = this._getEvent(id);
+        if (!evt) return;
+        SArray.remove(evt, handler);
+    },
+    _removeHandlers: function(id) {
+        if (!id) {
+            this._list = {};
+        }
+        else {
+            var evt = this._getEvent(id);
+            if (!evt) return;
+            evt.length = 0;
+        }
+    },
+    removeHandler: function(id, handler) {
+        this._removeHandler(id, handler);
+    },
+    getHandler: function(id) {
+        var evt = this._getEvent(id);
+        if (!evt || !evt.length) return null;
+        evt = SArray.clone(evt);
+        return function(source, args) {
+            for (var i = 0, l = evt.length; i < l; i++) {
+                evt[i](source, args);
+            }
+        };
+    },
+    _getEvent: function(id, create) {
+        var e = this._list[id];
+        if (!e) {
+            if (!create) return null;
+            this._list[id] = e = [];
+        }
+        return e;
+    }
+}
+var Seadragon = new function() {
+
+}
+
+Seadragon.Utils = function() {
+
+
+    var Browser = {
+        UNKNOWN: 0,
+        IE: 1,
+        FIREFOX: 2,
+        SAFARI: 3,
+        CHROME: 4,
+        OPERA: 5
+    };
+
+    Seadragon.Browser = Browser;
+
+
+    var self = this;
+
+    var arrActiveX = ["Msxml2.XMLHTTP", "Msxml3.XMLHTTP", "Microsoft.XMLHTTP"];
+    var fileFormats = {
+        "bmp": false,
+        "jpeg": true,
+        "jpg": true,
+        "png": true,
+        "tif": false,
+        "wdp": false
+    };
+
+    var browser = Browser.UNKNOWN;
+    var browserVersion = 0;
+    var badAlphaBrowser = false;    // updated in constructor
+
+    var urlParams = {};
+
+
+    (function() {
+
+
+        var app = navigator.appName;
+        var ver = navigator.appVersion;
+        var ua = navigator.userAgent;
+
+        if (app == "Microsoft Internet Explorer" &&
+                !!window.attachEvent && !!window.ActiveXObject) {
+
+            var ieOffset = ua.indexOf("MSIE");
+            browser = Browser.IE;
+            browserVersion = parseFloat(
+                    ua.substring(ieOffset + 5, ua.indexOf(";", ieOffset)));
+
+        } else if (app == "Netscape" && !!window.addEventListener) {
+
+            var ffOffset = ua.indexOf("Firefox");
+            var saOffset = ua.indexOf("Safari");
+            var chOffset = ua.indexOf("Chrome");
+
+            if (ffOffset >= 0) {
+                browser = Browser.FIREFOX;
+                browserVersion = parseFloat(ua.substring(ffOffset + 8));
+            } else if (saOffset >= 0) {
+                var slash = ua.substring(0, saOffset).lastIndexOf("/");
+                browser = (chOffset >= 0) ? Browser.CHROME : Browser.SAFARI;
+                browserVersion = parseFloat(ua.substring(slash + 1, saOffset));
+            }
+
+        } else if (app == "Opera" && !!window.opera && !!window.attachEvent) {
+
+            browser = Browser.OPERA;
+            browserVersion = parseFloat(ver);
+
+        }
+
+
+        var query = window.location.search.substring(1);    // ignore '?'
+        var parts = query.split('&');
+
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            var sep = part.indexOf('=');
+
+            if (sep > 0) {
+                urlParams[part.substring(0, sep)] =
+                        decodeURIComponent(part.substring(sep + 1));
+            }
+        }
+
+
+        badAlphaBrowser = (browser == Browser.IE ||
+                (browser == Browser.CHROME && browserVersion < 2));
+
+    })();
+
+
+    function getOffsetParent(elmt, isFixed) {
+        if (isFixed && elmt != document.body) {
+            return document.body;
+        } else {
+            return elmt.offsetParent;
+        }
+    }
+
+
+    this.getBrowser = function() {
+        return browser;
+    };
+
+    this.getBrowserVersion = function() {
+        return browserVersion;
+    };
+
+    this.getElement = function(elmt) {
+        if (typeof (elmt) == "string") {
+            elmt = document.getElementById(elmt);
+        }
+
+        return elmt;
+    };
+
+    this.getElementPosition = function(elmt) {
+        var elmt = self.getElement(elmt);
+        var result = new Seadragon.Point();
+
+
+        var isFixed = self.getElementStyle(elmt).position == "fixed";
+        var offsetParent = getOffsetParent(elmt, isFixed);
+
+        while (offsetParent) {
+            result.x += elmt.offsetLeft;
+            result.y += elmt.offsetTop;
+
+            if (isFixed) {
+                result = result.plus(self.getPageScroll());
+            }
+
+            elmt = offsetParent;
+            isFixed = self.getElementStyle(elmt).position == "fixed";
+            offsetParent = getOffsetParent(elmt, isFixed);
+        }
+
+        return result;
+    };
+
+    this.getElementSize = function(elmt) {
+        var elmt = self.getElement(elmt);
+        return new Seadragon.Point(elmt.clientWidth, elmt.clientHeight);
+    };
+
+    this.getElementStyle = function(elmt) {
+        var elmt = self.getElement(elmt);
+
+        if (elmt.currentStyle) {
+            return elmt.currentStyle;
+        } else if (window.getComputedStyle) {
+            return window.getComputedStyle(elmt, "");
+        } else {
+            Seadragon.Debug.fail("Unknown element style, no known technique.");
+        }
+    };
+
+    this.getEvent = function(event) {
+        return event ? event : window.event;
+    };
+
+    this.getMousePosition = function(event) {
+        var event = self.getEvent(event);
+        var result = new Seadragon.Point();
+
+
+        if (typeof (event.pageX) == "number") {
+            result.x = event.pageX;
+            result.y = event.pageY;
+        } else if (typeof (event.clientX) == "number") {
+            result.x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+            result.y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+        } else {
+            Seadragon.Debug.fail("Unknown event mouse position, no known technique.");
+        }
+
+        return result;
+    };
+
+    this.getPageScroll = function() {
+        var result = new Seadragon.Point();
+        var docElmt = document.documentElement || {};
+        var body = document.body || {};
+
+
+        if (typeof (window.pageXOffset) == "number") {
+            result.x = window.pageXOffset;
+            result.y = window.pageYOffset;
+        } else if (body.scrollLeft || body.scrollTop) {
+            result.x = body.scrollLeft;
+            result.y = body.scrollTop;
+        } else if (docElmt.scrollLeft || docElmt.scrollTop) {
+            result.x = docElmt.scrollLeft;
+            result.y = docElmt.scrollTop;
+        }
+
+
+        return result;
+    };
+
+    this.getWindowSize = function() {
+        var result = new Seadragon.Point();
+        var docElmt = document.documentElement || {};
+        var body = document.body || {};
+
+
+
+        if (typeof (window.innerWidth) == 'number') {
+            result.x = window.innerWidth;
+            result.y = window.innerHeight;
+        } else if (docElmt.clientWidth || docElmt.clientHeight) {
+            result.x = docElmt.clientWidth;
+            result.y = docElmt.clientHeight;
+        } else if (body.clientWidth || body.clientHeight) {
+            result.x = body.clientWidth;
+            result.y = body.clientHeight;
+        } else {
+            Seadragon.Debug.fail("Unknown window size, no known technique.");
+        }
+
+        return result;
+    };
+
+    this.imageFormatSupported = function(ext) {
+        var ext = ext ? ext : "";
+        return !!fileFormats[ext.toLowerCase()];
+    };
+
+    this.makeCenteredNode = function(elmt) {
+        var elmt = Seadragon.Utils.getElement(elmt);
+        var div = self.makeNeutralElement("div");
+        var html = [];
+
+        html.push('<div style="display:table; height:100%; width:100%;');
+        html.push('border:none; margin:0px; padding:0px;'); // neutralizing
+        html.push('#position:relative; overflow:hidden; text-align:left;">');
+        html.push('<div style="#position:absolute; #top:50%; width:100%; ');
+        html.push('border:none; margin:0px; padding:0px;'); // neutralizing
+        html.push('display:table-cell; vertical-align:middle;">');
+        html.push('<div style="#position:relative; #top:-50%; width:100%; ');
+        html.push('border:none; margin:0px; padding:0px;'); // neutralizing
+        html.push('text-align:center;"></div></div></div>');
+
+        div.innerHTML = html.join('');
+        div = div.firstChild;
+
+        var innerDiv = div;
+        var innerDivs = div.getElementsByTagName("div");
+        while (innerDivs.length > 0) {
+            innerDiv = innerDivs[0];
+            innerDivs = innerDiv.getElementsByTagName("div");
+        }
+
+        innerDiv.appendChild(elmt);
+
+        return div;
+    };
+
+    this.makeNeutralElement = function(tagName) {
+        var elmt = document.createElement(tagName);
+        var style = elmt.style;
+
+        style.background = "transparent none";
+        style.border = "none";
+        style.margin = "0px";
+        style.padding = "0px";
+        style.position = "static";
+
+        return elmt;
+    };
+
+    this.makeTransparentImage = function(src) {
+        var img = self.makeNeutralElement("img");
+        var elmt = null;
+
+        if (browser == Browser.IE && browserVersion < 7) {
+            elmt = self.makeNeutralElement("span");
+            elmt.style.display = "inline-block";
+
+            img.onload = function() {
+                elmt.style.width = elmt.style.width || img.width + "px";
+                elmt.style.height = elmt.style.height || img.height + "px";
+
+                img.onload = null;
+                img = null;     // to prevent memory leaks in IE
+            };
+
+            img.src = src;
+            elmt.style.filter =
+                    "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" +
+                    src + "', sizingMethod='scale')";
+        } else {
+            elmt = img;
+            elmt.src = src;
+        }
+
+        return elmt;
+    };
+
+    this.setElementOpacity = function(elmt, opacity, usesAlpha) {
+        var elmt = self.getElement(elmt);
+
+        if (usesAlpha && badAlphaBrowser) {
+            opacity = Math.round(opacity);
+        }
+
+        if (opacity < 1) {
+            elmt.style.opacity = opacity;
+        } else {
+            elmt.style.opacity = "";
+        }
+
+        if (opacity == 1) {
+            var prevFilter = elmt.style.filter || "";
+            elmt.style.filter = prevFilter.replace(/alpha\(.*?\)/g, "");
+            return;
+        }
+
+        var ieOpacity = Math.round(100 * opacity);
+        var ieFilter = " alpha(opacity=" + ieOpacity + ") ";
+
+        try {
+            if (elmt.filters && elmt.filters.alpha) {
+                elmt.filters.alpha.opacity = ieOpacity;
+            } else {
+                elmt.style.filter += ieFilter;
+            }
+        } catch (e) {
+            elmt.style.filter += ieFilter;
+        }
+    };
+
+    this.addEvent = function(elmt, eventName, handler, useCapture) {
+        var elmt = self.getElement(elmt);
+
+
+        if (elmt.addEventListener) {
+            elmt.addEventListener(eventName, handler, useCapture);
+        } else if (elmt.attachEvent) {
+            elmt.attachEvent("on" + eventName, handler);
+            if (useCapture && elmt.setCapture) {
+                elmt.setCapture();
+            }
+        } else {
+            Seadragon.Debug.fail("Unable to attach event handler, no known technique.");
+        }
+    };
+
+    this.removeEvent = function(elmt, eventName, handler, useCapture) {
+        var elmt = self.getElement(elmt);
+
+
+        if (elmt.removeEventListener) {
+            elmt.removeEventListener(eventName, handler, useCapture);
+        } else if (elmt.detachEvent) {
+            elmt.detachEvent("on" + eventName, handler);
+            if (useCapture && elmt.releaseCapture) {
+                elmt.releaseCapture();
+            }
+        } else {
+            Seadragon.Debug.fail("Unable to detach event handler, no known technique.");
+        }
+    };
+
+    this.cancelEvent = function(event) {
+        var event = self.getEvent(event);
+
+
+        if (event.preventDefault) {
+            event.preventDefault();     // W3C for preventing default
+        }
+
+        event.cancel = true;            // legacy for preventing default
+        event.returnValue = false;      // IE for preventing default
+    };
+
+    this.stopEvent = function(event) {
+        var event = self.getEvent(event);
+
+
+        if (event.stopPropagation) {
+            event.stopPropagation();    // W3C for stopping propagation
+        }
+
+        event.cancelBubble = true;      // IE for stopping propagation
+    };
+
+    this.createCallback = function(object, method) {
+        var initialArgs = [];
+        for (var i = 2; i < arguments.length; i++) {
+            initialArgs.push(arguments[i]);
+        }
+
+        return function() {
+            var args = initialArgs.concat([]);
+            for (var i = 0; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+
+            return method.apply(object, args);
+        };
+    };
+
+    this.getUrlParameter = function(key) {
+        var value = urlParams[key];
+        return value ? value : null;
+    };
+
+    this.makeAjaxRequest = function(url, callback) {
+        var async = typeof (callback) == "function";
+        var req = null;
+
+        if (async) {
+            var actual = callback;
+            var callback = function() {
+                window.setTimeout(Seadragon.Utils.createCallback(null, actual, req), 1);
+            };
+        }
+
+        if (window.ActiveXObject) {
+            for (var i = 0; i < arrActiveX.length; i++) {
+                try {
+                    req = new ActiveXObject(arrActiveX[i]);
+                    break;
+                } catch (e) {
+                    continue;
+                }
+            }
+        } else if (window.XMLHttpRequest) {
+            req = new XMLHttpRequest();
+        }
+
+        if (!req) {
+            Seadragon.Debug.fail("Browser doesn't support XMLHttpRequest.");
+        }
+
+
+        if (async) {
+            req.onreadystatechange = function() {
+                if (req.readyState == 4) {
+                    req.onreadystatechange = new function() { };
+                    callback();
+                }
+            };
+        }
+
+        try {
+            req.open("GET", url, async);
+            req.send(null);
+        } catch (e) {
+            Seadragon.Debug.log(e.name + " while making AJAX request: " + e.message);
+
+            req.onreadystatechange = null;
+            req = null;
+
+            if (async) {
+                callback();
+            }
+        }
+
+        return async ? null : req;
+    };
+
+    this.parseXml = function(string) {
+        var xmlDoc = null;
+
+        if (window.ActiveXObject) {
+            try {
+                xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+                xmlDoc.async = false;
+                xmlDoc.loadXML(string);
+            } catch (e) {
+                Seadragon.Debug.log(e.name + " while parsing XML (ActiveX): " + e.message);
+            }
+        } else if (window.DOMParser) {
+            try {
+                var parser = new DOMParser();
+                xmlDoc = parser.parseFromString(string, "text/xml");
+            } catch (e) {
+                Seadragon.Debug.log(e.name + " while parsing XML (DOMParser): " + e.message);
+            }
+        } else {
+            Seadragon.Debug.fail("Browser doesn't support XML DOM.");
+        }
+
+        return xmlDoc;
+    };
+
+};
+Seadragon.Utils = new Seadragon.Utils();
+(function () {
+
+    if (Seadragon.MouseTracker) {
+        return;
+    }
+
+
+    var isIE = Seadragon.Utils.getBrowser() == Seadragon.Browser.IE;
+
+
+    var buttonDownAny = false;
+
+    var ieCapturingAny = false;
+    var ieTrackersActive = {};      // dictionary from hash to MouseTracker
+    var ieTrackersCapturing = [];   // list of trackers interested in capture
+
+
+    function getMouseAbsolute(event) {
+        return Seadragon.Utils.getMousePosition(event);
+    }
+
+    function getMouseRelative(event, elmt) {
+        var mouse = Seadragon.Utils.getMousePosition(event);
+        var offset = Seadragon.Utils.getElementPosition(elmt);
+
+        return mouse.minus(offset);
+    }
+
+    /**
+    * Returns true if elmtB is a child node of elmtA, or if they're equal.
+    */
+    function isChild(elmtA, elmtB) {
+        var body = document.body;
+        while (elmtB && elmtA != elmtB && body != elmtB) {
+            try {
+                elmtB = elmtB.parentNode;
+            } catch (e) {
+                return false;
+            }
+        }
+        return elmtA == elmtB;
+    }
+
+    function onGlobalMouseDown() {
+        buttonDownAny = true;
+    }
+
+    function onGlobalMouseUp() {
+        buttonDownAny = false;
+    }
+
+
+    (function () {
+        if (isIE) {
+            Seadragon.Utils.addEvent(document, "mousedown", onGlobalMouseDown, false);
+            Seadragon.Utils.addEvent(document, "mouseup", onGlobalMouseUp, false);
+        } else {
+            Seadragon.Utils.addEvent(window, "mousedown", onGlobalMouseDown, true);
+            Seadragon.Utils.addEvent(window, "mouseup", onGlobalMouseUp, true);
+        }
+    })();
+
+
+    Seadragon.MouseTracker = function (elmt, clickTimeThreshold, clickDistThreshold) {
+
+
+        var self = this;
+        var ieSelf = null;
+
+        var hash = Math.random();     // a unique hash for this tracker
+        var elmt = Seadragon.Utils.getElement(elmt);
+
+        var tracking = false;
+        var capturing = false;
+        var buttonDownElmt = false;
+        var insideElmt = false;
+
+        var lastPoint = null;           // position of last mouse down/move
+        var lastMouseDownTime = null;   // time of last mouse down
+        var lastMouseDownPoint = null;  // position of last mouse down
+        var clickTimeThreshold = clickTimeThreshold;
+        var clickDistThreshold = clickDistThreshold;
+
+
+        this.target = elmt;
+        this.enterHandler = null;       // function(tracker, position, buttonDownElmt, buttonDownAny)
+        this.exitHandler = null;        // function(tracker, position, buttonDownElmt, buttonDownAny)
+        this.pressHandler = null;       // function(tracker, position)
+        this.releaseHandler = null;     // function(tracker, position, insideElmtPress, insideElmtRelease)
+        this.scrollHandler = null;      // function(tracker, position, scroll, shift)
+        this.clickHandler = null;       // function(tracker, position, quick, shift)
+        this.dragHandler = null;        // function(tracker, position, delta, shift)
+
+
+
+        function startTracking() {
+            if (!tracking) {
+                Seadragon.Utils.addEvent(elmt, "mouseover", onMouseOver, false);
+                Seadragon.Utils.addEvent(elmt, "mouseout", onMouseOut, false);
+                Seadragon.Utils.addEvent(elmt, "mousedown", onMouseDown, false);
+                Seadragon.Utils.addEvent(elmt, "mouseup", onMouseUp, false);
+                Seadragon.Utils.addEvent(elmt, "click", onMouseClick, false);
+                Seadragon.Utils.addEvent(elmt, "DOMMouseScroll", onMouseWheelSpin, false);
+                Seadragon.Utils.addEvent(elmt, "mousewheel", onMouseWheelSpin, false); // Firefox
+
+                tracking = true;
+                ieTrackersActive[hash] = ieSelf;
+            }
+        }
+
+        function stopTracking() {
+            if (tracking) {
+                Seadragon.Utils.removeEvent(elmt, "mouseover", onMouseOver, false);
+                Seadragon.Utils.removeEvent(elmt, "mouseout", onMouseOut, false);
+                Seadragon.Utils.removeEvent(elmt, "mousedown", onMouseDown, false);
+                Seadragon.Utils.removeEvent(elmt, "mouseup", onMouseUp, false);
+                Seadragon.Utils.removeEvent(elmt, "click", onMouseClick, false);
+                Seadragon.Utils.removeEvent(elmt, "DOMMouseScroll", onMouseWheelSpin, false);
+                Seadragon.Utils.removeEvent(elmt, "mousewheel", onMouseWheelSpin, false);
+
+                releaseMouse();
+                tracking = false;
+                delete ieTrackersActive[hash];
+            }
+        }
+
+        function captureMouse() {
+            if (!capturing) {
+                if (isIE) {
+                    Seadragon.Utils.removeEvent(elmt, "mouseup", onMouseUp, false);
+                    Seadragon.Utils.addEvent(elmt, "mouseup", onMouseUpIE, true);
+                    Seadragon.Utils.addEvent(elmt, "mousemove", onMouseMoveIE, true);
+                } else {
+                    Seadragon.Utils.addEvent(window, "mouseup", onMouseUpWindow, true);
+                    Seadragon.Utils.addEvent(window, "mousemove", onMouseMove, true);
+                }
+
+                capturing = true;
+            }
+        }
+
+        function releaseMouse() {
+            if (capturing) {
+                if (isIE) {
+                    Seadragon.Utils.removeEvent(elmt, "mousemove", onMouseMoveIE, true);
+                    Seadragon.Utils.removeEvent(elmt, "mouseup", onMouseUpIE, true);
+                    Seadragon.Utils.addEvent(elmt, "mouseup", onMouseUp, false);
+                } else {
+                    Seadragon.Utils.removeEvent(window, "mousemove", onMouseMove, true);
+                    Seadragon.Utils.removeEvent(window, "mouseup", onMouseUpWindow, true);
+                }
+
+                capturing = false;
+            }
+        }
+
+
+        function triggerOthers(eventName, event) {
+            var trackers = ieTrackersActive;
+            for (var otherHash in trackers) {
+                if (trackers.hasOwnProperty(otherHash) && hash != otherHash) {
+                    trackers[otherHash][eventName](event);
+                }
+            }
+        }
+
+        function hasMouse() {
+            return insideElmt;
+        }
+
+
+        function onMouseOver(event) {
+            var event = Seadragon.Utils.getEvent(event);
+
+            if (isIE && capturing && !isChild(event.srcElement, elmt)) {
+                triggerOthers("onMouseOver", event);
+            }
+
+            var to = event.target ? event.target : event.srcElement;
+            var from = event.relatedTarget ? event.relatedTarget : event.fromElement;
+            if (!isChild(elmt, to) || isChild(elmt, from)) {
+                return;
+            }
+
+            insideElmt = true;
+
+            if (typeof (self.enterHandler) == "function") {
+                try {
+                    self.enterHandler(self, getMouseRelative(event, elmt),
+                            buttonDownElmt, buttonDownAny);
+                } catch (e) {
+                    Seadragon.Debug.error(e.name +
+                            " while executing enter handler: " + e.message, e);
+                }
+            }
+        }
+
+        function onMouseOut(event) {
+            var event = Seadragon.Utils.getEvent(event);
+
+            if (isIE && capturing && !isChild(event.srcElement, elmt)) {
+                triggerOthers("onMouseOut", event);
+            }
+
+            var from = event.target ? event.target : event.srcElement;
+            var to = event.relatedTarget ? event.relatedTarget : event.toElement;
+            if (!isChild(elmt, from) || isChild(elmt, to)) {
+                return;
+            }
+
+            insideElmt = false;
+
+            if (typeof (self.exitHandler) == "function") {
+                try {
+                    self.exitHandler(self, getMouseRelative(event, elmt),
+                            buttonDownElmt, buttonDownAny);
+                } catch (e) {
+                    Seadragon.Debug.error(e.name +
+                            " while executing exit handler: " + e.message, e);
+                }
+            }
+        }
+
+        function onMouseDown(event) {
+            var event = Seadragon.Utils.getEvent(event);
+
+            if (event.button == 2) {
+                return;
+            }
+
+            buttonDownElmt = true;
+
+            lastPoint = getMouseAbsolute(event);
+            lastMouseDownPoint = lastPoint;
+            lastMouseDownTime = new Date().getTime();
+
+            if (typeof (self.pressHandler) == "function") {
+                try {
+                    self.pressHandler(self, getMouseRelative(event, elmt));
+                } catch (e) {
+                    Seadragon.Debug.error(e.name +
+                            " while executing press handler: " + e.message, e);
+                }
+            }
+
+            if (self.pressHandler || self.dragHandler) {
+                Seadragon.Utils.cancelEvent(event);
+            }
+
+            if (!isIE || !ieCapturingAny) {
+                captureMouse();
+                ieCapturingAny = true;
+                ieTrackersCapturing = [ieSelf];     // reset to empty & add us
+            } else if (isIE) {
+                ieTrackersCapturing.push(ieSelf);   // add us to the list
+            }
+        }
+
+        function onMouseUp(event) {
+            var event = Seadragon.Utils.getEvent(event);
+            var insideElmtPress = buttonDownElmt;
+            var insideElmtRelease = insideElmt;
+
+            if (event.button == 2) {
+                return;
+            }
+
+            buttonDownElmt = false;
+
+            if (typeof (self.releaseHandler) == "function") {
+                try {
+                    self.releaseHandler(self, getMouseRelative(event, elmt),
+                            insideElmtPress, insideElmtRelease);
+                } catch (e) {
+                    Seadragon.Debug.error(e.name +
+                            " while executing release handler: " + e.message, e);
+                }
+            }
+
+            if (insideElmtPress && insideElmtRelease) {
+                handleMouseClick(event);
+            }
+        }
+
+        /**
+        * Only triggered once by the deepest element that initially received
+        * the mouse down event. We want to make sure THIS event doesn't bubble.
+        * Instead, we want to trigger the elements that initially received the
+        * mouse down event (including this one) only if the mouse is no longer
+        * inside them. Then, we want to release capture, and emulate a regular
+        * mouseup on the event that this event was meant for.
+        */
+        function onMouseUpIE(event) {
+            var event = Seadragon.Utils.getEvent(event);
+
+            if (event.button == 2) {
+                return;
+            }
+
+            for (var i = 0; i < ieTrackersCapturing.length; i++) {
+                var tracker = ieTrackersCapturing[i];
+                if (!tracker.hasMouse()) {
+                    tracker.onMouseUp(event);
+                }
+            }
+
+            releaseMouse();
+            ieCapturingAny = false;
+            event.srcElement.fireEvent("on" + event.type,
+                    document.createEventObject(event));
+
+            Seadragon.Utils.stopEvent(event);
+        }
+
+        /**
+        * Only triggered in W3C browsers by elements within which the mouse was
+        * initially pressed, since they are now listening to the window for
+        * mouseup during the capture phase. We shouldn't handle the mouseup
+        * here if the mouse is still inside this element, since the regular
+        * mouseup handler will still fire.
+        */
+        function onMouseUpWindow(event) {
+            if (!insideElmt) {
+                onMouseUp(event);
+            }
+
+            releaseMouse();
+        }
+
+        function onMouseClick(event) {
+
+            if (self.clickHandler) {
+                Seadragon.Utils.cancelEvent(event);
+            }
+        }
+
+        function onMouseWheelSpin(event) {
+            var nDelta = 0;
+            if (!event) { // For IE, access the global (window) event object
+                event = window.event;
+            }
+            if (event.wheelDelta) { // IE and Opera
+                nDelta = event.wheelDelta;
+                if (window.opera) {  // Opera has the values reversed
+                    nDelta = -nDelta;
+                }
+            }
+            else if (event.detail) { // Mozilla FireFox
+                nDelta = -event.detail;
+            }
+
+            nDelta = nDelta > 0 ? 1 : -1;
+
+            if (typeof (self.scrollHandler) == "function") {
+                try {
+                    self.scrollHandler(self, getMouseRelative(event, elmt), nDelta, event.shiftKey);
+                } catch (e) {
+                    Seadragon.Debug.error(e.name +
+                            " while executing scroll handler: " + e.message, e);
+                }
+
+                Seadragon.Utils.cancelEvent(event);
+            }
+        }
+
+        function handleMouseClick(event) {
+            var event = Seadragon.Utils.getEvent(event);
+
+            if (event.button == 2) {
+                return;
+            }
+
+            var time = new Date().getTime() - lastMouseDownTime;
+            var point = getMouseAbsolute(event);
+            var distance = lastMouseDownPoint.distanceTo(point);
+            var quick = time <= clickTimeThreshold &&
+                    distance <= clickDistThreshold;
+
+            if (typeof (self.clickHandler) == "function") {
+                try {
+                    self.clickHandler(self, getMouseRelative(event, elmt),
+                            quick, event.shiftKey);
+                } catch (e) {
+                    Seadragon.Debug.error(e.name +
+                            " while executing click handler: " + e.message, e);
+                }
+            }
+        }
+
+        function onMouseMove(event) {
+            var event = Seadragon.Utils.getEvent(event);
+            var point = getMouseAbsolute(event);
+            var delta = point.minus(lastPoint);
+
+            lastPoint = point;
+
+            if (typeof (self.dragHandler) == "function") {
+                try {
+                    self.dragHandler(self, getMouseRelative(event, elmt),
+                            delta, event.shiftKey);
+                } catch (e) {
+                    Seadragon.Debug.error(e.name +
+                            " while executing drag handler: " + e.message, e);
+                }
+
+                Seadragon.Utils.cancelEvent(event);
+            }
+        }
+
+        /**
+        * Only triggered once by the deepest element that initially received
+        * the mouse down event. Since no other element has captured the mouse,
+        * we want to trigger the elements that initially received the mouse
+        * down event (including this one).
+        */
+        function onMouseMoveIE(event) {
+            for (var i = 0; i < ieTrackersCapturing.length; i++) {
+                ieTrackersCapturing[i].onMouseMove(event);
+            }
+
+            Seadragon.Utils.stopEvent(event);
+        }
+
+
+        (function () {
+            ieSelf = {
+                hasMouse: hasMouse,
+                onMouseOver: onMouseOver,
+                onMouseOut: onMouseOut,
+                onMouseUp: onMouseUp,
+                onMouseMove: onMouseMove
+            };
+        })();
+
+
+        this.isTracking = function () {
+            return tracking;
+        };
+
+        this.setTracking = function (track) {
+            if (track) {
+                startTracking();
+            } else {
+                stopTracking();
+            }
+        };
+
+    };
+
+})();
+if (!window.SIGNAL)
+    window.SIGNAL = "----seadragon----";
+
+Seadragon.ControlAnchor = function() {
+    throw Error.invalidOperation();
+}
+Seadragon.ControlAnchor = {
+    NONE: 0,
+    TOP_LEFT: 1,
+    TOP_RIGHT: 2,
+    BOTTOM_RIGHT: 3,
+    BOTTOM_LEFT: 4
+}
+Seadragon.ControlAnchor = Seadragon.ControlAnchor;
+
+Seadragon.OverlayPlacement = function() {
+    throw Error.invalidOperation();
+}
+Seadragon.OverlayPlacement = {
+    CENTER: 0,
+    TOP_LEFT: 1,
+    TOP: 2,
+    TOP_RIGHT: 3,
+    RIGHT: 4,
+    BOTTOM_RIGHT: 5,
+    BOTTOM: 6,
+    BOTTOM_LEFT: 7,
+    LEFT: 8
+}
+Seadragon.OverlayPlacement = Seadragon.OverlayPlacement;
+
+Seadragon.NavControl = function(viewer) {
+    this._group = null;
+    this._zooming = false;    // whether we should be continuously zooming
+    this._zoomFactor = null;  // how much we should be continuously zooming by
+    this._lastZoomTime = null;
+    this._viewer = viewer;
+    this.config = this._viewer.config;
+
+    this.elmt = null;
+    this.initialize();
+}
+Seadragon.NavControl.prototype = {
+    initialize: function() {
+        var beginZoomingInHandler = Function.createDelegate(this, this._beginZoomingIn);
+        var endZoomingHandler = Function.createDelegate(this, this._endZooming);
+        var doSingleZoomInHandler = Function.createDelegate(this, this._doSingleZoomIn);
+        var beginZoomingOutHandler = Function.createDelegate(this, this._beginZoomingOut);
+        var doSingleZoomOutHandler = Function.createDelegate(this, this._doSingleZoomOut);
+        var onHomeHandler = Function.createDelegate(this, this._onHome);
+        var onFullPageHandler = Function.createDelegate(this, this._onFullPage);
+
+        var navImages = this._viewer.config.navImages;
+        var zoomIn = new Seadragon.Button(
+                    { config: this._viewer.config, tooltip: Seadragon.Strings.getString("Tooltips.ZoomIn"), srcRest: this._resolveUrl(navImages.zoomIn.REST), srcGroup: this._resolveUrl(navImages.zoomIn.GROUP), srcHover: this._resolveUrl(navImages.zoomIn.HOVER), srcDown: this._resolveUrl(navImages.zoomIn.DOWN) },
+                    { onPress: beginZoomingInHandler, onRelease: endZoomingHandler, onClick: doSingleZoomInHandler, onEnter: beginZoomingInHandler, onExit: endZoomingHandler });
+        var zoomOut = new Seadragon.Button(
+                    { config: this._viewer.config, tooltip: Seadragon.Strings.getString("Tooltips.ZoomOut"), srcRest: this._resolveUrl(navImages.zoomOut.REST), srcGroup: this._resolveUrl(navImages.zoomOut.GROUP), srcHover: this._resolveUrl(navImages.zoomOut.HOVER), srcDown: this._resolveUrl(navImages.zoomOut.DOWN) },
+                    { onPress: beginZoomingOutHandler, onRelease: endZoomingHandler, onClick: doSingleZoomOutHandler, onEnter: beginZoomingOutHandler, onExit: endZoomingHandler });
+        var goHome = new Seadragon.Button(
+                    { config: this._viewer.config, tooltip: Seadragon.Strings.getString("Tooltips.Home"), srcRest: this._resolveUrl(navImages.home.REST), srcGroup: this._resolveUrl(navImages.home.GROUP), srcHover: this._resolveUrl(navImages.home.HOVER), srcDown: this._resolveUrl(navImages.home.DOWN) },
+                    { onRelease: onHomeHandler });
+        var fullPage = new Seadragon.Button(
+                    { config: this._viewer.config, tooltip: Seadragon.Strings.getString("Tooltips.FullPage"), srcRest: this._resolveUrl(navImages.fullpage.REST), srcGroup: this._resolveUrl(navImages.fullpage.GROUP), srcHover: this._resolveUrl(navImages.fullpage.HOVER), srcDown: this._resolveUrl(navImages.fullpage.DOWN) },
+                    { onRelease: onFullPageHandler });
+        this._group = new Seadragon.ButtonGroup({ config: this._viewer.config, buttons: [zoomIn, zoomOut, goHome, fullPage] });
+
+        this.elmt = this._group.get_element();
+        this.elmt[SIGNAL] = true;   // hack to get our controls to fade
+        this._viewer.add_open(Function.createDelegate(this, this._lightUp));
+    },
+    dispose: function() {
+    },
+    get_events: function() {
+        return this._events;
+    },
+    set_events: function(value) {
+        this._events = value;
+    },
+    _resolveUrl: function(url) {
+        return String.format("{1}", this._viewer.get_prefixUrl(), url);
+    },
+    _beginZoomingIn: function() {
+        this._lastZoomTime = new Date().getTime();
+        this._zoomFactor = this.config.zoomPerSecond;
+        this._zooming = true;
+        this._scheduleZoom();
+    },
+    _beginZoomingOut: function() {
+        this._lastZoomTime = new Date().getTime();
+        this._zoomFactor = 1.0 / this.config.zoomPerSecond;
+        this._zooming = true;
+        this._scheduleZoom();
+    },
+
+    _endZooming: function() {
+        this._zooming = false;
+    },
+    _scheduleZoom: function() {
+        window.setTimeout(Function.createDelegate(this, this._doZoom), 10);
+    },
+    _doZoom: function() {
+        if (this._zooming && this._viewer.viewport) {
+            var currentTime = new Date().getTime();
+            var deltaTime = currentTime - this._lastZoomTime;
+            var adjustedFactor = Math.pow(this._zoomFactor, deltaTime / 1000);
+
+            this._viewer.viewport.zoomBy(adjustedFactor);
+            this._viewer.viewport.applyConstraints();
+            this._lastZoomTime = currentTime;
+            this._scheduleZoom();
+        }
+    },
+    _doSingleZoomIn: function() {
+        if (this._viewer.viewport) {
+            this._zooming = false;
+            this._viewer.viewport.zoomBy(this.config.zoomPerClick / 1.0);
+            this._viewer.viewport.applyConstraints();
+        }
+    },
+    _doSingleZoomOut: function() {
+        if (this._viewer.viewport) {
+            this._zooming = false;
+            this._viewer.viewport.zoomBy(1.0 / this.config.zoomPerClick);
+            this._viewer.viewport.applyConstraints();
+        }
+    },
+    _lightUp: function() {
+        this._group.emulateEnter();
+        this._group.emulateExit();
+    },
+    _onHome: function() {
+        if (this._viewer.viewport) {
+            this._viewer.viewport.goHome();
+        }
+    },
+    _onFullPage: function() {
+        this._viewer.setFullPage(!this._viewer.isFullPage());
+        this._group.emulateExit();  // correct for no mouseout event on change
+
+        if (this._viewer.viewport) {
+            this._viewer.viewport.applyConstraints();
+        }
+    }
+}
+
+Seadragon.Control = function (elmt, anchor, container) {
+    this.elmt = elmt;
+    this.anchor = anchor;
+    this.container = container;
+    this.wrapper = Seadragon.Utils.makeNeutralElement("span");
+    this.wrapper.style.display = "inline-block";
+    this.wrapper.appendChild(this.elmt);
+    if (this.anchor == Seadragon.ControlAnchor.NONE) {
+        this.wrapper.style.width = this.wrapper.style.height = "100%";    // IE6 fix
+    }
+
+    if (this.anchor == Seadragon.ControlAnchor.TOP_RIGHT || this.anchor == Seadragon.ControlAnchor.BOTTOM_RIGHT) {
+        this.container.insertBefore(this.wrapper, this.container.firstChild);
+    } else {
+        this.container.appendChild(this.wrapper);
+    }
+}
+Seadragon.Control.prototype = {
+    destroy: function() {
+        this.wrapper.removeChild(this.elmt);
+        this.container.removeChild(this.wrapper);
+    },
+    isVisible: function() {
+        return this.wrapper.style.display != "none";
+    },
+    setVisible: function(visible) {
+        this.wrapper.style.display = visible ? "inline-block" : "none";
+    },
+    setOpacity: function(opacity) {
+        if (this.elmt[SIGNAL] && Seadragon.Utils.getBrowser() == Seadragon.Browser.IE) {
+            Seadragon.Utils.setElementOpacity(this.elmt, opacity, true);
+        } else {
+            Seadragon.Utils.setElementOpacity(this.wrapper, opacity, true);
+        }
+    }
+}
+
+Seadragon.Viewer = function(element, xmlPath, prefixUrl, controls, overlays, overlayControls) {
+
+    this.config = new Seadragon.Config();
+    this._prefixUrl = prefixUrl ? prefixUrl : "";
+    this._element = document.getElementById(element);
+
+    this._controls = controls ? controls : [];
+    this._customControls = [];
+    this._overlays = overlays ? overlays : [];
+    this._overlayControls = overlayControls ? overlayControls : [];
+    this._container = null;
+    this._canvas = null;
+    this._controlsTL = null;
+    this._controlsTR = null;
+    this._controlsBR = null;
+    this._controlsBL = null;
+    this._bodyWidth = null;
+    this._bodyHeight = null;
+    this._bodyOverflow = null;
+    this._docOverflow = null;
+    this._fsBoundsDelta = null;
+    this._prevContainerSize = null;
+    this._lastOpenStartTime = 0;
+    this._lastOpenEndTime = 0;
+    this._animating = false;
+    this._forceRedraw = false;
+    this._mouseInside = false;
+    this._xmlPath = xmlPath ? xmlPath : undefined;
+
+    this.source = null;
+    this.drawer = null;
+    this.viewport = null;
+    this.profiler = null;
+
+    this.initialize();
+}
+Seadragon.Viewer.prototype = {
+    initialize: function () {
+
+        this._observer = new Observer();
+
+        this._container = Seadragon.Utils.makeNeutralElement("div");
+        this._canvas = Seadragon.Utils.makeNeutralElement("div");
+
+        this._controlsTL = Seadragon.Utils.makeNeutralElement("div");
+        this._controlsTR = Seadragon.Utils.makeNeutralElement("div");
+        this._controlsBR = Seadragon.Utils.makeNeutralElement("div");
+        this._controlsBL = Seadragon.Utils.makeNeutralElement("div");
+
+        var innerTracker = new Seadragon.MouseTracker(this._canvas, this.config.clickTimeThreshold, this.config.clickDistThreshold);
+        var outerTracker = new Seadragon.MouseTracker(this._container, this.config.clickTimeThreshold, this.config.clickDistThreshold);
+
+        this._bodyWidth = document.body.style.width;
+        this._bodyHeight = document.body.style.height;
+        this._bodyOverflow = document.body.style.overflow;
+        this._docOverflow = document.documentElement.style.overflow;
+
+        this._fsBoundsDelta = new Seadragon.Point(1, 1);
+
+        var canvasStyle = this._canvas.style;
+        var containerStyle = this._container.style;
+        var controlsTLStyle = this._controlsTL.style;
+        var controlsTRStyle = this._controlsTR.style;
+        var controlsBRStyle = this._controlsBR.style;
+        var controlsBLStyle = this._controlsBL.style;
+
+        containerStyle.width = "100%";
+        containerStyle.height = "100%";
+        containerStyle.position = "relative";
+        containerStyle.left = "0px";
+        containerStyle.top = "0px";
+        containerStyle.textAlign = "left";  // needed to protect against
+
+        canvasStyle.width = "100%";
+        canvasStyle.height = "100%";
+        canvasStyle.overflow = "hidden";
+        canvasStyle.position = "absolute";
+        canvasStyle.top = "0px";
+        canvasStyle.left = "0px";
+
+        controlsTLStyle.position = controlsTRStyle.position =
+                    controlsBRStyle.position = controlsBLStyle.position =
+                    "absolute";
+
+        controlsTLStyle.top = controlsTRStyle.top = "0px";
+        controlsTLStyle.left = controlsBLStyle.left = "0px";
+        controlsTRStyle.right = controlsBRStyle.right = "0px";
+        controlsBLStyle.bottom = controlsBRStyle.bottom = "0px";
+
+        innerTracker.clickHandler = Function.createDelegate(this, this._onCanvasClick);
+        innerTracker.dragHandler = Function.createDelegate(this, this._onCanvasDrag);
+        innerTracker.releaseHandler = Function.createDelegate(this, this._onCanvasRelease);
+        innerTracker.scrollHandler = Function.createDelegate(this, this._onCanvasScroll);
+        innerTracker.setTracking(true);     // default state
+
+        if (this.get_showNavigationControl()) {
+            navControl = (new Seadragon.NavControl(this)).elmt;
+            navControl.style.marginRight = "4px";
+            navControl.style.marginBottom = "4px";
+            this.addControl(navControl, Seadragon.ControlAnchor.BOTTOM_RIGHT);
+        }
+        for (var i = 0; i < this._customControls.length; i++) {
+            this.addControl(this._customControls[i].id, this._customControls[i].anchor);
+        }
+
+        outerTracker.enterHandler = Function.createDelegate(this, this._onContainerEnter);
+        outerTracker.exitHandler = Function.createDelegate(this, this._onContainerExit);
+        outerTracker.releaseHandler = Function.createDelegate(this, this._onContainerRelease);
+        outerTracker.setTracking(true); // always tracking
+        window.setTimeout(Function.createDelegate(this, this._beginControlsAutoHide), 1);    // initial fade out
+
+        this._container.appendChild(this._canvas);
+        this._container.appendChild(this._controlsTL);
+        this._container.appendChild(this._controlsTR);
+        this._container.appendChild(this._controlsBR);
+        this._container.appendChild(this._controlsBL);
+        this.get_element().appendChild(this._container);
+
+        if (this._xmlPath)
+            this.openDzi(this._xmlPath);
+    },
+    get_events: function get_events() {
+        return this._observer._getContext(this, true).events;
+    },
+    _raiseEvent: function (eventName, eventArgs) {
+        var handler = this.get_events().getHandler(eventName);
+
+        if (handler) {
+            if (!eventArgs) {
+                eventArgs = new Object(); // Sys.EventArgs.Empty;
+            }
+
+            handler(this, eventArgs);
+        }
+    },
+    _beginControlsAutoHide: function () {
+        if (!this.config.autoHideControls) {
+            return;
+        }
+
+        this._controlsShouldFade = true;
+        this._controlsFadeBeginTime = new Date().getTime() + this._controlsFadeDelay;
+        window.setTimeout(Function.createDelegate(this, this._scheduleControlsFade), this._controlsFadeDelay);
+    },
+    _scheduleControlsFade: function () {
+        window.setTimeout(Function.createDelegate(this, this._updateControlsFade), 20);
+    },
+    _updateControlsFade: function () {
+        if (this._controlsShouldFade) {
+            var currentTime = new Date().getTime();
+            var deltaTime = currentTime - this._controlsFadeBeginTime;
+            var opacity = 1.0 - deltaTime / this._controlsFadeLength;
+
+            opacity = Math.min(1.0, opacity);
+            opacity = Math.max(0.0, opacity);
+
+            for (var i = this._controls.length - 1; i >= 0; i--) {
+                this._controls[i].setOpacity(opacity);
+            }
+
+            if (opacity > 0) {
+                this._scheduleControlsFade();    // fade again
+            }
+        }
+    },
+    _onCanvasClick: function (tracker, position, quick, shift) {
+        if (this.viewport && quick) {    // ignore clicks where mouse moved			
+            var zoomPerClick = this.config.zoomPerClick;
+            var factor = shift ? 1.0 / zoomPerClick : zoomPerClick;
+            this.viewport.zoomBy(factor, this.viewport.pointFromPixel(position, true));
+            this.viewport.applyConstraints();
+        }
+    },
+    _onCanvasDrag: function (tracker, position, delta, shift) {
+        if (this.viewport) {
+            this.viewport.panBy(this.viewport.deltaPointsFromPixels(delta.negate()));
+        }
+    },
+    _onCanvasRelease: function (tracker, position, insideElmtPress, insideElmtRelease) {
+        if (insideElmtPress && this.viewport) {
+            this.viewport.applyConstraints();
+        }
+    },
+    _onCanvasScroll: function (tracker, position, scroll, shift) {
+        if (this.viewport) {
+            var factor = Math.pow(this.config.zoomPerScroll,scroll);
+            this.viewport.zoomBy(factor, this.viewport.pointFromPixel(position, true));
+            this.viewport.applyConstraints();
+        }
+    },
+    _onContainerExit: function (tracker, position, buttonDownElmt, buttonDownAny) {
+        if (!buttonDownElmt) {
+            this._mouseInside = false;
+            if (!this._animating) {
+                this._beginControlsAutoHide();
+            }
+        }
+    },
+    _onContainerRelease: function (tracker, position, insideElmtPress, insideElmtRelease) {
+        if (!insideElmtRelease) {
+            this._mouseInside = false;
+            if (!this._animating) {
+                this._beginControlsAutoHide();
+            }
+        }
+    },
+    _getControlIndex: function (elmt) {
+        for (var i = this._controls.length - 1; i >= 0; i--) {
+            if (this._controls[i].elmt == elmt) {
+                return i;
+            }
+        }
+
+        return -1;
+    },
+    _abortControlsAutoHide: function () {
+        this._controlsShouldFade = false;
+        for (var i = this._controls.length - 1; i >= 0; i--) {
+            this._controls[i].setOpacity(1.0);
+        }
+    },
+    _onContainerEnter: function (tracker, position, buttonDownElmt, buttonDownAny) {
+        this._mouseInside = true;
+        this._abortControlsAutoHide();
+    },
+    _updateOnce: function () {
+        if (!this.source) {
+            return;
+        }
+
+        this.profiler.beginUpdate();
+
+        var containerSize = Seadragon.Utils.getElementSize(this._container);
+
+        if (!containerSize.equals(this._prevContainerSize)) {
+            this.viewport.resize(containerSize, true); // maintain image position
+            this._prevContainerSize = containerSize;
+            this._raiseEvent("resize", this);
+        }
+
+        var animated = this.viewport.update();
+
+        if (!this._animating && animated) {
+            this._raiseEvent("animationstart", self);
+            this._abortControlsAutoHide();
+        }
+
+        if (animated) {
+            this.drawer.update();
+            this._raiseEvent("animation", self);
+        } else if (this._forceRedraw || this.drawer.needsUpdate()) {
+            this.drawer.update();
+            this._forceRedraw = false;
+        } else {
+            this.drawer.idle();
+        }
+
+        if (this._animating && !animated) {
+            this._raiseEvent("animationfinish", this);
+
+            if (!this._mouseInside) {
+                this._beginControlsAutoHide();
+            }
+        }
+
+        this._animating = animated;
+
+        this.profiler.endUpdate();
+    },
+    _onClose: function () {
+
+        this.source = null;
+        this.viewport = null;
+        this.drawer = null;
+        this.profiler = null;
+
+        this._canvas.innerHTML = "";
+    },
+    _beforeOpen: function () {
+        if (this.source) {
+            this._onClose();
+        }
+
+        this._lastOpenStartTime = new Date().getTime();   // to ignore earlier opens
+
+        window.setTimeout(Function.createDelegate(this, function () {
+            if (this._lastOpenStartTime > this._lastOpenEndTime) {
+                this._setMessage(Seadragon.Strings.getString("Messages.Loading"));
+            }
+        }), 2000);
+
+        return this._lastOpenStartTime;
+    },
+    _setMessage: function (message) {
+        var textNode = document.createTextNode(message);
+
+        this._canvas.innerHTML = "";
+        this._canvas.appendChild(Seadragon.Utils.makeCenteredNode(textNode));
+
+        var textStyle = textNode.parentNode.style;
+
+        textStyle.color = "white";
+        textStyle.fontFamily = "verdana";
+        textStyle.fontSize = "13px";
+        textStyle.fontSizeAdjust = "none";
+        textStyle.fontStyle = "normal";
+        textStyle.fontStretch = "normal";
+        textStyle.fontVariant = "normal";
+        textStyle.fontWeight = "normal";
+        textStyle.lineHeight = "1em";
+        textStyle.textAlign = "center";
+        textStyle.textDecoration = "none";
+    },
+    _onOpen: function (time, _source, error) {
+        this._lastOpenEndTime = new Date().getTime();
+
+        if (time < this._lastOpenStartTime) {
+            Seadragon.Debug.log("Ignoring out-of-date open.");
+            this._raiseEvent("ignore");
+            return;
+        } else if (!_source) {
+            this._setMessage(error);
+            this._raiseEvent("error");
+            return;
+        }
+
+        this._canvas.innerHTML = "";
+        this._prevContainerSize = Seadragon.Utils.getElementSize(this._container);
+
+        this.source = _source;
+        this.viewport = new Seadragon.Viewport(this._prevContainerSize, this.source.dimensions, this.config);
+        this.drawer = new Seadragon.Drawer(this.source, this.viewport, this._canvas);
+        this.profiler = new Seadragon.Profiler();
+
+        this._animating = false;
+        this._forceRedraw = true;
+        this._scheduleUpdate(this._updateMulti);
+
+        for (var i = 0; i < this._overlayControls.length; i++) {
+            var overlay = this._overlayControls[i];
+            if (overlay.point != null) {
+                this.drawer.addOverlay(overlay.id, new Seadragon.Point(overlay.point.X, overlay.point.Y), Seadragon.OverlayPlacement.TOP_LEFT);
+            }
+            else {
+                this.drawer.addOverlay(overlay.id, new Seadragon.Rect(overlay.rect.Point.X, overlay.rect.Point.Y, overlay.rect.Width, overlay.rect.Height), overlay.placement);
+            }
+        }
+        this._raiseEvent("open");
+    },
+    _scheduleUpdate: function (updateFunc, prevUpdateTime) {
+        if (this._animating) {
+            return window.setTimeout(Function.createDelegate(this, updateFunc), 1);
+        }
+
+        var currentTime = new Date().getTime();
+        var prevUpdateTime = prevUpdateTime ? prevUpdateTime : currentTime;
+        var targetTime = prevUpdateTime + 1000 / 60;    // 60 fps ideal
+
+        var deltaTime = Math.max(1, targetTime - currentTime);
+        return window.setTimeout(Function.createDelegate(this, updateFunc), deltaTime);
+    },
+    _updateMulti: function () {
+        if (!this.source) {
+            return;
+        }
+
+        var beginTime = new Date().getTime();
+
+        this._updateOnce();
+        this._scheduleUpdate(arguments.callee, beginTime);
+    },
+    _updateOnce: function () {
+        if (!this.source) {
+            return;
+        }
+
+        this.profiler.beginUpdate();
+
+        var containerSize = Seadragon.Utils.getElementSize(this._container);
+
+        if (!containerSize.equals(this._prevContainerSize)) {
+            this.viewport.resize(containerSize, true); // maintain image position
+            this._prevContainerSize = containerSize;
+            this._raiseEvent("resize");
+        }
+
+        var animated = this.viewport.update();
+
+        if (!this._animating && animated) {
+            this._raiseEvent("animationstart");
+            this._abortControlsAutoHide();
+        }
+
+        if (animated) {
+            this.drawer.update();
+            this._raiseEvent("animation");
+        } else if (this._forceRedraw || this.drawer.needsUpdate()) {
+            this.drawer.update();
+            this._forceRedraw = false;
+        } else {
+            this.drawer.idle();
+        }
+
+        if (this._animating && !animated) {
+            this._raiseEvent("animationfinish");
+
+            if (!this._mouseInside) {
+                this._beginControlsAutoHide();
+            }
+        }
+
+        this._animating = animated;
+
+        this.profiler.endUpdate();
+    },
+
+    getNavControl: function () {
+        return this._navControl;
+    },
+    get_element: function () {
+        return this._element;
+    },
+    get_xmlPath: function () {
+        return this._xmlPath;
+    },
+    set_xmlPath: function (value) {
+        this._xmlPath = value;
+    },
+    get_debugMode: function () {
+        return this.config.debugMode;
+    },
+    set_debugMode: function (value) {
+        this.config.debugMode = value;
+    },
+    get_animationTime: function () {
+        return this.config.animationTime;
+    },
+    set_animationTime: function (value) {
+        this.config.animationTime = value;
+    },
+    get_blendTime: function () {
+        return this.config.blendTime;
+    },
+    set_blendTime: function (value) {
+        this.config.blendTime = value;
+    },
+    get_alwaysBlend: function () {
+        return this.config.alwaysBlend;
+    },
+    set_alwaysBlend: function (value) {
+        this.config.alwaysBlend = value;
+    },
+    get_autoHideControls: function () {
+        return this.config.autoHideControls;
+    },
+    set_autoHideControls: function (value) {
+        this.config.autoHideControls = value;
+    },
+    get_immediateRender: function () {
+        return this.config.immediateRender;
+    },
+    set_immediateRender: function (value) {
+        this.config.immediateRender = value;
+    },
+    get_wrapHorizontal: function () {
+        return this.config.wrapHorizontal;
+    },
+    set_wrapHorizontal: function (value) {
+        this.config.wrapHorizontal = value;
+    },
+    get_wrapVertical: function () {
+        return this.config.wrapVertical;
+    },
+    set_wrapVertical: function (value) {
+        this.config.wrapVertical = value;
+    },
+    get_minZoomImageRatio: function () {
+        return this.config.minZoomImageRatio;
+    },
+    set_minZoomImageRatio: function (value) {
+        this.config.minZoomImageRatio = value;
+    },
+    get_maxZoomPixelRatio: function () {
+        return this.config.maxZoomPixelRatio;
+    },
+    set_maxZoomPixelRatio: function (value) {
+        this.config.maxZoomPixelRatio = value;
+    },
+    get_visibilityRatio: function () {
+        return this.config.visibilityRatio;
+    },
+    set_visibilityRatio: function (value) {
+        this.config.visibilityRatio = value;
+    },
+    get_springStiffness: function () {
+        return this.config.springStiffness;
+    },
+    set_springStiffness: function (value) {
+        this.config.springStiffness = value;
+    },
+    get_imageLoaderLimit: function () {
+        return this.config.imageLoaderLimit;
+    },
+    set_imageLoaderLimit: function (value) {
+        this.config.imageLoaderLimit = value;
+    },
+    get_clickTimeThreshold: function () {
+        return this.config.clickTimeThreshold;
+    },
+    set_clickTimeThreshold: function (value) {
+        this.config.clickTimeThreshold = value;
+    },
+    get_clickDistThreshold: function () {
+        return this.config.clickDistThreshold;
+    },
+    set_clickDistThreshold: function (value) {
+        this.config.clickDistThreshold = value;
+    },
+    get_zoomPerClick: function () {
+        return this.config.zoomPerClick;
+    },
+    set_zoomPerClick: function (value) {
+        this.config.zoomPerClick = value;
+    },
+    get_zoomPerSecond: function () {
+        return this.config.zoomPerSecond;
+    },
+    set_zoomPerSecond: function (value) {
+        this.config.zoomPerSecond = value;
+    },
+    get_zoomPerScroll: function () {
+        return this.config.zoomPerScroll;
+    },
+    set_zoomPerScroll: function (value) {
+        this.config.zoomPerScroll = value;
+    },
+    get_maxImageCacheCount: function () {
+        return this.config.maxImageCacheCount;
+    },
+    set_maxImageCacheCount: function (value) {
+        this.config.maxImageCacheCount = value;
+    },
+    get_showNavigationControl: function () {
+        return this.config.showNavigationControl;
+    },
+    set_showNavigationControl: function (value) {
+        this.config.showNavigationControl = value;
+    },
+    get_minPixelRatio: function () {
+        return this.config.minPixelRatio;
+    },
+    set_minPixelRatio: function (value) {
+        this.config.minPixelRatio = value;
+    },
+    get_mouseNavEnabled: function () {
+        return this.config.mouseNavEnabled;
+    },
+    set_mouseNavEnabled: function (value) {
+        this.config.mouseNavEnabled = value;
+    },
+    get_controls: function () {
+        return this._customControls;
+    },
+    set_controls: function (value) {
+        this._customControls = value;
+    },
+    get_overlays: function () {
+        return this._overlayControls;
+    },
+    set_overlays: function (value) {
+        this._overlayControls = value;
+    },
+    get_prefixUrl: function () {
+        return this._prefixUrl;
+    },
+    set_prefixUrl: function (value) {
+        this._prefixUrl = value;
+    },
+    add_open: function (handler) {
+        this.get_events().addHandler("open", handler);
+    },
+    remove_open: function (handler) {
+        this.get_events().removeHandler("open", handler);
+    },
+    add_error: function (handler) {
+        this.get_events().addHandler("error", handler);
+    },
+    remove_error: function (handler) {
+        this.get_events().removeHandler("error", handler);
+    },
+    add_ignore: function (handler) {
+        this.get_events().addHandler("ignore", handler);
+    },
+    remove_ignore: function (handler) {
+        this.get_events().removeHandler("ignore", handler);
+    },
+    add_resize: function (handler) {
+        this.get_events().addHandler("resize", handler);
+    },
+    remove_resize: function (handler) {
+        this.get_events().removeHandler("resize", handler);
+    },
+    add_animationstart: function (handler) {
+        this.get_events().addHandler("animationstart", handler);
+    },
+    remove_animationstart: function (handler) {
+        this.get_events().removeHandler("animationstart", handler);
+    },
+    add_animation: function (handler) {
+        this.get_events().addHandler("animation", handler);
+    },
+    remove_animation: function (handler) {
+        this.get_events().removeHandler("animation", handler);
+    },
+    add_animationfinish: function (handler) {
+        this.get_events().addHandler("animationfinish", handler);
+    },
+    remove_animationfinish: function (handler) {
+        this.get_events().removeHandler("animationfinish", handler);
+    },
+    addControl: function (elmt, anchor) {
+        var elmt = Seadragon.Utils.getElement(elmt);
+
+        if (this._getControlIndex(elmt) >= 0) {
+            return;     // they're trying to add a duplicate control
+        }
+
+        var div = null;
+
+        switch (anchor) {
+            case Seadragon.ControlAnchor.TOP_RIGHT:
+                div = this._controlsTR;
+                elmt.style.position = "relative";
+                break;
+            case Seadragon.ControlAnchor.BOTTOM_RIGHT:
+                div = this._controlsBR;
+                elmt.style.position = "relative";
+                break;
+            case Seadragon.ControlAnchor.BOTTOM_LEFT:
+                div = this._controlsBL;
+                elmt.style.position = "relative";
+                break;
+            case Seadragon.ControlAnchor.TOP_LEFT:
+                div = this._controlsTL;
+                elmt.style.position = "relative";
+                break;
+            case Seadragon.ControlAnchor.NONE:
+            default:
+                div = this._container;
+                elmt.style.position = "absolute";
+                break;
+        }
+
+        this._controls.push(new Seadragon.Control(elmt, anchor, div));
+
+        elmt.style.display = "inline-block";
+    },
+    isOpen: function () {
+        return !!this.source;
+    },
+    openDzi: function (xmlUrl, xmlString) {
+        var currentTime = this._beforeOpen();
+        Seadragon.DziTileSourceHelper.createFromXml(xmlUrl, xmlString,
+                    Seadragon.Utils.createCallback(null, Function.createDelegate(this, this._onOpen), currentTime));
+    },
+    openTileSource: function (tileSource) {
+        var currentTime = beforeOpen();
+        window.setTimeout(Function.createDelegate(this, function () {
+            onOpen(currentTime, tileSource);
+        }), 1);
+    },
+    close: function () {
+        if (!this.source) {
+            return;
+        }
+
+        this._onClose();
+    },
+    removeControl: function (elmt) {
+        var elmt = Seadragon.Utils.getElement(elmt);
+        var i = this._getControlIndex(elmt);
+
+        if (i >= 0) {
+            this._controls[i].destroy();
+            this._controls.splice(i, 1);
+        }
+    },
+    clearControls: function () {
+        while (this._controls.length > 0) {
+            this._controls.pop().destroy();
+        }
+    },
+    isDashboardEnabled: function () {
+        for (var i = this._controls.length - 1; i >= 0; i--) {
+            if (this._controls[i].isVisible()) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    isFullPage: function () {
+        return this._container.parentNode == document.body;
+    },
+
+    isMouseNavEnabled: function () {
+        return this._innerTracker.isTracking();
+    },
+
+    isVisible: function () {
+        return this._container.style.visibility != "hidden";
+    },
+
+    setDashboardEnabled: function (enabled) {
+        for (var i = this._controls.length - 1; i >= 0; i--) {
+            this._controls[i].setVisible(enabled);
+        }
+    },
+
+    setFullPage: function (fullPage) {
+        if (fullPage == this.isFullPage()) {
+            return;
+        }
+
+        var body = document.body;
+        var bodyStyle = body.style;
+        var docStyle = document.documentElement.style;
+        var containerStyle = this._container.style;
+        var canvasStyle = this._canvas.style;
+
+        if (fullPage) {
+            bodyOverflow = bodyStyle.overflow;
+            docOverflow = docStyle.overflow;
+            bodyStyle.overflow = "hidden";
+            docStyle.overflow = "hidden";
+
+            bodyWidth = bodyStyle.width;
+            bodyHeight = bodyStyle.height;
+            bodyStyle.width = "100%";
+            bodyStyle.height = "100%";
+
+            canvasStyle.backgroundColor = "black";
+            canvasStyle.color = "white";
+
+            containerStyle.position = "fixed";
+            containerStyle.zIndex = "99999999";
+
+            body.appendChild(this._container);
+            this._prevContainerSize = Seadragon.Utils.getWindowSize();
+
+            this._onContainerEnter();     // mouse will be inside container now
+        } else {
+            bodyStyle.overflow = bodyOverflow;
+            docStyle.overflow = docOverflow;
+
+            bodyStyle.width = bodyWidth;
+            bodyStyle.height = bodyHeight;
+
+            canvasStyle.backgroundColor = "";
+            canvasStyle.color = "";
+
+            containerStyle.position = "relative";
+            containerStyle.zIndex = "";
+
+            this.get_element().appendChild(this._container);
+            this._prevContainerSize = Seadragon.Utils.getElementSize(this.get_element());
+
+            this._onContainerExit();      // mouse will likely be outside now
+        }
+        if (this.viewport) {
+            var oldBounds = this.viewport.getBounds();
+            this.viewport.resize(this._prevContainerSize);
+            var newBounds = this.viewport.getBounds();
+
+            if (fullPage) {
+                this._fsBoundsDelta = new Seadragon.Point(newBounds.width / oldBounds.width,
+                        newBounds.height / oldBounds.height);
+            } else {
+                this.viewport.update();
+                this.viewport.zoomBy(Math.max(this._fsBoundsDelta.x, this._fsBoundsDelta.y),
+                            null, true);
+            }
+
+            this._forceRedraw = true;
+            this._raiseEvent("resize", this);
+            this._updateOnce();
+        }
+    },
+
+    setMouseNavEnabled: function (enabled) {
+        this._innerTracker.setTracking(enabled);
+    },
+
+    setVisible: function (visible) {
+        this._container.style.visibility = visible ? "" : "hidden";
+    }
+
+}
+Seadragon.Strings = {
+    Errors: {
+        Failure: "Sorry, but Seadragon Ajax can't run on your browser!\n" +
+                    "Please try using IE 7 or Firefox 3.\n",
+        Dzc: "Sorry, we don't support Deep Zoom Collections!",
+        Dzi: "Hmm, this doesn't appear to be a valid Deep Zoom Image.",
+        Xml: "Hmm, this doesn't appear to be a valid Deep Zoom Image.",
+        Empty: "You asked us to open nothing, so we did just that.",
+        ImageFormat: "Sorry, we don't support {0}-based Deep Zoom Images.",
+        Security: "It looks like a security restriction stopped us from " +
+                    "loading this Deep Zoom Image.",
+        Status: "This space unintentionally left blank ({0} {1}).",
+        Unknown: "Whoops, something inexplicably went wrong. Sorry!"
+    },
+
+    Messages: {
+        Loading: "Loading..."
+    },
+
+    Tooltips: {
+        FullPage: "Toggle full page",
+        Home: "Go home",
+        ZoomIn: "Zoom in",
+        ZoomOut: "Zoom out"
+    },
+    getString: function(prop) {
+        var props = prop.split('.');
+        var string = Seadragon.Strings;
+
+        for (var i = 0; i < props.length; i++) {
+            string = string[props[i]] || {};    // in case not a subproperty
+        }
+
+        if (typeof (string) != "string") {
+            string = "";
+        }
+
+        var args = arguments;
+        return string.replace(/\{\d+\}/g, function(capture) {
+            var i = parseInt(capture.match(/\d+/)) + 1;
+            return i < args.length ? args[i] : "";
+        });
+    },
+
+    setString: function(prop, value) {
+        var props = prop.split('.');
+        var container = Seadragon.Strings;
+
+        for (var i = 0; i < props.length - 1; i++) {
+            if (!container[props[i]]) {
+                container[props[i]] = {};
+            }
+            container = container[props[i]];
+        }
+
+        container[props[i]] = value;
+    }
+
+}
+Seadragon.Strings = Seadragon.Strings;
+
+
+Seadragon.Point=Seadragon.Point = function(x, y) {
+    this.x = typeof (x) == "number" ? x : 0;
+    this.y = typeof (y) == "number" ? y : 0;
+}
+Seadragon.Point.prototype = {
+
+    plus: function(point) {
+        return new Seadragon.Point(this.x + point.x, this.y + point.y);
+    },
+
+    minus: function(point) {
+        return new Seadragon.Point(this.x - point.x, this.y - point.y);
+    },
+
+    times: function(factor) {
+        return new Seadragon.Point(this.x * factor, this.y * factor);
+    },
+
+    divide: function(factor) {
+        return new Seadragon.Point(this.x / factor, this.y / factor);
+    },
+
+    negate: function() {
+        return new Seadragon.Point(-this.x, -this.y);
+    },
+
+    distanceTo: function(point) {
+        return Math.sqrt(Math.pow(this.x - point.x, 2) +
+                        Math.pow(this.y - point.y, 2));
+    },
+
+    apply: function(func) {
+        return new Seadragon.Point(func(this.x), func(this.y));
+    },
+
+    equals: function(point) {
+        return (point instanceof Seadragon.Point) &&
+                (this.x === point.x) && (this.y === point.y);
+    },
+
+    toString: function() {
+        return "(" + this.x + "," + this.y + ")";
+    }
+}
+Seadragon.Profiler = function() {
+
+    this._midUpdate = false;
+    this._numUpdates = 0;
+
+    this._lastBeginTime = null;
+    this._lastEndTime = null;
+
+    this._minUpdateTime = Infinity;
+    this._avgUpdateTime = 0;
+    this._maxUpdateTime = 0;
+
+    this._minIdleTime = Infinity;
+    this._avgIdleTime = 0;
+    this._maxIdleTime = 0;
+}
+Seadragon.Profiler.prototype = {
+
+    getAvgUpdateTime: function() {
+        return this._avgUpdateTime;
+    },
+
+    getMinUpdateTime: function() {
+        return this._minUpdateTime;
+    },
+
+    getMaxUpdateTime: function() {
+        return this._maxUpdateTime;
+    },
+
+
+    getAvgIdleTime: function() {
+        return this._avgIdleTime;
+    },
+
+    getMinIdleTime: function() {
+        return this._minIdleTime;
+    },
+
+    getMaxIdleTime: function() {
+        return this._maxIdleTime;
+    },
+
+
+    isMidUpdate: function() {
+        return this._midUpdate;
+    },
+
+    getNumUpdates: function() {
+        return this._numUpdates;
+    },
+
+
+    beginUpdate: function() {
+        if (this._midUpdate) {
+            this.endUpdate();
+        }
+
+        this._midUpdate = true;
+        this._lastBeginTime = new Date().getTime();
+
+        if (this._numUpdates < 1) {
+            return;     // this is the first update
+        }
+
+        var time = this._lastBeginTime - this._lastEndTime;
+
+        this._avgIdleTime = (this._avgIdleTime * (this._numUpdates - 1) + time) / this._numUpdates;
+
+        if (time < this._minIdleTime) {
+            this._minIdleTime = time;
+        }
+        if (time > this._maxIdleTime) {
+            this._maxIdleTime = time;
+        }
+    },
+
+    endUpdate: function() {
+        if (!this._midUpdate) {
+            return;
+        }
+
+        this._lastEndTime = new Date().getTime();
+        this._midUpdate = false;
+
+        var time = this._lastEndTime - this._lastBeginTime;
+
+        this._numUpdates++;
+        this._avgUpdateTime = (this._avgUpdateTime * (this._numUpdates - 1) + time) / this._numUpdates;
+
+        if (time < this._minUpdateTime) {
+            this._minUpdateTime = time;
+        }
+        if (time > this._maxUpdateTime) {
+            this._maxUpdateTime = time;
+        }
+    },
+
+    clearProfile: function() {
+        this._midUpdate = false;
+        this._numUpdates = 0;
+
+        this._lastBeginTime = null;
+        this._lastEndTime = null;
+
+        this._minUpdateTime = Infinity;
+        this._avgUpdateTime = 0;
+        this._maxUpdateTime = 0;
+
+        this._minIdleTime = Infinity;
+        this._avgIdleTime = 0;
+        this._maxIdleTime = 0;
+    }
+}
+Seadragon.Job = function(src, callback) {
+    this._image = null;
+    this._timeout = null;
+    this._src = src;
+    this._callback = callback;
+    this.TIMEOUT = 5000;
+}
+Seadragon.Job.prototype = {
+    _finish: function(success) {
+        this._image.onload = null;
+        this._image.onabort = null;
+        this._image.onerror = null;
+
+
+        if (this._timeout) {
+            window.clearTimeout(this._timeout);
+        }
+
+        var image = this._image;
+        var callback = this._callback;
+        window.setTimeout(function() {
+            callback(this._src, success ? image : null);
+        }, 1);
+    },
+    _onloadHandler: function() {
+        this._finish(true);
+    },
+    _onerrorHandler: function() {
+        this._finish(false);
+    },
+    start: function() {
+        this._image = new Image();
+        this._image.onload = Function.createDelegate(this, this._onloadHandler);
+        this._image.onabort = Function.createDelegate(this, this._onerrorHandler);
+        this._image.onerror = Function.createDelegate(this, this._onerrorHandler);
+
+        this._timeout = window.setTimeout(Function.createDelegate(this, this._onerrorHandler), this.TIMEOUT);
+
+        this._image.src = this._src;
+    }
+}
+
+
+Seadragon.ImageLoader = function(imageLoaderLimit) {
+	this._downloading = 0;
+	this.imageLoaderLimit = imageLoaderLimit;
+}
+Seadragon.ImageLoader.prototype = {
+    _onComplete: function(callback, src, image) {
+        this._downloading--;
+        if (typeof (callback) == "function") {
+            try {
+                callback(image);
+            } catch (e) {
+                Seadragon.Debug.error(e.name + " while executing " + src +
+                            " callback: " + e.message, e);
+            }
+        }
+    },
+    loadImage: function(src, callback) {
+        if (this._downloading >= this.imageLoaderLimit) {
+            return false;
+        }
+
+        var func = Seadragon.Utils.createCallback(null, Function.createDelegate(this, this._onComplete), callback);
+        var job = new Seadragon.Job(src, func);
+
+        this._downloading++;
+        job.start();
+
+        return true;
+    }
+}
+
+
+Seadragon.TileSource = function(width, height, tileSize, tileOverlap, minLevel, maxLevel) {
+    this.aspectRatio = width / height;
+    this.dimensions = new Seadragon.Point(width, height);
+    this.minLevel = minLevel ? minLevel : 0;
+    this.maxLevel = maxLevel ? maxLevel :
+            Math.ceil(Math.log(Math.max(width, height)) / Math.log(2));
+    this.tileSize = tileSize ? tileSize : 0;
+    this.tileOverlap = tileOverlap ? tileOverlap : 0;
+}
+Seadragon.TileSource.prototype = {
+    getLevelScale: function(level) {
+        return 1 / (1 << (this.maxLevel - level));
+    },
+
+    getNumTiles: function(level) {
+        var scale = this.getLevelScale(level);
+        var x = Math.ceil(scale * this.dimensions.x / this.tileSize);
+        var y = Math.ceil(scale * this.dimensions.y / this.tileSize);
+
+        return new Seadragon.Point(x, y);
+    },
+
+    getPixelRatio: function(level) {
+        var imageSizeScaled = this.dimensions.times(this.getLevelScale(level));
+        var rx = 1.0 / imageSizeScaled.x;
+        var ry = 1.0 / imageSizeScaled.y;
+
+        return new Seadragon.Point(rx, ry);
+    },
+
+    getTileAtPoint: function(level, point) {
+        var pixel = point.times(this.dimensions.x).times(this.getLevelScale(level));
+
+        var tx = Math.floor(pixel.x / this.tileSize);
+        var ty = Math.floor(pixel.y / this.tileSize);
+
+        return new Seadragon.Point(tx, ty);
+    },
+
+    getTileBounds: function(level, x, y) {
+        var dimensionsScaled = this.dimensions.times(this.getLevelScale(level));
+
+        var px = (x === 0) ? 0 : this.tileSize * x - this.tileOverlap;
+        var py = (y === 0) ? 0 : this.tileSize * y - this.tileOverlap;
+
+        var sx = this.tileSize + (x === 0 ? 1 : 2) * this.tileOverlap;
+        var sy = this.tileSize + (y === 0 ? 1 : 2) * this.tileOverlap;
+
+        sx = Math.min(sx, dimensionsScaled.x - px);
+        sy = Math.min(sy, dimensionsScaled.y - py);
+
+        var scale = 1.0 / dimensionsScaled.x;
+        return new Seadragon.Rect(px * scale, py * scale, sx * scale, sy * scale);
+    },
+
+    getTileUrl: function(level, x, y) {
+        throw new Error("Method not implemented.");
+    },
+
+    tileExists: function(level, x, y) {
+        var numTiles = this.getNumTiles(level);
+        return level >= this.minLevel && level <= this.maxLevel &&
+                x >= 0 && y >= 0 && x < numTiles.x && y < numTiles.y;
+    }
+}
+Seadragon.DziError = function(message) {
+    Error.apply(this, arguments);
+    this.message = message;
+}
+Seadragon.DziError.prototype = new Error();
+Seadragon.DziError.constructor = Seadragon.DziError;
+
+Seadragon.DziTileSource = function(width, height, tileSize, tileOverlap, tilesUrl, fileFormat, displayRects) {
+    Seadragon.TileSource.call(this, width, height, tileSize, tileOverlap, null, null);
+
+    this._levelRects = {};
+    this.tilesUrl = tilesUrl;
+
+    this.fileFormat = fileFormat;
+    this.displayRects = displayRects;
+    this.initialize();
+}
+Seadragon.DziTileSource.prototype = new Seadragon.TileSource();
+Seadragon.DziTileSource.prototype.constructor = Seadragon.DziTileSource;
+Seadragon.DziTileSource.prototype.initialize = function() {
+    if (!this.displayRects) {
+        return;
+    }
+
+    for (var i = this.displayRects.length - 1; i >= 0; i--) {
+        var rect = this.displayRects[i];
+        for (var level = rect.minLevel; level <= rect.maxLevel; level++) {
+            if (!this._levelRects[level]) {
+                this._levelRects[level] = [];
+            }
+            this._levelRects[level].push(rect);
+        }
+    }
+}
+Seadragon.DziTileSource.prototype.getTileUrl = function(level, x, y) {
+    return [this.tilesUrl, level, '/', x, '_', y, '.', this.fileFormat].join('');
+}
+Seadragon.DziTileSource.prototype.tileExists = function(level, x, y) {
+    var rects = this._levelRects[level];
+
+    if (!rects || !rects.length) {
+        return true;
+    }
+
+    for (var i = rects.length - 1; i >= 0; i--) {
+        var rect = rects[i];
+
+        if (level < rect.minLevel || level > rect.maxLevel) {
+            continue;
+        }
+
+        var scale = this.getLevelScale(level);
+        var xMin = rect.x * scale;
+        var yMin = rect.y * scale;
+        var xMax = xMin + rect.width * scale;
+        var yMax = yMin + rect.height * scale;
+
+        xMin = Math.floor(xMin / this.tileSize);
+        yMin = Math.floor(yMin / this.tileSize);
+        xMax = Math.ceil(xMax / this.tileSize);
+        yMax = Math.ceil(yMax / this.tileSize);
+
+        if (xMin <= x && x < xMax && yMin <= y && y < yMax) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Seadragon._DziTileSourceHelper = function() {
+
+}
+Seadragon._DziTileSourceHelper.prototype = {
+    createFromXml: function(xmlUrl, xmlString, callback) {
+        var async = typeof (callback) == "function";
+        var error = null;
+
+        if (!xmlUrl) {
+            this.error = Seadragon.Strings.getString("Errors.Empty");
+            if (async) {
+                window.setTimeout(function() {
+                    callback(null, error);
+                }, 1);
+                return null;
+            }
+            throw new Seadragon.DziError(error);
+        }
+
+        var urlParts = xmlUrl.split('/');
+        var filename = urlParts[urlParts.length - 1];
+        var lastDot = filename.lastIndexOf('.');
+
+        if (lastDot > -1) {
+            urlParts[urlParts.length - 1] = filename.slice(0, lastDot);
+        }
+
+        var tilesUrl = urlParts.join('/') + "_files/";
+        function finish(func, obj) {
+            try {
+                return func(obj, tilesUrl);
+            } catch (e) {
+                if (async) {
+                    error = this.getError(e).message;
+                    return null;
+                } else {
+                    throw this.getError(e);
+                }
+            }
+        }
+        if (async) {
+            if (xmlString) {
+                var handler = Function.createDelegate(this, this.processXml);
+                window.setTimeout(function() {
+                    var source = finish(handler, Seadragon.Utils.parseXml(xmlString));
+                    callback(source, error);    // call after finish sets error
+                }, 1);
+            } else {
+                var handler = Function.createDelegate(this, this.processResponse);
+                Seadragon.Utils.makeAjaxRequest(xmlUrl, function(xhr) {
+                    var source = finish(handler, xhr);
+                    callback(source, error);    // call after finish sets error
+                });
+            }
+
+            return null;
+        }
+
+        if (xmlString) {
+            return finish(Function.createDelegate(this, this.processXml), Seadragon.Utils.parseXml(xmlString));
+        } else {
+            return finish(Function.createDelegate(this, this.processResponse), Seadragon.Utils.makeAjaxRequest(xmlUrl));
+        }
+    },
+    processResponse: function(xhr, tilesUrl) {
+        if (!xhr) {
+            throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Security"));
+        } else if (xhr.status !== 200 && xhr.status !== 0) {
+            var status = xhr.status;
+            var statusText = (status == 404) ? "Not Found" : xhr.statusText;
+            throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Status", status, statusText));
+        }
+
+        var doc = null;
+
+        if (xhr.responseXML && xhr.responseXML.documentElement) {
+            doc = xhr.responseXML;
+        } else if (xhr.responseText) {
+            doc = Seadragon.Utils.parseXml(xhr.responseText);
+        }
+
+        return this.processXml(doc, tilesUrl);
+    },
+
+    processXml: function(xmlDoc, tilesUrl) {
+        if (!xmlDoc || !xmlDoc.documentElement) {
+            throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Xml"));
+        }
+
+        var root = xmlDoc.documentElement;
+        var rootName = root.tagName;
+
+        if (rootName == "Image") {
+            try {
+                return this.processDzi(root, tilesUrl);
+            } catch (e) {
+                var defMsg = Seadragon.Strings.getString("Errors.Dzi");
+                throw (e instanceof Seadragon.DziError) ? e : new Seadragon.DziError(defMsg);
+            }
+        } else if (rootName == "Collection") {
+            throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Dzc"));
+        } else if (rootName == "Error") {
+            return this.processError(root);
+        }
+
+        throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.Dzi"));
+    },
+
+    processDzi: function(imageNode, tilesUrl) {
+        var fileFormat = imageNode.getAttribute("Format");
+
+        if (!Seadragon.Utils.imageFormatSupported(fileFormat)) {
+            throw new Seadragon.DziError(Seadragon.Strings.getString("Errors.ImageFormat",
+                    fileFormat.toUpperCase()));
+        }
+
+        var sizeNode = imageNode.getElementsByTagName("Size")[0];
+        var dispRectNodes = imageNode.getElementsByTagName("DisplayRect");
+
+        var width = parseInt(sizeNode.getAttribute("Width"), 10);
+        var height = parseInt(sizeNode.getAttribute("Height"), 10);
+        var tileSize = parseInt(imageNode.getAttribute("TileSize"));
+        var tileOverlap = parseInt(imageNode.getAttribute("Overlap"));
+        var dispRects = [];
+
+        for (var i = 0; i < dispRectNodes.length; i++) {
+            var dispRectNode = dispRectNodes[i];
+            var rectNode = dispRectNode.getElementsByTagName("Rect")[0];
+
+            dispRects.push(new Seadragon.DisplayRect(
+                parseInt(rectNode.getAttribute("X"), 10),
+                parseInt(rectNode.getAttribute("Y"), 10),
+                parseInt(rectNode.getAttribute("Width"), 10),
+                parseInt(rectNode.getAttribute("Height"), 10),
+                0,  // ignore MinLevel attribute, bug in Deep Zoom Composer
+                parseInt(dispRectNode.getAttribute("MaxLevel"), 10)
+            ));
+        }
+        return new Seadragon.DziTileSource(width, height, tileSize, tileOverlap,
+                tilesUrl, fileFormat, dispRects);
+    },
+
+    processError: function(errorNode) {
+        var messageNode = errorNode.getElementsByTagName("Message")[0];
+        var message = messageNode.firstChild.nodeValue;
+
+        throw new Seadragon.DziError(message);
+    },
+    getError: function(e) {
+        if (!(e instanceof DziError)) {
+            Seadragon.Debug.error(e.name + " while creating DZI from XML: " + e.message);
+            e = new Seadragon.DziError(Seadragon.Strings.getString("Errors.Unknown"));
+        }
+
+    }
+}
+Seadragon.DziTileSourceHelper = new Seadragon._DziTileSourceHelper();
+
+Seadragon.ButtonState = function() {
+	throw Error.invalidOperation();
+}
+Seadragon.ButtonState = {
+	REST: 0,
+	GROUP: 1,
+	HOVER: 2,
+	DOWN: 3
+}
+
+Seadragon.Button = function(properties, events) {
+
+    this._tooltip = properties.tooltip;
+    this._srcRest = properties.srcRest;
+    this._srcGroup = properties.srcGroup;
+    this._srcHover = properties.srcHover;
+    this._srcDown = properties.srcDown;
+    this._button = properties.button;
+    this.config = properties.config;
+
+    this.initialize(events);
+}
+Seadragon.Button.prototype = {
+    initialize: function(events) {
+
+        this._observer = new Observer();
+
+        if (events.onPress != undefined)
+            this.add_onPress(events.onPress);
+        if (events.onRelease != undefined)
+            this.add_onRelease(events.onRelease);
+        if (events.onClick != undefined)
+            this.add_onClick(events.onClick);
+        if (events.onEnter != undefined)
+            this.add_onEnter(events.onEnter);
+        if (events.onExit != undefined)
+            this.add_onExit(events.onExit);
+
+        this._button = Seadragon.Utils.makeNeutralElement("span");
+        this._currentState = Seadragon.ButtonState.GROUP;
+        this._tracker = new Seadragon.MouseTracker(this._button, this.config.clickTimeThreshold, this.config.clickDistThreshold);
+        this._imgRest = Seadragon.Utils.makeTransparentImage(this._srcRest);
+        this._imgGroup = Seadragon.Utils.makeTransparentImage(this._srcGroup);
+        this._imgHover = Seadragon.Utils.makeTransparentImage(this._srcHover);
+        this._imgDown = Seadragon.Utils.makeTransparentImage(this._srcDown);
+
+        this._fadeDelay = 0;      // begin fading immediately
+        this._fadeLength = 2000;  // fade over a period of 2 seconds
+        this._fadeBeginTime = null;
+        this._shouldFade = false;
+
+        this._button.style.display = "inline-block";
+        this._button.style.position = "relative";
+        this._button.title = this._tooltip;
+
+        this._button.appendChild(this._imgRest);
+        this._button.appendChild(this._imgGroup);
+        this._button.appendChild(this._imgHover);
+        this._button.appendChild(this._imgDown);
+
+        var styleRest = this._imgRest.style;
+        var styleGroup = this._imgGroup.style;
+        var styleHover = this._imgHover.style;
+        var styleDown = this._imgDown.style;
+
+        styleGroup.position = styleHover.position = styleDown.position = "absolute";
+        styleGroup.top = styleHover.top = styleDown.top = "0px";
+        styleGroup.left = styleHover.left = styleDown.left = "0px";
+        styleHover.visibility = styleDown.visibility = "hidden";
+
+        if (Seadragon.Utils.getBrowser() == Seadragon.Browser.FIREFOX &&
+                    Seadragon.Utils.getBrowserVersion() < 3) {
+            styleGroup.top = styleHover.top = styleDown.top = "";
+        }
+
+        this._tracker.enterHandler = Function.createDelegate(this, this._enterHandler);
+        this._tracker.exitHandler = Function.createDelegate(this, this._exitHandler);
+        this._tracker.pressHandler = Function.createDelegate(this, this._pressHandler);
+        this._tracker.releaseHandler = Function.createDelegate(this, this._releaseHandler);
+        this._tracker.clickHandler = Function.createDelegate(this, this._clickHandler);
+
+        this._tracker.setTracking(true);
+        this._outTo(Seadragon.ButtonState.REST);
+    },
+    dispose: function() {
+    },
+    _scheduleFade: function() {
+        window.setTimeout(Function.createDelegate(this, this._updateFade), 20);
+    },
+    _updateFade: function() {
+        if (this._shouldFade) {
+            var currentTime = new Date().getTime();
+            var deltaTime = currentTime - this._fadeBeginTime;
+            var opacity = 1.0 - deltaTime / this._fadeLength;
+
+            opacity = Math.min(1.0, opacity);
+            opacity = Math.max(0.0, opacity);
+
+            Seadragon.Utils.setElementOpacity(this._imgGroup, opacity, true);
+            if (opacity > 0) {
+                this._scheduleFade();    // fade again
+            }
+        }
+    },
+    _beginFading: function() {
+        this._shouldFade = true;
+        this._fadeBeginTime = new Date().getTime() + this._fadeDelay;
+        window.setTimeout(Function.createDelegate(this, this._scheduleFade), this._fadeDelay);
+    },
+    _stopFading: function() {
+        this._shouldFade = false;
+        Seadragon.Utils.setElementOpacity(this._imgGroup, 1.0, true);
+    },
+    _inTo: function(newState) {
+        if (newState >= Seadragon.ButtonState.GROUP && this._currentState == Seadragon.ButtonState.REST) {
+            this._stopFading();
+            this._currentState = Seadragon.ButtonState.GROUP;
+        }
+
+        if (newState >= Seadragon.ButtonState.HOVER && this._currentState == Seadragon.ButtonState.GROUP) {
+            this._imgHover.style.visibility = "";
+            this._currentState = Seadragon.ButtonState.HOVER;
+        }
+
+        if (newState >= Seadragon.ButtonState.DOWN && this._currentState == Seadragon.ButtonState.HOVER) {
+            this._imgDown.style.visibility = "";
+            this._currentState = Seadragon.ButtonState.DOWN;
+        }
+    },
+    _outTo: function(newState) {
+        if (newState <= Seadragon.ButtonState.HOVER && this._currentState == Seadragon.ButtonState.DOWN) {
+            this._imgDown.style.visibility = "hidden";
+            this._currentState = Seadragon.ButtonState.HOVER;
+        }
+
+        if (newState <= Seadragon.ButtonState.GROUP && this._currentState == Seadragon.ButtonState.HOVER) {
+            this._imgHover.style.visibility = "hidden";
+            this._currentState = Seadragon.ButtonState.GROUP;
+        }
+
+        if (this._newState <= Seadragon.ButtonState.REST && this._currentState == Seadragon.ButtonState.GROUP) {
+            this._beginFading();
+            this._currentState = Seadragon.ButtonState.REST;
+        }
+    },
+    _enterHandler: function(tracker, position, buttonDownElmt, buttonDownAny) {
+        if (buttonDownElmt) {
+            this._inTo(Seadragon.ButtonState.DOWN);
+            this._raiseEvent("onEnter", this);
+        } else if (!buttonDownAny) {
+            this._inTo(Seadragon.ButtonState.HOVER);
+        }
+    },
+    _exitHandler: function(tracker, position, buttonDownElmt, buttonDownAny) {
+        this._outTo(Seadragon.ButtonState.GROUP);
+        if (buttonDownElmt) {
+            this._raiseEvent("onExit", this);
+        }
+    },
+    _pressHandler: function(tracker, position) {
+        this._inTo(Seadragon.ButtonState.DOWN);
+        this._raiseEvent("onPress", this);
+    },
+    _releaseHandler: function(tracker, position, insideElmtPress, insideElmtRelease) {
+        if (insideElmtPress && insideElmtRelease) {
+            this._outTo(Seadragon.ButtonState.HOVER);
+            this._raiseEvent("onRelease", this);
+        } else if (insideElmtPress) {
+            this._outTo(Seadragon.ButtonState.GROUP);
+        } else {
+            this._inTo(Seadragon.ButtonState.HOVER);
+        }
+    },
+    _clickHandler: function(tracker, position, quick, shift) {
+        if (quick) {
+            this._raiseEvent("onClick", this);
+        }
+    },
+    get_events: function get_events() {
+        return this._observer._getContext(this, true).events;
+    },
+    _raiseEvent: function(eventName, eventArgs) {
+        var handler = this.get_events().getHandler(eventName);
+
+        if (handler) {
+            if (!eventArgs) {
+                eventArgs = new Object(); // Sys.EventArgs.Empty;
+            }
+
+            handler(this, eventArgs);
+        }
+    },
+    get_element: function() {
+        return this._button;
+    },
+    get_tooltip: function() {
+        return this._tooltip;
+    },
+    set_tooltip: function(value) {
+        this._tooltip = value;
+    },
+    get_config: function() {
+        return this.config;
+    },
+    set_config: function(value) {
+        this.config = value;
+    },
+    get_srcRest: function() {
+        return this._srcRest;
+    },
+    set_srcRest: function(value) {
+        this._srcRest = value;
+    },
+    get_srcGroup: function() {
+        return this._srcGroup;
+    },
+    set_srcGroup: function(value) {
+        this._srcGroup = value;
+    },
+    get_srcHover: function() {
+        return this._srcHover;
+    },
+    set_srcHover: function(value) {
+        this._srcHover = value;
+    },
+    get_srcDown: function() {
+        return this._srcDown;
+    },
+    set_srcDown: function(value) {
+        this._srcDown = value;
+    },
+    add_onPress: function(handler) {
+        this.get_events().addHandler("onPress", handler);
+    },
+    remove_onPress: function(handler) {
+        this.get_events().removeHandler("onPress", handler);
+    },
+    add_onClick: function(handler) {
+        this.get_events().addHandler("onClick", handler);
+    },
+    remove_onClick: function(handler) {
+        this.get_events().removeHandler("onClick", handler);
+    },
+    add_onEnter: function(handler) {
+        this.get_events().addHandler("onEnter", handler);
+    },
+    remove_onEnter: function(handler) {
+        this.get_events().removeHandler("onEnter", handler);
+    },
+    add_onRelease: function(handler) {
+        this.get_events().addHandler("onRelease", handler);
+    },
+    remove_onRelease: function(handler) {
+        this.get_events().removeHandler("onRelease", handler);
+    },
+    add_onExit: function(handler) {
+        this.get_events().addHandler("onExit", handler);
+    },
+    remove_onExit: function(handler) {
+        this.get_events().removeHandler("onExit", handler);
+    },
+    notifyGroupEnter: function() {
+        this._inTo(Seadragon.ButtonState.GROUP);
+    },
+    notifyGroupExit: function() {
+        this._outTo(Seadragon.ButtonState.REST);
+    }
+}
+
+Seadragon.ButtonGroup = function(properties) {
+
+    this._buttons = properties.buttons;
+    this._group = properties.group;
+    this.config = properties.config;
+
+    this.initialize();
+}
+Seadragon.ButtonGroup.prototype = {
+	initialize: function() {
+
+		this._group = Seadragon.Utils.makeNeutralElement("span");
+		var buttons = this._buttons.concat([]);   // copy
+		var tracker = new Seadragon.MouseTracker(this._group, this.config.clickTimeThreshold, this.config.clickDistThreshold);
+		this._group.style.display = "inline-block";
+
+		for (var i = 0; i < buttons.length; i++) {
+			this._group.appendChild(buttons[i].get_element());
+		}
+
+		tracker.enterHandler = Function.createDelegate(this, this._enterHandler);
+		tracker.exitHandler = Function.createDelegate(this, this._exitHandler);
+		tracker.releaseHandler = Function.createDelegate(this, this._releaseHandler);
+
+		tracker.setTracking(true);
+	},
+	dispose: function() {
+	},
+	get_buttons: function() {
+		return this._buttons;
+	},
+	set_buttons: function(value) {
+		this._buttons = value;
+	},
+	get_element: function() {
+		return this._group;
+	},
+	get_config: function() {
+		return this.config;
+	},
+	set_config: function(value) {
+		this.config = value;
+	},
+	_enterHandler: function(tracker, position, buttonDownElmt, buttonDownAny) {
+		for (var i = 0; i < this._buttons.length; i++) {
+			this._buttons[i].notifyGroupEnter();
+		}
+	},
+	_exitHandler: function(tracker, position, buttonDownElmt, buttonDownAny) {
+		if (!buttonDownElmt) {
+			for (var i = 0; i < this._buttons.length; i++) {
+				this._buttons[i].notifyGroupExit();
+			}
+		}
+	},
+	_releaseHandler: function(tracker, position, insideElmtPress, insideElmtRelease) {
+
+		if (!insideElmtRelease) {
+			for (var i = 0; i < this._buttons.length; i++) {
+				this._buttons[i].notifyGroupExit();
+			}
+		}
+	},
+	emulateEnter: function() {
+		this._enterHandler();
+	},
+
+	emulateExit: function() {
+		this._exitHandler();
+	}
+}
+Seadragon.Config = function () {
+
+    this.debugMode = true;
+
+    this.animationTime = 1.5;
+
+    this.blendTime = 0.5;
+
+    this.alwaysBlend = false;
+
+    this.autoHideControls = true;
+
+    this.immediateRender = false;
+
+    this.wrapHorizontal = false;
+
+    this.wrapVertical = false;
+
+    this.minZoomImageRatio = 0.8;
+
+    this.maxZoomPixelRatio = 2;
+
+    this.visibilityRatio = 0.5;
+
+    this.springStiffness = 5.0;
+
+    this.imageLoaderLimit = 2;
+
+    this.clickTimeThreshold = 200;
+
+    this.clickDistThreshold = 5;
+
+    this.zoomPerClick = 2.0;
+
+    this.zoomPerScroll = 1.2;
+
+    this.zoomPerSecond = 2.0;
+
+    this.showNavigationControl = true;
+
+    this.maxImageCacheCount = 100;
+
+    this.minPixelRatio = 0.5;
+
+    this.mouseNavEnabled = true;
+
+    this.navImages = {
+        zoomIn: {
+            REST: '/Scripts/images/zoomin_rest.png',
+            GROUP: '/Scripts/images/zoomin_grouphover.png',
+            HOVER: '/Scripts/images/zoomin_hover.png',
+            DOWN: '/Scripts/images/zoomin_pressed.png'
+        },
+        zoomOut: {
+            REST: '/Scripts/images/zoomout_rest.png',
+            GROUP: '/Scripts/images/zoomout_grouphover.png',
+            HOVER: '/Scripts/images/zoomout_hover.png',
+            DOWN: '/Scripts/images/zoomout_pressed.png'
+        },
+        home: {
+            REST: '/Scripts/images/home_rest.png',
+            GROUP: '/Scripts/images/home_grouphover.png',
+            HOVER: '/Scripts/images/home_hover.png',
+            DOWN: '/Scripts/images/home_pressed.png'
+        },
+        fullpage: {
+            REST: '/Scripts/images/fullpage_rest.png',
+            GROUP: '/Scripts/images/fullpage_grouphover.png',
+            HOVER: '/Scripts/images/fullpage_hover.png',
+            DOWN: '/Scripts/images/fullpage_pressed.png'
+        }
+    }
+}
+Seadragon.Rect = function(x, y, width, height) {
+
+    this.x = typeof (x) == "number" ? x : 0;
+    this.y = typeof (y) == "number" ? y : 0;
+    this.width = typeof (width) == "number" ? width : 0;
+    this.height = typeof (height) == "number" ? height : 0;
+}
+Seadragon.Rect.prototype = {
+    getAspectRatio: function() {
+        return this.width / this.height;
+    },
+
+    getTopLeft: function() {
+    return new Seadragon.Point(this.x, this.y);
+    },
+
+    getBottomRight: function() {
+    return new Seadragon.Point(this.x + this.width, this.y + this.height);
+    },
+
+    getCenter: function() {
+    return new Seadragon.Point(this.x + this.width / 2.0,
+                        this.y + this.height / 2.0);
+    },
+
+    getSize: function() {
+    return new Seadragon.Point(this.width, this.height);
+    },
+
+    equals: function(other) {
+        return (other instanceof Seadragon.Rect) &&
+                (this.x === other.x) && (this.y === other.y) &&
+                (this.width === other.width) && (this.height === other.height);
+    },
+
+    toString: function() {
+        return "[" + this.x + "," + this.y + "," + this.width + "x" +
+                this.height + "]";
+    }
+}
+Seadragon.DisplayRect = function(x, y, width, height, minLevel, maxLevel) {
+    Seadragon.Rect.apply(this, [x, y, width, height]);
+
+    this.minLevel = minLevel;
+    this.maxLevel = maxLevel;
+}
+Seadragon.DisplayRect.prototype = new Seadragon.Rect();
+Seadragon.DisplayRect.prototype.constructor = Seadragon.DisplayRect;
+Seadragon.Spring = Seadragon.Spring = function(initialValue, config) {
+	this._currentValue = typeof (initialValue) == "number" ? initialValue : 0;
+	this._startValue = this._currentValue;
+	this._targetValue = this._currentValue;
+	this.config = config;
+
+	this._currentTime = new Date().getTime(); // always work in milliseconds
+	this._startTime = this._currentTime;
+	this._targetTime = this._currentTime;
+}
+Seadragon.Spring.prototype = {
+	_transform: function(x) {
+		var s = this.config.springStiffness;
+		return (1.0 - Math.exp(-x * s)) / (1.0 - Math.exp(-s));
+	},
+	getCurrent: function() {
+		return this._currentValue;
+	},
+
+	getTarget: function() {
+		return this._targetValue;
+	},
+
+	resetTo: function(target) {
+		this._targetValue = target;
+		this._targetTime = this._currentTime;
+		this._startValue = this._targetValue;
+		this._startTime = this._targetTime;
+	},
+
+	springTo: function(target) {
+		this._startValue = this._currentValue;
+		this._startTime = this._currentTime;
+		this._targetValue = target;
+		this._targetTime = this._startTime + 1000 * this.config.animationTime;
+	},
+
+	shiftBy: function(delta) {
+		this._startValue += delta;
+		this._targetValue += delta;
+	},
+
+	update: function() {
+		this._currentTime = new Date().getTime();
+		this._currentValue = (this._currentTime >= this._targetTime) ? this._targetValue :
+                this._startValue + (this._targetValue - this._startValue) *
+                this._transform((this._currentTime - this._startTime) / (this._targetTime - this._startTime));
+	}
+}
+
+var QUOTA = 100;    // the max number of images we should keep in memory
+var MIN_PIXEL_RATIO = 0.5;  // the most shrunk a tile should be
+
+
+var browser = Seadragon.Utils.getBrowser();
+var browserVer = Seadragon.Utils.getBrowserVersion();
+
+var subpixelRenders = browser == Seadragon.Browser.FIREFOX ||
+            browser == Seadragon.Browser.OPERA ||
+            (browser == Seadragon.Browser.SAFARI && browserVer >= 4) ||
+            (browser == Seadragon.Browser.CHROME && browserVer >= 2);
+
+var useCanvas =
+            typeof (document.createElement("canvas").getContext) == "function" &&
+            subpixelRenders;
+Seadragon.Tile = function(level, x, y, bounds, exists, url) {
+    this.level = level;
+    this.x = x;
+    this.y = y;
+    this.bounds = bounds;   // where this tile fits, in normalized coordinates
+    this.exists = exists;   // part of sparse image? tile hasn't failed to load?
+    this.loaded = false;    // is this tile loaded?
+    this.loading = false;   // or is this tile loading?
+
+
+
+    this.elmt = null;       // the HTML element for this tile
+    this.image = null;      // the Image object for this tile
+    this.url = url;         // the URL of this tile's image
+
+
+    this.style = null;      // alias of this.elmt.style
+    this.position = null;   // this tile's position on screen, in pixels
+    this.size = null;       // this tile's size on screen, in pixels
+    this.blendStart = null; // the start time of this tile's blending
+    this.opacity = null;    // the current opacity this tile should be
+    this.distance = null;   // the distance of this tile to the viewport center
+    this.visibility = null; // the visibility score of this tile
+
+    this.beingDrawn = false; // whether this tile is currently being drawn
+    this.lastTouchTime = 0; // the time that tile was last touched
+}
+Seadragon.Tile.prototype = {
+    dispose: function() {
+    },
+    toString: function() {
+        return this.level + "/" + this.x + "_" + this.y;
+    },
+    drawHTML: function(container) {
+        if (!this.loaded) {
+            Seadragon.Debug.error("Attempting to draw tile " + this.toString() +
+                    " when it's not yet loaded.");
+            return;
+        }
+
+        if (!this.elmt) {
+            this.elmt = Seadragon.Utils.makeNeutralElement("img");
+            this.elmt.src = this.url;
+            this.style = this.elmt.style;
+            this.style.position = "absolute";
+            this.style.msInterpolationMode = "nearest-neighbor";
+        }
+
+        var elmt = this.elmt;
+        var style = this.style;
+        var position = this.position.apply(Math.floor);
+        var size = this.size.apply(Math.ceil);
+
+
+        if (elmt.parentNode != container) {
+            container.appendChild(elmt);
+        }
+
+        style.left = position.x + "px";
+        style.top = position.y + "px";
+        style.width = size.x + "px";
+        style.height = size.y + "px";
+
+        Seadragon.Utils.setElementOpacity(elmt, this.opacity);
+    },
+    drawCanvas: function(context) {
+        if (!this.loaded) {
+            Seadragon.Debug.error("Attempting to draw tile " + this.toString() +
+                    " when it's not yet loaded.");
+            return;
+        }
+
+        var position = this.position;
+        var size = this.size;
+
+        context.globalAlpha = this.opacity;
+        context.drawImage(this.image, position.x, position.y, size.x, size.y);
+    },
+    unload: function() {
+        if (this.elmt && this.elmt.parentNode) {
+            this.elmt.parentNode.removeChild(this.elmt);
+        }
+
+        this.elmt = null;
+        this.image = null;
+        this.loaded = false;
+        this.loading = false;
+    }
+}
+
+Seadragon.Overlay = function(elmt, loc, placement) {
+    this.elmt = elmt;
+    this.scales = (loc instanceof Seadragon.Rect);
+    this.bounds = new Seadragon.Rect(loc.x, loc.y, loc.width, loc.height);
+    this.placement = loc instanceof Seadragon.Point ? placement : Seadragon.OverlayPlacement.TOP_LEFT;    // rects are always top-left
+    this.position = new Seadragon.Point(loc.x, loc.y);
+    this.size = new Seadragon.Point(loc.width, loc.height);
+    this.style = elmt.style;
+}
+Seadragon.Overlay.prototype = {
+
+    adjust: function(position, size) {
+        switch (this.placement) {
+            case Seadragon.OverlayPlacement.TOP_LEFT:
+                break;
+            case Seadragon.OverlayPlacement.TOP:
+                position.x -= size.x / 2;
+                break;
+            case Seadragon.OverlayPlacement.TOP_RIGHT:
+                position.x -= size.x;
+                break;
+            case Seadragon.OverlayPlacement.RIGHT:
+                position.x -= size.x;
+                position.y -= size.y / 2;
+                break;
+            case Seadragon.OverlayPlacement.BOTTOM_RIGHT:
+                position.x -= size.x;
+                position.y -= size.y;
+                break;
+            case Seadragon.OverlayPlacement.BOTTOM:
+                position.x -= size.x / 2;
+                position.y -= size.y;
+                break;
+            case Seadragon.OverlayPlacement.BOTTOM_LEFT:
+                position.y -= size.y;
+                break;
+            case Seadragon.OverlayPlacement.LEFT:
+                position.y -= size.y / 2;
+                break;
+            case Seadragon.OverlayPlacement.CENTER:
+            default:
+                position.x -= size.x / 2;
+                position.y -= size.y / 2;
+                break;
+        }
+    },
+    destroy: function() {
+        var elmt = this.elmt;
+        var style = this.style;
+
+        if (elmt.parentNode) {
+            elmt.parentNode.removeChild(elmt);
+        }
+
+        style.top = "";
+        style.left = "";
+        style.position = "";
+
+        if (this.scales) {
+            style.width = "";
+            style.height = "";
+        }
+    },
+    drawHTML: function(container) {
+        var elmt = this.elmt;
+        var style = this.style;
+        var scales = this.scales;
+
+        if (elmt.parentNode != container) {
+            container.appendChild(elmt);
+        }
+
+        if (!scales) {
+            this.size = Seadragon.Utils.getElementSize(elmt);
+        }
+
+        var position = this.position;
+        var size = this.size;
+
+        this.adjust(position, size);
+
+        position = position.apply(Math.floor);
+        size = size.apply(Math.ceil);
+
+        style.left = position.x + "px";
+        style.top = position.y + "px";
+        style.position = "absolute";
+
+        if (scales) {
+            style.width = size.x + "px";
+            style.height = size.y + "px";
+        }
+    },
+    update: function(loc, placement) {
+        this.scales = (loc instanceof Seadragon.Rect);
+        this.bounds = new Seadragon.Rect(loc.x, loc.y, loc.width, loc.height);
+        this.placement = loc instanceof Seadragon.Point ?
+                placement : Seadragon.OverlayPlacement.TOP_LEFT;    // rects are always top-left
+    }
+
+}
+
+Seadragon.Drawer = function(source, viewport, elmt) {
+
+	this._container = Seadragon.Utils.getElement(elmt);
+	this._canvas = Seadragon.Utils.makeNeutralElement(useCanvas ? "canvas" : "div");
+	this._context = useCanvas ? this._canvas.getContext("2d") : null;
+	this._viewport = viewport;
+	this._source = source;
+	this.config = this._viewport.config;
+
+	this._imageLoader = new Seadragon.ImageLoader(this.config.imageLoaderLimit);
+	this._profiler = new Seadragon.Profiler();
+
+	this._minLevel = source.minLevel;
+	this._maxLevel = source.maxLevel;
+	this._tileSize = source.tileSize;
+	this._tileOverlap = source.tileOverlap;
+	this._normHeight = source.dimensions.y / source.dimensions.x;
+
+	this._cacheNumTiles = {};     // 1d dictionary [level] --> Point
+	this._cachePixelRatios = {};  // 1d dictionary [level] --> Point
+	this._tilesMatrix = {};       // 3d dictionary [level][x][y] --> Tile
+	this._tilesLoaded = [];       // unordered list of Tiles with loaded images
+	this._coverage = {};          // 3d dictionary [level][x][y] --> Boolean
+
+	this._overlays = [];          // unordered list of Overlays added
+	this._lastDrawn = [];         // unordered list of Tiles drawn last frame
+	this._lastResetTime = 0;
+	this._midUpdate = false;
+	this._updateAgain = true;
+
+
+	this.elmt = this._container;
+
+
+	this._init();
+}
+Seadragon.Drawer.prototype = {
+    dispose: function() {
+    },
+    _init: function() {
+        this._canvas.style.width = "100%";
+        this._canvas.style.height = "100%";
+        this._canvas.style.position = "absolute";
+        this._container.style.textAlign = "left";    // explicit left-align
+        this._container.appendChild(this._canvas);
+    },
+    _compareTiles: function(prevBest, tile) {
+        if (!prevBest) {
+            return tile;
+        }
+
+        if (tile.visibility > prevBest.visibility) {
+            return tile;
+        } else if (tile.visibility == prevBest.visibility) {
+            if (tile.distance < prevBest.distance) {
+                return tile;
+            }
+        }
+
+        return prevBest;
+    },
+    _getNumTiles: function(level) {
+        if (!this._cacheNumTiles[level]) {
+            this._cacheNumTiles[level] = this._source.getNumTiles(level);
+        }
+
+        return this._cacheNumTiles[level];
+    },
+
+    _getPixelRatio: function(level) {
+        if (!this._cachePixelRatios[level]) {
+            this._cachePixelRatios[level] = this._source.getPixelRatio(level);
+        }
+
+        return this._cachePixelRatios[level];
+    },
+
+
+    _getTile: function(level, x, y, time, numTilesX, numTilesY) {
+        if (!this._tilesMatrix[level]) {
+            this._tilesMatrix[level] = {};
+        }
+        if (!this._tilesMatrix[level][x]) {
+            this._tilesMatrix[level][x] = {};
+        }
+
+        if (!this._tilesMatrix[level][x][y]) {
+            var xMod = (numTilesX + (x % numTilesX)) % numTilesX;
+            var yMod = (numTilesY + (y % numTilesY)) % numTilesY;
+            var bounds = this._source.getTileBounds(level, xMod, yMod);
+            var exists = this._source.tileExists(level, xMod, yMod);
+            var url = this._source.getTileUrl(level, xMod, yMod);
+
+            bounds.x += 1.0 * (x - xMod) / numTilesX;
+            bounds.y += this._normHeight * (y - yMod) / numTilesY;
+
+            this._tilesMatrix[level][x][y] = new Seadragon.Tile(level, x, y, bounds, exists, url);
+        }
+
+        var tile = this._tilesMatrix[level][x][y];
+
+        tile.lastTouchTime = time;
+
+        return tile;
+    },
+
+    _loadTile: function(tile, time) {
+        tile.loading = this._imageLoader.loadImage(tile.url,
+                    Seadragon.Utils.createCallback(null, Function.createDelegate(this, this._onTileLoad), tile, time));
+    },
+
+    _onTileLoad: function(tile, time, image) {
+        tile.loading = false;
+
+        if (this._midUpdate) {
+            Seadragon.Debug.error("Tile load callback in middle of drawing routine.");
+            return;
+        } else if (!image) {
+            Seadragon.Debug.log("Tile " + tile + " failed to load: " + tile.url);
+            tile.exists = false;
+            return;
+        } else if (time < this._lastResetTime) {
+            Seadragon.Debug.log("Ignoring tile " + tile + " loaded before reset: " + tile.url);
+            return;
+        }
+
+        tile.loaded = true;
+        tile.image = image;
+
+        var insertionIndex = this._tilesLoaded.length;
+
+        if (this._tilesLoaded.length >= QUOTA) {
+            var cutoff = Math.ceil(Math.log(this._tileSize) / Math.log(2));
+
+            var worstTile = null;
+            var worstTileIndex = -1;
+
+            for (var i = this._tilesLoaded.length - 1; i >= 0; i--) {
+                var prevTile = this._tilesLoaded[i];
+
+                if (prevTile.level <= this._cutoff || prevTile.beingDrawn) {
+                    continue;
+                } else if (!worstTile) {
+                    worstTile = prevTile;
+                    worstTileIndex = i;
+                    continue;
+                }
+
+                var prevTime = prevTile.lastTouchTime;
+                var worstTime = worstTile.lastTouchTime;
+                var prevLevel = prevTile.level;
+                var worstLevel = worstTile.level;
+
+                if (prevTime < worstTime ||
+                            (prevTime == worstTime && prevLevel > worstLevel)) {
+                    worstTile = prevTile;
+                    worstTileIndex = i;
+                }
+            }
+
+            if (worstTile && worstTileIndex >= 0) {
+                worstTile.unload();
+                insertionIndex = worstTileIndex;
+            }
+        }
+
+        this._tilesLoaded[insertionIndex] = tile;
+        this._updateAgain = true;
+    },
+
+    _clearTiles: function() {
+        this._tilesMatrix = {};
+        this._tilesLoaded = [];
+    },
+
+
+
+    /**
+    * Returns true if the given tile provides coverage to lower-level tiles of
+    * lower resolution representing the same content. If neither x nor y is
+    * given, returns true if the entire visible level provides coverage.
+    * 
+    * Note that out-of-bounds tiles provide coverage in this sense, since
+    * there's no content that they would need to cover. Tiles at non-existent
+    * levels that are within the image bounds, however, do not.
+    */
+    _providesCoverage: function(level, x, y) {
+        if (!this._coverage[level]) {
+            return false;
+        }
+
+        if (x === undefined || y === undefined) {
+            var rows = this._coverage[level];
+            for (var i in rows) {
+                if (rows.hasOwnProperty(i)) {
+                    var cols = rows[i];
+                    for (var j in cols) {
+                        if (cols.hasOwnProperty(j) && !cols[j]) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        return (this._coverage[level][x] === undefined ||
+                    this._coverage[level][x][y] === undefined ||
+                    this._coverage[level][x][y] === true);
+    },
+
+    /**
+    * Returns true if the given tile is completely covered by higher-level
+    * tiles of higher resolution representing the same content. If neither x
+    * nor y is given, returns true if the entire visible level is covered.
+    */
+    _isCovered: function(level, x, y) {
+        if (x === undefined || y === undefined) {
+            return this._providesCoverage(level + 1);
+        } else {
+            return (this._providesCoverage(level + 1, 2 * x, 2 * y) &&
+                        this._providesCoverage(level + 1, 2 * x, 2 * y + 1) &&
+                        this._providesCoverage(level + 1, 2 * x + 1, 2 * y) &&
+                        this._providesCoverage(level + 1, 2 * x + 1, 2 * y + 1));
+        }
+    },
+
+    /**
+    * Sets whether the given tile provides coverage or not.
+    */
+    _setCoverage: function(level, x, y, covers) {
+        if (!this._coverage[level]) {
+            Seadragon.Debug.error("Setting coverage for a tile before its " +
+                        "level's coverage has been reset: " + level);
+            return;
+        }
+
+        if (!this._coverage[level][x]) {
+            this._coverage[level][x] = {};
+        }
+
+        this._coverage[level][x][y] = covers;
+    },
+
+    /**
+    * Resets coverage information for the given level. This should be called
+    * after every draw routine. Note that at the beginning of the next draw
+    * routine, coverage for every visible tile should be explicitly set. 
+    */
+    _resetCoverage: function(level) {
+        this._coverage[level] = {};
+    },
+
+
+    _compareTiles: function(prevBest, tile) {
+        if (!prevBest) {
+            return tile;
+        }
+
+        if (tile.visibility > prevBest.visibility) {
+            return tile;
+        } else if (tile.visibility == prevBest.visibility) {
+            if (tile.distance < prevBest.distance) {
+                return tile;
+            }
+        }
+
+        return prevBest;
+    },
+
+
+    _getOverlayIndex: function(elmt) {
+        for (var i = this._overlays.length - 1; i >= 0; i--) {
+            if (this._overlays[i].elmt == elmt) {
+                return i;
+            }
+        }
+
+        return -1;
+    },
+
+
+    _updateActual: function() {
+        this._updateAgain = false;
+
+        var _canvas = this._canvas;
+        var _context = this._context;
+        var _container = this._container;
+        var _useCanvas = useCanvas;
+        var _lastDrawn = this._lastDrawn;
+
+        while (_lastDrawn.length > 0) {
+            var tile = _lastDrawn.pop();
+            tile.beingDrawn = false;
+        }
+
+        var viewportSize = this._viewport.getContainerSize();
+        var viewportWidth = viewportSize.x;
+        var viewportHeight = viewportSize.y;
+
+        _canvas.innerHTML = "";
+        if (_useCanvas) {
+            _canvas.width = viewportWidth;
+            _canvas.height = viewportHeight;
+            _context.clearRect(0, 0, viewportWidth, viewportHeight);
+        }
+
+        var viewportBounds = this._viewport.getBounds(true);
+        var viewportTL = viewportBounds.getTopLeft();
+        var viewportBR = viewportBounds.getBottomRight();
+        if (!this.config.wrapHorizontal &&
+                    (viewportBR.x < 0 || viewportTL.x > 1)) {
+            return;
+        } else if (!this.config.wrapVertical &&
+                    (viewportBR.y < 0 || viewportTL.y > this._normHeight)) {
+            return;
+        }
+
+
+
+
+        var _abs = Math.abs;
+        var _ceil = Math.ceil;
+        var _floor = Math.floor;
+        var _log = Math.log;
+        var _max = Math.max;
+        var _min = Math.min;
+        var alwaysBlend = this.config.alwaysBlend;
+        var blendTimeMillis = 1000 * this.config.blendTime;
+        var immediateRender = this.config.immediateRender;
+        var wrapHorizontal = this.config.wrapHorizontal;
+        var wrapVertical = this.config.wrapVertical;
+
+        if (!wrapHorizontal) {
+            viewportTL.x = _max(viewportTL.x, 0);
+            viewportBR.x = _min(viewportBR.x, 1);
+        }
+        if (!wrapVertical) {
+            viewportTL.y = _max(viewportTL.y, 0);
+            viewportBR.y = _min(viewportBR.y, this._normHeight);
+        }
+
+        var best = null;
+        var haveDrawn = false;
+        var currentTime = new Date().getTime();
+
+        var viewportCenter = this._viewport.pixelFromPoint(this._viewport.getCenter());
+        var zeroRatioT = this._viewport.deltaPixelsFromPoints(this._source.getPixelRatio(0), false).x;
+        var optimalPixelRatio = immediateRender ? 1 : zeroRatioT;
+
+        var lowestLevel = _max(this._minLevel, _floor(_log(this.config.minZoomImageRatio) / _log(2)));
+        var zeroRatioC = this._viewport.deltaPixelsFromPoints(this._source.getPixelRatio(0), true).x;
+        var highestLevel = _min(this._maxLevel,
+                    _floor(_log(zeroRatioC / MIN_PIXEL_RATIO) / _log(2)));
+
+        lowestLevel = _min(lowestLevel, highestLevel);
+
+        for (var level = highestLevel; level >= lowestLevel; level--) {
+            var drawLevel = false;
+            var renderPixelRatioC = this._viewport.deltaPixelsFromPoints(
+                        this._source.getPixelRatio(level), true).x;     // note the .x!
+
+            if ((!haveDrawn && renderPixelRatioC >= MIN_PIXEL_RATIO) ||
+                        level == lowestLevel) {
+                drawLevel = true;
+                haveDrawn = true;
+            } else if (!haveDrawn) {
+                continue;
+            }
+
+            this._resetCoverage(level);
+
+            var levelOpacity = _min(1, (renderPixelRatioC - 0.5) / 0.5);
+            var renderPixelRatioT = this._viewport.deltaPixelsFromPoints(
+                        this._source.getPixelRatio(level), false).x;
+            var levelVisibility = optimalPixelRatio /
+                        _abs(optimalPixelRatio - renderPixelRatioT);
+
+            var tileTL = this._source.getTileAtPoint(level, viewportTL);
+            var tileBR = this._source.getTileAtPoint(level, viewportBR);
+            var numTiles = this._getNumTiles(level);
+            var numTilesX = numTiles.x;
+            var numTilesY = numTiles.y;
+            if (!wrapHorizontal) {
+                tileBR.x = _min(tileBR.x, numTilesX - 1);
+            }
+            if (!wrapVertical) {
+                tileBR.y = _min(tileBR.y, numTilesY - 1);
+            }
+
+            for (var x = tileTL.x; x <= tileBR.x; x++) {
+                for (var y = tileTL.y; y <= tileBR.y; y++) {
+                    var tile = this._getTile(level, x, y, currentTime, numTilesX, numTilesY);
+                    var drawTile = drawLevel;
+
+                    this._setCoverage(level, x, y, false);
+
+                    if (!tile.exists) {
+                        continue;
+                    }
+
+                    if (haveDrawn && !drawTile) {
+                        if (this._isCovered(level, x, y)) {
+                            this._setCoverage(level, x, y, true);
+                        } else {
+                            drawTile = true;
+                        }
+                    }
+
+                    if (!drawTile) {
+                        continue;
+                    }
+
+                    var boundsTL = tile.bounds.getTopLeft();
+                    var boundsSize = tile.bounds.getSize();
+                    var positionC = this._viewport.pixelFromPoint(boundsTL, true);
+                    var sizeC = this._viewport.deltaPixelsFromPoints(boundsSize, true);
+
+                    if (!this._tileOverlap) {
+                        sizeC = sizeC.plus(new Seadragon.Point(1, 1));
+                    }
+
+                    var positionT = this._viewport.pixelFromPoint(boundsTL, false);
+                    var sizeT = this._viewport.deltaPixelsFromPoints(boundsSize, false);
+                    var tileCenter = positionT.plus(sizeT.divide(2));
+                    var tileDistance = viewportCenter.distanceTo(tileCenter);
+
+                    tile.position = positionC;
+                    tile.size = sizeC;
+                    tile.distance = tileDistance;
+                    tile.visibility = levelVisibility;
+
+                    if (tile.loaded) {
+                        if (!tile.blendStart) {
+                            tile.blendStart = currentTime;
+                        }
+
+                        var deltaTime = currentTime - tile.blendStart;
+                        var opacity = _min(1, deltaTime / blendTimeMillis);
+                        
+                        if (alwaysBlend) {
+                            opacity *= levelOpacity;
+                        }
+
+                        tile.opacity = opacity;
+
+                        _lastDrawn.push(tile);
+
+                        if (opacity == 1) {
+                            this._setCoverage(level, x, y, true);
+                        } else if (deltaTime < blendTimeMillis) {
+                            updateAgain = true;
+                        }
+                    } else if (tile.Loading) {
+                    } else {
+                        best = this._compareTiles(best, tile);
+                    }
+                }
+            }
+
+            if (this._providesCoverage(level)) {
+                break;
+            }
+        }
+
+        for (var i = _lastDrawn.length - 1; i >= 0; i--) {
+            var tile = _lastDrawn[i];
+
+            if (_useCanvas) {
+                tile.drawCanvas(_context);
+            } else {
+                tile.drawHTML(_canvas);
+            }
+
+            tile.beingDrawn = true;
+        }
+
+        var numOverlays = this._overlays.length;
+        for (var i = 0; i < numOverlays; i++) {
+            var overlay = this._overlays[i];
+            var bounds = overlay.bounds;
+
+            overlay.position = this._viewport.pixelFromPoint(bounds.getTopLeft(), true);
+            overlay.size = this._viewport.deltaPixelsFromPoints(bounds.getSize(), true);
+            overlay.drawHTML(_container);
+        }
+
+        if (best) {
+            this._loadTile(best, currentTime);
+            this._updateAgain = true; // because we haven't finished drawing, so
+        }
+    },
+
+
+    addOverlay: function(elmt, loc, placement) {
+        var elmt = Seadragon.Utils.getElement(elmt);
+
+        if (this._getOverlayIndex(elmt) >= 0) {
+            return;     // they're trying to add a duplicate overlay
+        }
+
+        this._overlays.push(new Seadragon.Overlay(elmt, loc, placement));
+        this._updateAgain = true;
+    },
+
+    updateOverlay: function(elmt, loc, placement) {
+        var elmt = Seadragon.Utils.getElement(elmt);
+        var i = this._getOverlayIndex(elmt);
+
+        if (i >= 0) {
+            this._overlays[i].update(loc, placement);
+            this._updateAgain = true;
+        }
+    },
+
+    removeOverlay: function(elmt) {
+        var elmt = Seadragon.Utils.getElement(elmt);
+        var i = this._getOverlayIndex(elmt);
+
+        if (i >= 0) {
+            this._overlays[i].destroy();
+            this._overlays.splice(i, 1);
+            this._updateAgain = true;
+        }
+    },
+
+    clearOverlays: function() {
+        while (this._overlays.length > 0) {
+            this._overlays.pop().destroy();
+            this._updateAgain = true;
+        }
+    },
+
+
+    needsUpdate: function() {
+        return this._updateAgain;
+    },
+
+    numTilesLoaded: function() {
+        return this._tilesLoaded.length;
+    },
+
+    reset: function() {
+        this._clearTiles();
+        this._lastResetTime = new Date().getTime();
+        this._updateAgain = true;
+    },
+
+    update: function() {
+        this._profiler.beginUpdate();
+        this._midUpdate = true;
+        this._updateActual();
+        this._midUpdate = false;
+        this._profiler.endUpdate();
+    },
+
+    idle: function() {
+    }
+}
+
+Seadragon.Viewport = function(containerSize, contentSize, config) {
+	this.zoomPoint = null;
+	this.config = config;
+	this._containerSize = containerSize;
+	this._contentSize = contentSize;
+	this._contentAspect = contentSize.x / contentSize.y;
+	this._contentHeight = contentSize.y / contentSize.x;
+	this._centerSpringX = new Seadragon.Spring(0, this.config);
+	this._centerSpringY = new Seadragon.Spring(0, this.config);
+	this._zoomSpring = new Seadragon.Spring(1, this.config);
+	this._homeBounds = new Seadragon.Rect(0, 0, 1, this._contentHeight);
+	this.goHome(true);
+	this.update();
+}
+Seadragon.Viewport.prototype = {
+	_getHomeZoom: function() {
+		var aspectFactor = this._contentAspect / this.getAspectRatio();
+		return (aspectFactor >= 1) ? 1 : aspectFactor;
+	},
+
+	_getMinZoom: function() {
+		var homeZoom = this._getHomeZoom();
+		var zoom = this.config.minZoomImageRatio * homeZoom;
+
+		return Math.min(zoom, homeZoom);
+	},
+
+	_getMaxZoom: function() {
+		var zoom = this._contentSize.x * this.config.maxZoomPixelRatio / this._containerSize.x;
+		return Math.max(zoom, this._getHomeZoom());
+	},
+	getAspectRatio: function() {
+		return this._containerSize.x / this._containerSize.y;
+	},
+	getContainerSize: function() {
+		return new Seadragon.Point(this._containerSize.x, this._containerSize.y);
+	},
+
+	getBounds: function(current) {
+		var center = this.getCenter(current);
+		var width = 1.0 / this.getZoom(current);
+		var height = width / this.getAspectRatio();
+
+		return new Seadragon.Rect(center.x - width / 2.0, center.y - height / 2.0,
+            width, height);
+	},
+
+	getCenter: function(current) {
+		var centerCurrent = new Seadragon.Point(this._centerSpringX.getCurrent(),
+                this._centerSpringY.getCurrent());
+		var centerTarget = new Seadragon.Point(this._centerSpringX.getTarget(),
+                this._centerSpringY.getTarget());
+
+		if (current) {
+			return centerCurrent;
+		} else if (!this.zoomPoint) {
+			return centerTarget;
+		}
+
+		var oldZoomPixel = this.pixelFromPoint(this.zoomPoint, true);
+
+		var zoom = this.getZoom();
+		var width = 1.0 / zoom;
+		var height = width / this.getAspectRatio();
+		var bounds = new Seadragon.Rect(centerCurrent.x - width / 2.0,
+                centerCurrent.y - height / 2.0, width, height);
+
+		var newZoomPixel = this.zoomPoint.minus(bounds.getTopLeft()).times(this._containerSize.x / bounds.width);
+		var deltaZoomPixels = newZoomPixel.minus(oldZoomPixel);
+		var deltaZoomPoints = deltaZoomPixels.divide(this._containerSize.x * zoom);
+
+		return centerTarget.plus(deltaZoomPoints);
+	},
+
+	getZoom: function(current) {
+		if (current) {
+			return this._zoomSpring.getCurrent();
+		} else {
+			return this._zoomSpring.getTarget();
+		}
+	},
+
+
+	applyConstraints: function(immediately) {
+		var actualZoom = this.getZoom();
+		var constrainedZoom = Math.max(Math.min(actualZoom, this._getMaxZoom()), this._getMinZoom());
+		if (actualZoom != constrainedZoom) {
+			this.zoomTo(constrainedZoom, this.zoomPoint, immediately);
+		}
+
+		var bounds = this.getBounds();
+		var visibilityRatio = this.config.visibilityRatio;
+
+		var horThres = visibilityRatio * bounds.width;
+		var verThres = visibilityRatio * bounds.height;
+
+		var left = bounds.x + bounds.width;
+		var right = 1 - bounds.x;
+		var top = bounds.y + bounds.height;
+		var bottom = this._contentHeight - bounds.y;
+
+		var dx = 0;
+		if (this.config.wrapHorizontal) {
+		} else if (left < horThres) {
+			dx = horThres - left;
+		} else if (right < horThres) {
+			dx = right - horThres;
+		}
+
+		var dy = 0;
+		if (this.config.wrapVertical) {
+		} else if (top < verThres) {
+			dy = verThres - top;
+		} else if (bottom < verThres) {
+			dy = bottom - verThres;
+		}
+
+		if (dx || dy) {
+			bounds.x += dx;
+			bounds.y += dy;
+			this.fitBounds(bounds, immediately);
+		}
+	},
+
+	ensureVisible: function(immediately) {
+		this.applyConstraints(immediately);
+	},
+
+	fitBounds: function(bounds, immediately) {
+		var aspect = this.getAspectRatio();
+		var center = bounds.getCenter();
+
+		var newBounds = new Seadragon.Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+		if (newBounds.getAspectRatio() >= aspect) {
+			newBounds.height = bounds.width / aspect;
+			newBounds.y = center.y - newBounds.height / 2;
+		} else {
+			newBounds.width = bounds.height * aspect;
+			newBounds.x = center.x - newBounds.width / 2;
+		}
+
+		this.panTo(this.getCenter(true), true);
+		this.zoomTo(this.getZoom(true), null, true);
+
+		var oldBounds = this.getBounds();
+		var oldZoom = this.getZoom();
+
+		var newZoom = 1.0 / newBounds.width;
+		if (newZoom == oldZoom || newBounds.width == oldBounds.width) {
+			this.panTo(center, immediately);
+			return;
+		}
+
+		var refPoint = oldBounds.getTopLeft().times(this._containerSize.x / oldBounds.width).minus(
+                newBounds.getTopLeft().times(this._containerSize.x / newBounds.width)).divide(
+                this._containerSize.x / oldBounds.width - this._containerSize.x / newBounds.width);
+
+
+		this.zoomTo(newZoom, refPoint, immediately);
+	},
+
+	goHome: function(immediately) {
+		var center = this.getCenter();
+
+		if (this.config.wrapHorizontal) {
+			center.x = (1 + (center.x % 1)) % 1;
+			this._centerSpringX.resetTo(center.x);
+			this._centerSpringX.update();
+		}
+
+		if (this.config.wrapVertical) {
+			center.y = (this._contentHeight + (center.y % this._contentHeight)) % this._contentHeight;
+			this._centerSpringY.resetTo(center.y);
+			this._centerSpringY.update();
+		}
+
+		this.fitBounds(this._homeBounds, immediately);
+	},
+
+	panBy: function(delta, immediately) {
+		var center = new Seadragon.Point(this._centerSpringX.getTarget(),
+                this._centerSpringY.getTarget());
+		this.panTo(center.plus(delta), immediately);
+	},
+
+	panTo: function(center, immediately) {
+		if (immediately) {
+			this._centerSpringX.resetTo(center.x);
+			this._centerSpringY.resetTo(center.y);
+		} else {
+			this._centerSpringX.springTo(center.x);
+			this._centerSpringY.springTo(center.y);
+		}
+	},
+
+	zoomBy: function(factor, refPoint, immediately) {
+		this.zoomTo(this._zoomSpring.getTarget() * factor, refPoint, immediately);
+	},
+
+	zoomTo: function(zoom, refPoint, immediately) {
+
+		if (immediately) {
+			this._zoomSpring.resetTo(zoom);
+		} else {		
+			this._zoomSpring.springTo(zoom);
+		}
+
+		this.zoomPoint = refPoint instanceof Seadragon.Point ? refPoint : null;
+	},
+
+	resize: function(newContainerSize, maintain) {
+		var oldBounds = this.getBounds();
+		var newBounds = oldBounds;
+		var widthDeltaFactor = newContainerSize.x / this._containerSize.x;
+
+		this._containerSize = new Seadragon.Point(newContainerSize.x, newContainerSize.y);
+
+		if (maintain) {
+			newBounds.width = oldBounds.width * widthDeltaFactor;
+			newBounds.height = newBounds.width / this.getAspectRatio();
+		}
+
+		this.fitBounds(newBounds, true);
+	},
+
+	update: function() {
+		var oldCenterX = this._centerSpringX.getCurrent();
+		var oldCenterY = this._centerSpringY.getCurrent();
+		var oldZoom = this._zoomSpring.getCurrent();
+
+		if (this.zoomPoint) {
+			var oldZoomPixel = this.pixelFromPoint(this.zoomPoint, true);
+		}
+
+		this._zoomSpring.update();
+
+		if (this.zoomPoint && this._zoomSpring.getCurrent() != oldZoom) {
+			var newZoomPixel = this.pixelFromPoint(this.zoomPoint, true);
+			var deltaZoomPixels = newZoomPixel.minus(oldZoomPixel);
+			var deltaZoomPoints = this.deltaPointsFromPixels(deltaZoomPixels, true);
+
+			this._centerSpringX.shiftBy(deltaZoomPoints.x);
+			this._centerSpringY.shiftBy(deltaZoomPoints.y);
+		} else {
+			this.zoomPoint = null;
+		}
+
+		this._centerSpringX.update();
+		this._centerSpringY.update();
+
+		return this._centerSpringX.getCurrent() != oldCenterX ||
+                this._centerSpringY.getCurrent() != oldCenterY ||
+                this._zoomSpring.getCurrent() != oldZoom;
+	},
+
+
+	deltaPixelsFromPoints: function(deltaPoints, current) {
+		return deltaPoints.times(this._containerSize.x * this.getZoom(current));
+	},
+
+	deltaPointsFromPixels: function(deltaPixels, current) {
+		return deltaPixels.divide(this._containerSize.x * this.getZoom(current));
+	},
+
+	pixelFromPoint: function(point, current) {
+		var bounds = this.getBounds(current);
+		return point.minus(bounds.getTopLeft()).times(this._containerSize.x / bounds.width);
+	},
+
+	pointFromPixel: function(pixel, current) {
+		var bounds = this.getBounds(current);
+		return pixel.divide(this._containerSize.x / bounds.width).plus(bounds.getTopLeft());
+	}
+}
+
