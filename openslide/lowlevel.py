@@ -38,7 +38,17 @@ import sys
 if platform.system() == 'Windows':
     _lib = cdll.LoadLibrary('libopenslide-0.dll')
 elif platform.system() == 'Darwin':
-    _lib = cdll.LoadLibrary('libopenslide.0.dylib')
+    try:
+        _lib = cdll.LoadLibrary('libopenslide.0.dylib')
+    except OSError:
+        # MacPorts doesn't add itself to the dyld search path, but
+        # does add itself to the find_library() search path
+        # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
+        import ctypes.util
+        _lib = ctypes.util.find_library('openslide')
+        if _lib is None:
+            raise ImportError("Couldn't locate OpenSlide library")
+        _lib = cdll.LoadLibrary(_lib)
 else:
     _lib = cdll.LoadLibrary('libopenslide.so.0')
 
