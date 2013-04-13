@@ -1,13 +1,16 @@
 <!doctype html>
-<title>Slide Viewer</title>
-
-<style type="text/css">
+<html>
+	<head>
+		<title>Slide Viewer</title>
+		<script src="static/openseadragon/openseadragon.js"></script>
+		<style type="text/css">
 html {
     overflow: hidden;
 }
 body {
     margin: 5px;
 }
+
 h1 {
     font-size: 1.2em;
 }
@@ -65,7 +68,12 @@ div#properties dt {
 div#properties dd {
     margin-left: 0;
 }
+
 </style>
+	</head>
+	<body>
+
+<div id="all">
 
 <div id="images">
     <h1>View</h1>
@@ -102,21 +110,9 @@ div#properties dd {
         <span class="notice">None</span>
     {% endif %}
 </div>
-
+</div>
 <script type="text/javascript" src="static/jquery.js"></script>
-<script type="text/javascript" src="static/OpenSeadragon.js"></script>
 <script type="text/javascript">
-// Override hardcoded icon paths
-var UnwrappedConfig = Seadragon.Config;
-Seadragon.Config = function() {
-    UnwrappedConfig.apply(this);
-    $.each(this.navImages, function(k, v) {
-        $.each(v, function(kk, vv) {
-            var elements = vv.split('/');
-            v[kk] = 'static/images/' + elements[elements.length - 1];
-        });
-    });
-};
 
 $(document).ready(function() {
     var dzi_data = {{ dzi_data|default('{}')|safe }};
@@ -129,11 +125,9 @@ $(document).ready(function() {
             viewer.close();
             $("#view").text("");
         }
-        viewer = new Seadragon.Viewer("view");
-        viewer.config.animationTime = 0.5;
-        viewer.config.blendTime = 0.1;
-        viewer.config.zoomPerScroll = 2;
-        viewer.openDzi(url, dzi_data[url]);
+        viewer = new OpenSeadragon.Viewer( { id: "view" , prefixUrl:     "static/openseadragon/images/" , tileSources:   [ url ] });
+        
+
     }
 
     open_slide("{{ slide_url }}");
@@ -145,3 +139,6 @@ $(document).ready(function() {
     });
 });
 </script>
+
+</body>
+</html>
