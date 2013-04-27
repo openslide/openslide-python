@@ -108,14 +108,19 @@ div#properties dd {
 <script type="text/javascript">
 $(document).ready(function() {
     var dzi_data = {{ dzi_data|default('{}')|safe }};
-    var viewer;
+    var viewer = new OpenSeadragon({
+        id: "view",
+        prefixUrl: "static/images/",
+        showNavigator: false,
+        animationTime: 0.5,
+        blendTime: 0.1,
+        constrainDuringPan: true,
+        minZoomLevel: 1,
+        visibilityRatio: 1,
+        zoomPerScroll: 2,
+    });
 
     function open_slide(url) {
-        if (viewer) {
-            // Never reuse an existing viewer to avoid a timer leak
-            viewer.close();
-            $("#view").text("");
-        }
         var tile_source;
         if (dzi_data[url]) {
             // DZI XML provided as template argument (deepzoom_tile.py)
@@ -126,18 +131,7 @@ $(document).ready(function() {
             // DZI XML fetched from server (deepzoom_server.py)
             tile_source = url;
         }
-        viewer = new OpenSeadragon({
-            id: "view",
-            prefixUrl: "static/images/",
-            tileSources: [tile_source],
-            showNavigator: false,
-            animationTime: 0.5,
-            blendTime: 0.1,
-            constrainDuringPan: true,
-            minZoomLevel: 1,
-            visibilityRatio: 1,
-            zoomPerScroll: 2,
-        });
+        viewer.open(tile_source);
     }
 
     open_slide("{{ slide_url }}");
