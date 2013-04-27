@@ -104,20 +104,8 @@ div#properties dd {
 </div>
 
 <script type="text/javascript" src="static/jquery.js"></script>
-<script type="text/javascript" src="static/OpenSeadragon.js"></script>
+<script type="text/javascript" src="static/openseadragon.js"></script>
 <script type="text/javascript">
-// Override hardcoded icon paths
-var UnwrappedConfig = Seadragon.Config;
-Seadragon.Config = function() {
-    UnwrappedConfig.apply(this);
-    $.each(this.navImages, function(k, v) {
-        $.each(v, function(kk, vv) {
-            var elements = vv.split('/');
-            v[kk] = 'static/images/' + elements[elements.length - 1];
-        });
-    });
-};
-
 $(document).ready(function() {
     var dzi_data = {{ dzi_data|default('{}')|safe }};
     var viewer;
@@ -125,15 +113,28 @@ $(document).ready(function() {
     function open_slide(url) {
         if (viewer) {
             // Never reuse an existing viewer to avoid a timer leak
-            // (OpenSeadragon issue #14)
             viewer.close();
             $("#view").text("");
         }
-        viewer = new Seadragon.Viewer("view");
-        viewer.config.animationTime = 0.5;
-        viewer.config.blendTime = 0.1;
-        viewer.config.zoomPerScroll = 2;
-        viewer.openDzi(url, dzi_data[url]);
+        var tile_source;
+        if (dzi_data[url]) {
+            // DZI XML provided as template argument (deepzoom_tile.py)
+            tile_source = new OpenSeadragon.DziTileSource(
+                    OpenSeadragon.DziTileSource.prototype.configure(
+                    OpenSeadragon.parseXml(dzi_data[url]), url));
+        } else {
+            // DZI XML fetched from server (deepzoom_server.py)
+            tile_source = url;
+        }
+        viewer = new OpenSeadragon({
+            id: "view",
+            prefixUrl: "static/images/",
+            tileSources: [tile_source],
+            showNavigator: false,
+            animationTime: 0.5,
+            blendTime: 0.1,
+            zoomPerScroll: 2,
+        });
     }
 
     open_slide("{{ slide_url }}");
