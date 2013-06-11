@@ -2,19 +2,19 @@ To install deepzoom_wsgi as wsgi service in apache:
 1. Copy (renaming) deepzoom_apache to /etc/apache2/sites-available/ or wherever your apache sites config files are located.
 You can as well copy the 3 WSGI lines from this file to existing VirtualHost section of your config.
 
-2. Copy deepzoom_wsgi.py and deepzoom.wsgi (and static/ and templates/ directories) to the directory where your website is located.
+2. Copy deepzoom_server.py and deepzoom.wsgi (and static/ and templates/ directories) to the directory where your website is located.
 
 3. Customize deepzoom_apache (or other files You've copied the WSGI directives), i.e:
 
 a) Provide full path to deepzoom.wsgi file in WSGIScriptAlias directive
 b) If You want - modify "mountpoint" of the script - by default / means it is "mounted" in the root of the virtual server. 
 Change it to /whatever/ is You want to access slide as http://hostname/whatever/
-c) Provide full path to the directory where deepzoom_wsgi.py file is located as python-path parameter of WSGIDaemonProcess
+c) Provide full path to the directory where deepzoom_server.py file is located as python-path parameter of WSGIDaemonProcess
 d) Customize other options of WSGIDaemonProcess, threads number and user and group as which the daemon will run. 
 By default I use 5 threads.
 You can also remove user and group directives (daemon will be run as the same user as apache itself, i.e. www-data), but make sure slides are readable by this user.
 
-4. Specify full path to your slide in deepzoom_wsgi.py as DEEPZOOM_SLIDE variable, in ' ' quotes.
+4. Specify full path to your slide in deepzoom.wsgi as DEEPZOOM_SLIDE variable, in ' ' quotes.
 
 5. Restart apache
 
