@@ -1,6 +1,6 @@
-//! OpenSeadragon 0.9.127
-//! Built on 2013-05-14
-//! Git commit: v0.9.127-3-gc78f3ef
+//! OpenSeadragon 0.9.128
+//! Built on 2013-06-17
+//! Git commit: v0.9.128-0-g2103121
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 
  /**
-  * @version  OpenSeadragon 0.9.127
+  * @version  OpenSeadragon 0.9.128
   * 
   * @fileOverview 
   * <h2>
@@ -214,6 +214,13 @@
   * @param {Boolean} [options.showNavigationControl=true]
   *     Set to false to prevent the appearance of the default navigation controls.
   *
+  * @param {Boolean} [options.showNavigator=false]
+  *     Set to true to make the navigator minimap appear.
+  *
+  * @param {Boolean} [options.navigatorId=navigator-GENERATED DATE]
+  *     Set the ID of a div to hold the navigator minimap.  If one is not specified,
+  *     one will be generated and placed on top of the main image
+  *
   * @param {Number} [options.controlsFadeDelay=2000]
   *     The number of milliseconds to wait once the user has stopped interacting
   *     with the interface before begining to fade the controls. Assumes
@@ -256,6 +263,11 @@
   *     called '/images', eg '/images/zoomin_rest.png'.  If you need to adjust
   *     these paths, prefer setting the option.prefixUrl rather than overriding 
   *     every image path directly through this setting.
+  *
+  * @param {Boolean} [options.navPrevNextWrap=false]
+  *     If the 'previous' button will wrap to the last image when viewing the first
+  *     image and if the 'next' button will wrap to the first image when viewing
+  *     the last image.
   *
   * @returns {OpenSeadragon.Viewer}
   */
@@ -495,7 +507,7 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
             wrapHorizontal:         false,
             wrapVertical:           false,
             visibilityRatio:        0.5, //-> how much of the viewer can be negative space
-            minPixelRatio:          1, //->closer to 0 draws tiles meant for a higher zoom at this zoom
+            minPixelRatio:          0.5, //->closer to 0 draws tiles meant for a higher zoom at this zoom
             defaultZoomLevel:       0,
             minZoomLevel:           null,
             maxZoomLevel:           null, 
@@ -524,8 +536,8 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
             mouseNavEnabled:        true,  //GENERAL MOUSE INTERACTIVITY
             
             //VIEWPORT NAVIGATOR SETTINGS
-            showNavigator:          true, //promoted to default in 0.9.64
-            navigatorElement:       null,
+            showNavigator:          false,
+            navigatorId:            null,
             navigatorHeight:        null,
             navigatorWidth:         null,
             navigatorPosition:      null,
@@ -594,6 +606,7 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
                     DOWN:   'next_pressed.png'
                 }
             },
+            navPrevNextWrap:        false,
 
             //DEVELOPER SETTINGS
             debugMode:              false,
@@ -1006,8 +1019,7 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
          */
         setElementOpacity: function( element, opacity, usesAlpha ) {
 
-            var previousFilter,
-                ieOpacity,
+            var ieOpacity,
                 ieFilter;
 
             element = $.getElement( element );
@@ -1016,31 +1028,16 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
                 opacity = Math.round( opacity );
             }
 
-            if ( opacity < 1 ) {
-                element.style.opacity = opacity;
+            if ( $.Browser.opacity ) {
+                element.style.opacity = opacity < 1 ? opacity : "";
             } else {
-                element.style.opacity = "";
-            }
-
-            if ( opacity == 1 ) {
-                prevFilter = element.style.filter || "";
-                element.style.filter = prevFilter.replace(/alpha\(.*?\)/g, "");
-                return;
-            }
-
-            ieOpacity = Math.round( 100 * opacity );
-            ieFilter  = " alpha(opacity=" + ieOpacity + ") ";
-
-            //TODO: find out why this uses a try/catch instead of a predetermined
-            //      routine or at least an if/elseif/else
-            try {
-                if ( element.filters && element.filters.alpha ) {
-                    element.filters.alpha.opacity = ieOpacity;
+                if ( opacity < 1 ) {
+                    ieOpacity = Math.round( 100 * opacity );
+                    ieFilter  = "alpha(opacity=" + ieOpacity + ")";
+                    element.style.filter = ieFilter;
                 } else {
-                    element.style.filter += ieFilter;
+                    element.style.filter = "";
                 }
-            } catch ( e ) {
-                element.style.filter += ieFilter;
             }
         },
 
@@ -1271,11 +1268,12 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
         createAjaxRequest: function(){
             var request;
 
-            if ( window.ActiveXObject ) {
-                //TODO: very bad...Why check every time using try/catch when
-                //      we could determine once at startup which activeX object
-                //      was supported.  This will have significant impact on 
-                //      performance for IE Browsers DONE
+            if ( window.XMLHttpRequest ) {
+                $.createAjaxRequest = function( ){
+                    return new XMLHttpRequest();
+                };
+                request = new XMLHttpRequest();
+            } else if ( window.ActiveXObject ) {
                 /*jshint loopfunc:true*/
                 for ( i = 0; i < ACTIVEX.length; i++ ) {
                     try {
@@ -1288,11 +1286,6 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
                         continue;
                     }
                 }
-            } else if ( window.XMLHttpRequest ) {
-                $.createAjaxRequest = function( ){
-                    return new XMLHttpRequest();
-                };
-                request = new XMLHttpRequest();
             }
 
             if ( !request ) {
@@ -1301,6 +1294,8 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
 
             return request;
         },
+
+        
         /**
          * Makes an AJAX request.
          * @function
@@ -1625,6 +1620,12 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
             )
         );
 
+        //determine if this browser supports element.style.opacity
+        $.Browser.opacity = !(
+            $.Browser.vendor == $.BROWSERS.IE &&
+            $.Browser.version < 9
+        );
+
     })();
 
 
@@ -1652,33 +1653,31 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
     };
         
 
-    // Adding support for HTML5's requestAnimationFrame as suggested by acdha
-    // implementation taken from matt synders post here:s
+    // Adding support for HTML5's requestAnimationFrame as suggested by acdha.
+    // Implementation taken from matt synder's post here:
     // http://mattsnider.com/cross-browser-and-legacy-supported-requestframeanimation/
     (function( w ) {
 
         // most browsers have an implementation
-        w.requestAnimationFrame = w.requestAnimationFrame ||
+        var requestAnimationFrame = w.requestAnimationFrame ||
             w.mozRequestAnimationFrame || 
             w.webkitRequestAnimationFrame ||
             w.msRequestAnimationFrame;
 
-        w.cancelAnimationFrame = w.cancelAnimationFrame ||
+        var cancelAnimationFrame = w.cancelAnimationFrame ||
             w.mozCancelAnimationFrame || 
             w.webkitCancelAnimationFrame ||
             w.msCancelAnimationFrame;
 
-
         // polyfill, when necessary
-        if ( w.requestAnimationFrame ) {
-            //we cant assign window.requestAnimationFrame directly to $.requestAnimationFrame
-            //without getting Illegal Invocation errors in webkit so call in a
-            //wrapper
-            $.requestAnimationFrame = function( callback ){ 
-                return w.requestAnimationFrame( callback );
+        if ( requestAnimationFrame && cancelAnimationFrame ) {
+            // We can't assign these window methods directly to $ because they
+            // expect their "this" to be "window", so we call them in wrappers.
+            $.requestAnimationFrame = function(){
+                return requestAnimationFrame.apply( w, arguments );
             };
-            $.cancelAnimationFrame = function( requestId ){ 
-                return w.cancelAnimationFrame( requestId );
+            $.cancelAnimationFrame = function(){
+                return cancelAnimationFrame.apply( w, arguments );
             };
         } else {
             var aAnimQueue = [],
@@ -2138,7 +2137,7 @@ $.EventHandler.prototype = {
         if( $.isArray( events ) ){
             for( i = 0; i < events.length; i++ ){
                 if( events[ i ] !== handler ){
-                    handlers.push( handler );
+                    handlers.push( events[ i ] );
                 }
             } 
             this.events[ eventName ] = handlers;
@@ -2187,7 +2186,7 @@ $.EventHandler.prototype = {
      * @param {Function} handler - Function to call when event is triggered.
      */
     raiseEvent: function( eventName, eventArgs ) {
-        //uncomment if you want to get a log og all events
+        //uncomment if you want to get a log of all events
         //$.console.log( eventName );
         var handler = this.getHandler( eventName );
 
@@ -3356,22 +3355,38 @@ $.ControlAnchor = {
  * to interact with the zoomable interface. Any control can be anchored to any 
  * element.
  * @class
- * @param {Element} element - the contol element to be anchored in the container.
- * @param {OpenSeadragon.ControlAnchor} anchor - the location to anchor at.
+ * @param {Element} element - the control element to be anchored in the container.
+ * @param {Object } options - All required and optional settings for configuring a control element.
+ * @param {OpenSeadragon.ControlAnchor} [options.anchor=OpenSeadragon.ControlAnchor.NONE] - the position of the control
+ *  relative to the container.
+ * @param {Boolean} [options.attachToViewer=true] - Whether the control should be added directly to the viewer, or
+ *  directly to the container
+ * @param {Boolean} [options.autoFade=true] - Whether the control should have the autofade behavior
  * @param {Element} container - the element to control will be anchored too.
- * 
- * @property {Element} element - the element providing the user interface with 
+ *
+ * @property {Element} element - the element providing the user interface with
  *  some type of control. Eg a zoom-in button
  * @property {OpenSeadragon.ControlAnchor} anchor - the position of the control 
  *  relative to the container.
- * @property {Element} container - the element within with the control is 
+ * @property {Boolean} autoFade - Whether the control should have the autofade behavior
+ * @property {Element} container - the element within with the control is
  *  positioned.
- * @property {Element} wrapper - a nuetral element surrounding the control 
+ * @property {Element} wrapper - a neutral element surrounding the control
  *  element.
  */
-$.Control = function ( element, anchor, container ) {
+$.Control = function ( element, options, container ) {
+    var parent = element.parentNode;
+    if (typeof options === 'number')
+    {
+        $.console.error("Passing an anchor directly into the OpenSeadragon.Control constructor is deprecated; " +
+                        "please use an options object instead.  " +
+                        "Support for this deprecated variant is scheduled for removal in December 2013");
+         options = {anchor: options};
+    }
+    options.attachToViewer = (typeof options.attachToViewer === 'undefined') ? true : options.attachToViewer;
+    this.autoFade = (typeof options.autoFade === 'undefined') ? true : options.autoFade;
     this.element    = element;
-    this.anchor     = anchor;
+    this.anchor     = options.anchor;
     this.container  = container;
     this.wrapper    = $.makeNeutralElement( "span" );
     this.wrapper.style.display = "inline-block";
@@ -3382,14 +3397,18 @@ $.Control = function ( element, anchor, container ) {
         this.wrapper.style.width = this.wrapper.style.height = "100%";    
     }
 
-    if ( this.anchor == $.ControlAnchor.TOP_RIGHT || 
-         this.anchor == $.ControlAnchor.BOTTOM_RIGHT ) {
-        this.container.insertBefore( 
-            this.wrapper, 
-            this.container.firstChild 
-        );
+    if (options.attachToViewer ) {
+        if ( this.anchor == $.ControlAnchor.TOP_RIGHT ||
+             this.anchor == $.ControlAnchor.BOTTOM_RIGHT ) {
+            this.container.insertBefore(
+                this.wrapper,
+                this.container.firstChild
+            );
+        } else {
+            this.container.appendChild( this.wrapper );
+        }
     } else {
-        this.container.appendChild( this.wrapper );
+        parent.appendChild( this.wrapper );
     }
 };
 
@@ -3530,7 +3549,7 @@ $.Control.prototype = {
         /**
          * @function
          */
-        addControl: function ( element, anchor ) {
+        addControl: function ( element, controlOptions ) {
             element = $.getElement( element );
             var div = null;
 
@@ -3538,7 +3557,7 @@ $.Control.prototype = {
                 return;     // they're trying to add a duplicate control
             }
 
-            switch ( anchor ) {
+            switch ( controlOptions.anchor ) {
                 case $.ControlAnchor.TOP_RIGHT:
                     div = this.controls.topright;
                     element.style.position = "relative";
@@ -3572,7 +3591,7 @@ $.Control.prototype = {
             }
 
             this.controls.push(
-                new $.Control( element, anchor, div )
+                new $.Control( element, controlOptions, div )
             );
             element.style.display = "inline-block";
         },
@@ -3863,32 +3882,45 @@ $.Viewer = function( options ) {
         this.open( initialTileSource );
     }
 
-    this.element        = this.element || document.getElementById( this.id );
-    this.canvas         = $.makeNeutralElement( "div" );
+    this.element              = this.element || document.getElementById( this.id );
+    this.canvas               = $.makeNeutralElement( "div" );
+    this.keyboardCommandArea  = $.makeNeutralElement( "textarea" );
 
     this.canvas.className = "openseadragon-canvas";
-    (function( canvas ){
-        canvas.width    = "100%";
-        canvas.height   = "100%";
-        canvas.overflow = "hidden";
-        canvas.position = "absolute";
-        canvas.top      = "0px";
-        canvas.left     = "0px";
+    (function( style ){
+        style.width    = "100%";
+        style.height   = "100%";
+        style.overflow = "hidden";
+        style.position = "absolute";
+        style.top      = "0px";
+        style.left     = "0px";
     }(  this.canvas.style ));
 
     //the container is created through applying the ControlDock constructor above
     this.container.className = "openseadragon-container";
-    (function( container ){
-        container.width     = "100%";
-        container.height    = "100%";
-        container.position  = "relative";
-        container.overflow  = "hidden";
-        container.left      = "0px";
-        container.top       = "0px";
-        container.textAlign = "left";  // needed to protect against
+    (function( style ){
+        style.width     = "100%";
+        style.height    = "100%";
+        style.position  = "relative";
+        style.overflow  = "hidden";
+        style.left      = "0px";
+        style.top       = "0px";
+        style.textAlign = "left";  // needed to protect against
     }( this.container.style ));
 
+    this.keyboardCommandArea.className = "keyboard-command-area";
+    (function( style ){
+        style.width    = "100%";
+        style.height   = "100%";
+        style.overflow = "hidden";
+        style.position = "absolute";
+        style.top      = "0px";
+        style.left     = "0px";
+        style.resize   = "none";
+    }(  this.keyboardCommandArea.style ));
+
     this.container.insertBefore( this.canvas, this.container.firstChild );
+    this.container.insertBefore( this.keyboardCommandArea, this.container.firstChild );
     this.element.appendChild( this.container );
 
     //Used for toggling between fullscreen and default container size
@@ -3898,6 +3930,64 @@ $.Viewer = function( options ) {
     this.bodyHeight     = document.body.style.height;
     this.bodyOverflow   = document.body.style.overflow;
     this.docOverflow    = document.documentElement.style.overflow;
+
+    this.keyboardCommandArea.innerTracker = new $.MouseTracker({
+            _this : this,
+            element:            this.keyboardCommandArea,
+            focusHandler:       function(){
+                var point    = $.getElementPosition( this.element );
+                window.scrollTo( 0, point.y );
+            },
+
+            keyHandler:         function(tracker, keyCode, shiftKey){
+                switch( keyCode ){
+                    case 61://=|+
+                        _this.viewport.zoomBy(1.1);
+                        _this.viewport.applyConstraints();
+                        return false;
+                    case 45://-|_
+                        _this.viewport.zoomBy(0.9);
+                        _this.viewport.applyConstraints();
+                        return false;
+                    case 48://0|)
+                        _this.viewport.goHome();
+                        _this.viewport.applyConstraints();
+                        return false;
+                    case 119://w
+                    case 87://W
+                    case 38://up arrow
+                        if (shiftKey)
+                            _this.viewport.zoomBy(1.1);
+                        else
+                            _this.viewport.panBy(new $.Point(0, -0.05));
+                        _this.viewport.applyConstraints();
+                        return false;
+                    case 115://s
+                    case 83://S
+                    case 40://down arrow
+                        if (shiftKey)
+                            _this.viewport.zoomBy(0.9);
+                        else
+                            _this.viewport.panBy(new $.Point(0, 0.05));
+                        _this.viewport.applyConstraints();
+                        return false;
+                    case 97://a
+                    case 37://left arrow
+                        _this.viewport.panBy(new $.Point(-0.05, 0));
+                        _this.viewport.applyConstraints();
+                        return false;
+                    case 100://d
+                    case 39://right arrow
+                        _this.viewport.panBy(new $.Point(0.05, 0));
+                        _this.viewport.applyConstraints();
+                        return false;
+                    default:
+                        //console.log( 'navigator keycode %s', keyCode );
+                        return true;
+                }
+            }
+        }).setTracking( true ); // default state
+
 
     this.innerTracker = new $.MouseTracker({
         element:            this.canvas, 
@@ -3928,13 +4018,17 @@ $.Viewer = function( options ) {
     for ( i = 0; i < this.customControls.length; i++ ) {
         this.addControl(
             this.customControls[ i ].id, 
-            this.customControls[ i ].anchor
+            {anchor: this.customControls[ i ].anchor}
         );
     }
 
     $.requestAnimationFrame( function(){
         beginControlsAutoHide( _this );
     } );    // initial fade out
+
+    if(this.navPrevNextWrap){
+        this.previousButton.enable();
+    }
 
 };
 
@@ -4113,8 +4207,11 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
 
 
     /**
+     * Shows or hides the controls (e.g. the default navigation buttons).
+     * 
      * @function
-     * @name OpenSeadragon.Viewer.prototype.setDashboardEnabled
+     * @name OpenSeadragon.Viewer.prototype.setControlsEnabled
+     * @param {Boolean} true to show, false to hide.
      * @return {OpenSeadragon.Viewer} Chainable.
      */
     setControlsEnabled: function( enabled ) {
@@ -4455,12 +4552,12 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
                 if( this.toolbar ){
                     this.toolbar.addControl( 
                         this.pagingControl, 
-                        $.ControlAnchor.BOTTOM_RIGHT  
+                        {anchor: $.ControlAnchor.BOTTOM_RIGHT}
                     );
                 }else{
                     this.addControl( 
                         this.pagingControl, 
-                        $.ControlAnchor.TOP_LEFT 
+                        {anchor: $.ControlAnchor.TOP_LEFT}
                     );
                 }
             }
@@ -4577,12 +4674,12 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
                 if( this.toolbar ){
                     this.toolbar.addControl( 
                         this.navControl, 
-                        $.ControlAnchor.TOP_LEFT  
+                        {anchor: $.ControlAnchor.TOP_LEFT}
                     );
                 }else{
                     this.addControl( 
                         this.navControl, 
-                        $.ControlAnchor.TOP_LEFT 
+                        {anchor: $.ControlAnchor.TOP_LEFT}
                     );
                 }
             }
@@ -4609,7 +4706,9 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
             if( this.nextButton ){
                 if( ( this.tileSources.length - 1 ) === page  ){
                     //Disable next button
-                    this.nextButton.disable();
+                    if(!this.navPrevNextWrap){
+                        this.nextButton.disable();
+                    }
                 } else {
                     this.nextButton.enable();
                 }
@@ -4619,7 +4718,9 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
                     //Enable previous button
                     this.previousButton.enable();
                 } else {
-                    this.previousButton.disable();
+                    if(!this.navPrevNextWrap){
+                        this.previousButton.disable();
+                    }
                 }
             }
 
@@ -4708,6 +4809,7 @@ function openTileSource( viewer, source ) {
     _this.source.overlays = _this.source.overlays || [];
 
     _this.drawer = new $.Drawer({
+        viewer:             _this,
         source:             _this.source, 
         viewport:           _this.viewport, 
         element:            _this.canvas,
@@ -4729,12 +4831,15 @@ function openTileSource( viewer, source ) {
     //Instantiate a navigator if configured
     if ( _this.showNavigator  && ! _this.navigator && !_this.collectionMode ){
         _this.navigator = new $.Navigator({
-            id:          _this.navigatorElement,
+            id:          _this.navigatorId,
             position:    _this.navigatorPosition,
             sizeRatio:   _this.navigatorSizeRatio,
             height:      _this.navigatorHeight,
             width:       _this.navigatorWidth,
-            tileSources: _this.tileSources,
+            // By passing the fully parsed source here, the navigator doesn't
+            // have to load it again. Additionally, we don't have to call
+            // navigator.open, as it's implicitly called in the ctor.
+            tileSources: source,
             tileHost:    _this.tileHost,
             prefixUrl:   _this.prefixUrl,
             overlays:    _this.overlays,
@@ -4798,10 +4903,6 @@ function openTileSource( viewer, source ) {
         }
     }
     VIEWERS[ _this.hash ] = _this;
-
-    if( _this.navigator ){
-        _this.navigator.open( source );
-    }
 
     _this.raiseEvent( 'open', { source: source, viewer: _this } );
 
@@ -4876,7 +4977,9 @@ function updateControlsFade( viewer ) {
         opacity = Math.max( 0.0, opacity );
 
         for ( i = viewer.controls.length - 1; i >= 0; i--) {
-            viewer.controls[ i ].setOpacity( opacity );
+            if (viewer.controls[ i ].autoFade) {
+                viewer.controls[ i ].setOpacity( opacity );
+            }
         }
 
         if ( opacity > 0 ) {
@@ -5210,12 +5313,18 @@ function onFullPage() {
 
 function onPrevious(){
     var previous = THIS[ this.hash ].sequence - 1;
+    if(this.navPrevNextWrap && previous < 0){
+        previous += this.tileSources.length;
+    }
     this.goToPage( previous );
 }
 
 
 function onNext(){
     var next = THIS[ this.hash ].sequence + 1;
+    if(this.navPrevNextWrap && next >= this.tileSources.length){
+        next = 0;
+    }
     this.goToPage( next );
 }
 
@@ -5275,16 +5384,26 @@ $.Navigator = function( options ){
 
     var _this       = this,
         viewer      = options.viewer,
-        viewerSize  = $.getElementSize( viewer.element );
-    
+        viewerSize  = $.getElementSize( viewer.element),
+        unneededElement;
+
     //We may need to create a new element and id if they did not
     //provide the id for the existing element
     if( !options.id ){
         options.id              = 'navigator-' + (+new Date());
         this.element            = $.makeNeutralElement( "div" );
-        this.element.id         = options.id;
-        this.element.className  = 'navigator';
+        options.controlOptions  = {anchor:           $.ControlAnchor.TOP_RIGHT,
+                                   attachToViewer:   true,
+                                   autoFade:         true};
     }
+    else {
+        this.element            = document.getElementById( options.id );
+        options.controlOptions  = {anchor:           $.ControlAnchor.NONE,
+                                   attachToViewer:   false,
+                                   autoFade:         false};
+    }
+    this.element.id         = options.id;
+    this.element.className  += ' navigator';
 
     options = $.extend( true, {
         sizeRatio:     $.DEFAULT_SETTINGS.navigatorSizeRatio
@@ -5303,29 +5422,36 @@ $.Navigator = function( options ){
 
     options.minPixelRatio = this.minPixelRatio = viewer.minPixelRatio;
 
-    (function( style ){
-        style.marginTop     = '0px';
-        style.marginRight   = '0px';
-        style.marginBottom  = '0px';
-        style.marginLeft    = '0px';
-        style.border        = '2px solid #555';
+    this.viewerSizeInPoints = viewer.viewport.deltaPointsFromPixels(viewerSize);
+    this.borderWidth = 2;
+    //At some browser magnification levels the display regions lines up correctly, but at some there appears to
+    //be a one pixel gap.
+    this.fudge = new $.Point(1, 1);
+    this.totalBorderWidths = new $.Point(this.borderWidth*2, this.borderWidth*2).minus(this.fudge);
+
+
+    (function( style, borderWidth ){
+        style.margin        = '0px';
+        style.border        = borderWidth + 'px solid #555';
+        style.padding       = '0px';
         style.background    = '#000';
         style.opacity       = 0.8;
         style.overflow      = 'hidden';
-    }( this.element.style ));
+    }( this.element.style, this.borderWidth));
 
-    this.displayRegion           = $.makeNeutralElement( "textarea" );
+    this.displayRegion           = $.makeNeutralElement( "div" );
     this.displayRegion.id        = this.element.id + '-displayregion';
     this.displayRegion.className = 'displayregion';
 
-    (function( style ){
+    (function( style, borderWidth ){
         style.position      = 'relative';
         style.top           = '0px';
         style.left          = '0px';
         style.fontSize      = '0px';
         style.overflow      = 'hidden';
-        style.border        = '2px solid #900';
-        
+        style.border        = borderWidth + 'px solid #900';
+        style.margin        = '0px';
+        style.padding       = '0px';
         //TODO: IE doesnt like this property being set
         //try{ style.outline  = '2px auto #909'; }catch(e){/*ignore*/}
         
@@ -5340,93 +5466,20 @@ $.Navigator = function( options ){
         style.styleFloat    = 'left'; //IE
         style.zIndex        = 999999999;
         style.cursor        = 'default';
-    }( this.displayRegion.style ));
+    }( this.displayRegion.style, this.borderWidth ));
+
 
     this.element.innerTracker = new $.MouseTracker({
         element:        this.element,
+        dragHandler:        $.delegate( this, onCanvasDrag ),
+        clickHandler:       $.delegate( this, onCanvasClick ),
+        releaseHandler:     $.delegate( this, onCanvasRelease ),
         scrollHandler:  function(){
             //dont scroll the page up and down if the user is scrolling
             //in the navigator
             return false;
         }
     }).setTracking( true );
-
-    this.displayRegion.innerTracker = new $.MouseTracker({
-        element:            this.displayRegion, 
-        clickTimeThreshold: this.clickTimeThreshold, 
-        clickDistThreshold: this.clickDistThreshold,
-        clickHandler:       $.delegate( this, onCanvasClick ),
-        dragHandler:        $.delegate( this, onCanvasDrag ),
-        releaseHandler:     $.delegate( this, onCanvasRelease ),
-        scrollHandler:      $.delegate( this, onCanvasScroll ),
-        focusHandler:       function(){
-            var point    = $.getElementPosition( _this.viewer.element );
-
-            window.scrollTo( 0, point.y );
-
-            _this.viewer.setControlsEnabled( true );
-            (function( style ){
-                style.border        = '2px solid #437AB2';
-                //style.outline       = '2px auto #437AB2';
-            }( this.element.style ));
-
-        },
-        blurHandler:       function(){
-            _this.viewer.setControlsEnabled( false );
-            (function( style ){
-                style.border        = '2px solid #900';
-                //style.outline       = '2px auto #900';
-            }( this.element.style ));
-        },
-        keyHandler:         function(tracker, keyCode, shiftKey){
-            //console.log( keyCode );
-            switch( keyCode ){
-                case 61://=|+
-                    _this.viewer.viewport.zoomBy(1.1);
-                    _this.viewer.viewport.applyConstraints();
-                    return false;
-                case 45://-|_
-                    _this.viewer.viewport.zoomBy(0.9);
-                    _this.viewer.viewport.applyConstraints();
-                    return false;
-                case 48://0|)
-                    _this.viewer.viewport.goHome();
-                    _this.viewer.viewport.applyConstraints();
-                    return false;
-                case 119://w
-                case 87://W
-                case 38://up arrow
-                    if (shiftKey) 
-                        _this.viewer.viewport.zoomBy(1.1);
-                    else
-                        _this.viewer.viewport.panBy(new $.Point(0, -0.05));
-                    _this.viewer.viewport.applyConstraints();
-                    return false;
-                case 115://s
-                case 83://S
-                case 40://down arrow
-                    if (shiftKey)
-                        _this.viewer.viewport.zoomBy(0.9);
-                    else
-                        _this.viewer.viewport.panBy(new $.Point(0, 0.05));
-                    _this.viewer.viewport.applyConstraints();
-                    return false;
-                case 97://a
-                case 37://left arrow
-                    _this.viewer.viewport.panBy(new $.Point(-0.05, 0));
-                    _this.viewer.viewport.applyConstraints();
-                    return false;
-                case 100://d
-                case 39://right arrow
-                    _this.viewer.viewport.panBy(new $.Point(0.05, 0));  
-                    _this.viewer.viewport.applyConstraints();
-                    return false;
-                default:
-                    //console.log( 'navigator keycode %s', keyCode );
-                    return true;
-            }
-        }
-    }).setTracking( true ); // default state
 
     /*this.displayRegion.outerTracker = new $.MouseTracker({
         element:            this.container, 
@@ -5440,7 +5493,7 @@ $.Navigator = function( options ){
 
     viewer.addControl( 
         this.element, 
-        $.ControlAnchor.TOP_RIGHT 
+        options.controlOptions
     );
 
     if( options.width && options.height ){
@@ -5454,6 +5507,10 @@ $.Navigator = function( options ){
     $.Viewer.apply( this, [ options ] ); 
 
     this.element.getElementsByTagName('form')[0].appendChild( this.displayRegion );
+    unneededElement = this.element.getElementsByTagName('textarea')[0];
+    if (unneededElement) {
+        unneededElement.parentNode.removeChild(unneededElement);
+    }
 
 };
 
@@ -5471,22 +5528,22 @@ $.extend( $.Navigator.prototype, $.EventHandler.prototype, $.Viewer.prototype, {
 
         if( viewport && this.viewport ){
             bounds      = viewport.getBounds( true );
-            topleft     = this.viewport.pixelFromPoint( bounds.getTopLeft() );
-            bottomright = this.viewport.pixelFromPoint( bounds.getBottomRight() );
+            topleft     = this.viewport.pixelFromPoint( bounds.getTopLeft());
+            bottomright = this.viewport.pixelFromPoint( bounds.getBottomRight()).minus(this.totalBorderWidths);
 
             //update style for navigator-box    
-            (function(style){
+            (function(style, borderWidth){
 
                 style.top    = topleft.y + 'px';
                 style.left   = topleft.x + 'px';
 
-                var width = Math.abs( topleft.x - bottomright.x ) - 3; // TODO: What does this magic number mean?
-                var height = Math.abs( topleft.y - bottomright.y ) - 3;
+                var width = Math.abs( topleft.x - bottomright.x );
+                var height = Math.abs( topleft.y - bottomright.y );
                 // make sure width and height are non-negative so IE doesn't throw
                 style.width  = Math.max( width, 0 ) + 'px';
                 style.height = Math.max( height, 0 ) + 'px';
 
-            }( this.displayRegion.style ));  
+            }( this.displayRegion.style, this.borderWidth));
         } 
 
     },
@@ -5507,16 +5564,39 @@ $.extend( $.Navigator.prototype, $.EventHandler.prototype, $.Viewer.prototype, {
 
 });
 
-
 /**
  * @private
  * @inner
  * @function
  */
 function onCanvasClick( tracker, position, quick, shift ) {
-    this.displayRegion.focus();
+    var newBounds,
+        viewerPosition,
+        dimensions;
+    if (! this.drag) {
+        if ( this.viewer.viewport ) {
+            viewerPosition = this.viewport.deltaPointsFromPixels(position);
+            dimensions = this.viewer.viewport.getBounds().getSize();
+            newBounds = new $.Rect(
+                viewerPosition.x - dimensions.x/2,
+                viewerPosition.y - dimensions.y/2,
+                dimensions.x,
+                dimensions.y
+            );
+            if (this.viewer.source.aspectRatio > this.viewer.viewport.getAspectRatio()) {
+                newBounds.y = newBounds.y -  ((this.viewerSizeInPoints.y - (1/this.viewer.source.aspectRatio)) /2 );
+            }
+            else  {
+                newBounds.x = newBounds.x -  ((this.viewerSizeInPoints.x -1) /2 );
+            }
+            this.viewer.viewport.fitBounds(newBounds);
+            this.viewer.viewport.applyConstraints();
+        }
+    }
+    else {
+        this.drag = false;
+    }
 }
-
 
 /**
  * @private
@@ -5525,6 +5605,7 @@ function onCanvasClick( tracker, position, quick, shift ) {
  */
 function onCanvasDrag( tracker, position, delta, shift ) {
     if ( this.viewer.viewport ) {
+        this.drag = true;
         if( !this.panHorizontal ){
             delta.x = 0;
         }
@@ -5563,7 +5644,6 @@ function onCanvasScroll( tracker, position, scroll, shift ) {
         factor = Math.pow( this.zoomPerScroll, scroll );
         this.viewer.viewport.zoomBy( 
             factor, 
-            //this.viewport.pointFromPixel( position, true ) 
             this.viewport.getCenter()
         );
         this.viewer.viewport.applyConstraints();
@@ -7813,7 +7893,7 @@ $.ButtonState = {
  * @param {String} options.srcRest URL of image to use in 'rest' state
  * @param {String} options.srcGroup URL of image to use in 'up' state
  * @param {String} options.srcHover URL of image to use in 'hover' state
- * @param {String} options.srcDown URL of image to use in 'domn' state
+ * @param {String} options.srcDown URL of image to use in 'down' state
  * @param {Element} [options.element] Element to use as a container for the 
  *  button.
  * @property {String} tooltip Provides context help for the button we the
@@ -7821,7 +7901,7 @@ $.ButtonState = {
  * @property {String} srcRest URL of image to use in 'rest' state
  * @property {String} srcGroup URL of image to use in 'up' state
  * @property {String} srcHover URL of image to use in 'hover' state
- * @property {String} srcDown URL of image to use in 'domn' state
+ * @property {String} srcDown URL of image to use in 'down' state
  * @property {Object} config Configurable settings for this button. DEPRECATED.
  * @property {Element} [element] Element to use as a container for the 
  *  button.
@@ -8564,7 +8644,7 @@ $.ReferenceStrip = function( options ){
         this.element.style.height = options.height + 'px';
         viewer.addControl( 
             this.element, 
-            $.ControlAnchor.BOTTOM_LEFT
+            {anchor: $.ControlAnchor.BOTTOM_LEFT}
         );
     } else {
         if( "horizontal" == options.scroll ){
@@ -8581,7 +8661,7 @@ $.ReferenceStrip = function( options ){
 
             viewer.addControl( 
                 this.element, 
-                $.ControlAnchor.BOTTOM_LEFT
+                {anchor: $.ControlAnchor.BOTTOM_LEFT}
             );
         }else {
             this.element.style.height = ( 
@@ -8597,7 +8677,7 @@ $.ReferenceStrip = function( options ){
 
             viewer.addControl( 
                 this.element, 
-                $.ControlAnchor.TOP_LEFT
+                {anchor: $.ControlAnchor.TOP_LEFT}
             );
 
         }
@@ -9312,9 +9392,6 @@ $.Tile.prototype = {
      * @param {Element} container
      */
     drawHTML: function( container ) {
-
-        var containerSize = $.getElementSize( container );
-
         if ( !this.loaded || !this.image ) {
             $.console.warn(
                 "Attempting to draw tile %s when it's not yet loaded.",
@@ -9323,29 +9400,9 @@ $.Tile.prototype = {
             return;
         }
 
-        /* EXISTING IMPLEMENTATION
-        if ( !this.element ) {
-            this.element              = $.makeNeutralElement("img");
-            this.element.src          = this.url;
-
-            this.style                     = this.element.style;
-            this.style.position            = "absolute";
-            this.style.msInterpolationMode = "nearest-neighbor";
-        }
-
-        if ( this.element.parentNode != container ) {
-            container.appendChild( this.element );
-        }
-
-        this.style.top     = position.y + "px";
-        this.style.left    = position.x + "px";
-        this.style.height  = size.y + "px";
-        this.style.width   = size.x + "px";
-        */
-
         //EXPERIMENTAL - trying to figure out how to scale the container
         //               content during animation of the container size.
-        
+
         if ( !this.element ) {
             this.element              = $.makeNeutralElement("img");
             this.element.src          = this.url;
@@ -9358,14 +9415,12 @@ $.Tile.prototype = {
             container.appendChild( this.element );
         }
 
-        this.style.top     = 100 * ( this.position.y / containerSize.y ) + "%";
-        this.style.left    = 100 * ( this.position.x / containerSize.x ) + "%";
-        this.style.height  = 100 * ( this.size.y / containerSize.y ) + "%";
-        this.style.width   = 100 * ( this.size.x / containerSize.x ) + "%";
-        
+        this.style.top     = this.position.y + "px";
+        this.style.left    = this.position.x + "px";
+        this.style.height  = this.size.y + "px";
+        this.style.width   = this.size.x + "px";
+
         $.setElementOpacity( this.element, this.opacity );
-
-
     },
 
     /**
@@ -9775,6 +9830,7 @@ $.Drawer = function( options ) {
     $.extend( true, this, {
 
         //internal state properties
+        viewer:         null,
         downloading:    0,
         tilesMatrix:    {},
         tilesLoaded:    [],
@@ -10389,8 +10445,7 @@ function updateTile( drawer, drawLevel, haveDrawn, x, y, level, levelOpacity, le
     );
 
     if ( tile.loaded ) {
-        
-        drawer.updateAgain = blendTile(
+        var needsUpdate = blendTile(
             drawer,
             tile, 
             x, y,
@@ -10398,6 +10453,10 @@ function updateTile( drawer, drawLevel, haveDrawn, x, y, level, levelOpacity, le
             levelOpacity, 
             currentTime 
         );
+
+        if ( needsUpdate ) {
+            drawer.updateAgain = true;
+        }
     } else if ( tile.loading ) {
         // the tile is already in the download queue 
         // thanks josh1093 for finally translating this typo
@@ -10984,7 +11043,7 @@ $.Viewport = function( options ) {
 
     //options.config and the general config argument are deprecated
     //in favor of the more direct specification of optional settings
-    //being pass directly on the options object
+    //being passed directly on the options object
     if ( options.config ){
         $.extend( true, options, options.config );
         delete options.config;
