@@ -20,6 +20,7 @@
 
 """An example program to generate a Deep Zoom directory tree from a slide."""
 
+from __future__ import print_function
 import json
 from multiprocessing import Process, JoinableQueue
 from openslide import open_slide, ImageSlide
@@ -105,10 +106,11 @@ class DeepZoomImageTiler(object):
         self._processed += 1
         count, total = self._processed, self._dz.tile_count
         if count % 100 == 0 or count == total:
-            print >> sys.stderr, "Tiling %s: wrote %d/%d tiles\r" % (
-                        self._associated or 'slide', count, total),
+            print("Tiling %s: wrote %d/%d tiles" % (
+                    self._associated or 'slide', count, total),
+                    end='\r', file=sys.stderr)
             if count == total:
-                print
+                print(file=sys.stderr)
 
     def _write_dzi(self):
         with open('%s.dzi' % self._basename, 'w') as fh:

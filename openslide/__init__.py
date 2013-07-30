@@ -25,7 +25,7 @@ documentation on the OpenSlide API, see:
 http://openslide.org/api/openslide_8h.html
 """
 
-from __future__ import division
+from __future__ import division, print_function
 from collections import Mapping
 from PIL import Image
 
@@ -359,12 +359,12 @@ def open_slide(filename):
 
 if __name__ == '__main__':
     import sys
-    print "OpenSlide can open:", OpenSlide.can_open(sys.argv[1])
-    print "PIL can open:", ImageSlide.can_open(sys.argv[1])
+    print("OpenSlide can open:", OpenSlide.can_open(sys.argv[1]))
+    print("PIL can open:", ImageSlide.can_open(sys.argv[1]))
     with open_slide(sys.argv[1]) as _slide:
-        print "Dimensions:", _slide.dimensions
-        print "Levels:", _slide.level_count
-        print "Level dimensions:", _slide.level_dimensions
-        print "Level downsamples:", _slide.level_downsamples
-        print "Properties:", _slide.properties
-        print "Associated images:", _slide.associated_images
+        print("Dimensions:", _slide.dimensions)
+        print("Levels:", _slide.level_count)
+        print("Level dimensions:", _slide.level_dimensions)
+        print("Level downsamples:", _slide.level_downsamples)
+        print("Properties:", _slide.properties)
+        print("Associated images:", _slide.associated_images)
