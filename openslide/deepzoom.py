@@ -72,7 +72,7 @@ class DeepZoomGenerator(object):
 
         # Total downsamples for each Deep Zoom level
         l0_z_downsamples = tuple(2 ** (self._dz_levels - dz_level - 1)
-                    for dz_level in xrange(self._dz_levels))
+                    for dz_level in range(self._dz_levels))
 
         # Preferred slide levels for each Deep Zoom level
         self._slide_from_dz_level = tuple(

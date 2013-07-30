@@ -47,14 +47,14 @@ def load_slide():
         'DEEPZOOM_TILE_SIZE': 'tile_size',
         'DEEPZOOM_OVERLAP': 'overlap',
     }
-    opts = dict((v, app.config[k]) for k, v in config_map.iteritems())
+    opts = dict((v, app.config[k]) for k, v in config_map.items())
     slide = open_slide(slidefile)
     app.slides = {
         SLIDE_NAME: DeepZoomGenerator(slide, **opts)
     }
     app.associated_images = []
     app.slide_properties = slide.properties
-    for name, image in slide.associated_images.iteritems():
+    for name, image in slide.associated_images.items():
         app.associated_images.append(name)
         slug = slugify(name)
         app.slides[slug] = DeepZoomGenerator(ImageSlide(image), **opts)
