@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2010-2011 Carnegie Mellon University
+# Copyright (c) 2010-2013 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -91,6 +91,25 @@ class _OpenSlide(object):
             raise ValueError("Passing closed slide object")
         return obj
 
+class _utf8_p(object):
+    """Wrapper class to convert string arguments to bytes."""
+
+    if sys.version[0] == '2':
+        _bytes_type = str
+        _str_type = unicode
+    else:
+        _bytes_type = bytes
+        _str_type = str
+
+    @classmethod
+    def from_param(cls, obj):
+        if isinstance(obj, cls._bytes_type):
+            return obj
+        elif isinstance(obj, cls._str_type):
+            return obj.encode()
+        else:
+            raise TypeError('Incorrect type')
+
 # check for errors opening an image file and wrap the resulting handle
 def _check_open(result, _func, _args):
     if result is None:
@@ -106,14 +125,21 @@ def _check_open(result, _func, _args):
 def _check_close(_result, _func, args):
     args[0].invalidate()
 
+# Convert returned byte array, if present, into a string
+def _check_string(result, func, _args):
+    if func.restype is c_char_p and result is not None:
+        return result.decode(errors='replace')
+    else:
+        return result
+
 # check if the library got into an error state after each library call
-def _check_error(result, _func, args):
+def _check_error(result, func, args):
     err = get_error(args[0])
     if err is not None:
         raise OpenSlideError(err)
-    return result
+    return _check_string(result, func, args)
 
-# Convert returned NULL-terminated string array into a list
+# Convert returned NULL-terminated char** into a list of strings
 def _check_name_list(result, func, args):
     _check_error(result, func, args)
     names = []
@@ -121,7 +147,7 @@ def _check_name_list(result, func, args):
         name = result[i]
         if not name:
             break
-        names.append(name)
+        names.append(name.decode(errors='replace'))
     return names
 
 # resolve and return an OpenSlide function with the specified properties
@@ -145,13 +171,13 @@ def _load_image(buf, size):
     return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBa', 0, 1)
 
 try:
-    get_version = _func('openslide_get_version', c_char_p, [], None)
+    get_version = _func('openslide_get_version', c_char_p, [], _check_string)
 except AttributeError:
     raise OpenSlideError('OpenSlide >= 3.3.0 required')
 
-can_open = _func('openslide_can_open', c_bool, [c_char_p], None)
+can_open = _func('openslide_can_open', c_bool, [_utf8_p], None)
 
-open = _func('openslide_open', c_void_p, [c_char_p], _check_open)
+open = _func('openslide_open', c_void_p, [_utf8_p], _check_open)
 
 close = _func('openslide_close', None, [_OpenSlide], _check_close)
 
@@ -188,27 +214,27 @@ def read_region(slide, x, y, level, w, h):
     _read_region(slide, buf, x, y, level, w, h)
     return _load_image(buf, (w, h))
 
-get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], None)
+get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], _check_string)
 
 get_property_names = _func('openslide_get_property_names', POINTER(c_char_p),
         [_OpenSlide], _check_name_list)
 
 get_property_value = _func('openslide_get_property_value', c_char_p,
-        [_OpenSlide, c_char_p])
+        [_OpenSlide, _utf8_p])
 
 get_associated_image_names = _func('openslide_get_associated_image_names',
         POINTER(c_char_p), [_OpenSlide], _check_name_list)
 
 _get_associated_image_dimensions = \
         _func('openslide_get_associated_image_dimensions', None,
-        [_OpenSlide, c_char_p, POINTER(c_int64), POINTER(c_int64)])
+        [_OpenSlide, _utf8_p, POINTER(c_int64), POINTER(c_int64)])
 def get_associated_image_dimensions(slide, name):
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
     return w.value, h.value
 
 _read_associated_image = _func('openslide_read_associated_image', None,
-        [_OpenSlide, c_char_p, POINTER(c_uint32)])
+        [_OpenSlide, _utf8_p, POINTER(c_uint32)])
 def read_associated_image(slide, name):
     w, h = get_associated_image_dimensions(slide, name)
     buf = (w * h * c_uint32)()
