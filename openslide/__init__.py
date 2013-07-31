@@ -222,17 +222,18 @@ class _OpenSlideMap(Mapping):
         return repr(dict(self))
 
     def __len__(self):
-        return len(self.keys())
+        return len(self._keys())
 
     def __iter__(self):
-        return iter(self.keys())
+        return iter(self._keys())
 
-    def keys(self):
+    def _keys(self):
+        # Private method; always returns list.
         raise NotImplementedError()
 
 
 class _PropertyMap(_OpenSlideMap):
-    def keys(self):
+    def _keys(self):
         return lowlevel.get_property_names(self._osr)
 
     def __getitem__(self, key):
@@ -243,11 +244,11 @@ class _PropertyMap(_OpenSlideMap):
 
 
 class _AssociatedImageMap(_OpenSlideMap):
-    def keys(self):
+    def _keys(self):
         return lowlevel.get_associated_image_names(self._osr)
 
     def __getitem__(self, key):
-        if key not in self.keys():
+        if key not in self._keys():
             raise KeyError()
         return lowlevel.read_associated_image(self._osr, key)
 
