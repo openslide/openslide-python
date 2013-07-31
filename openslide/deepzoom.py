@@ -24,7 +24,7 @@ OpenSlide objects.
 """
 
 from __future__ import division
-import cStringIO as StringIO
+from io import BytesIO
 import math
 import openslide
 from PIL import Image
@@ -209,6 +209,6 @@ class DeepZoomGenerator(object):
         w, h = self._l0_dimensions
         SubElement(image, 'Size', Width=str(w), Height=str(h))
         tree = ElementTree(element=image)
-        buf = StringIO.StringIO()
+        buf = BytesIO()
         tree.write(buf, encoding='UTF-8')
-        return unicode(buf.getvalue(), 'UTF-8')
+        return buf.getvalue().decode()

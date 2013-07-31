@@ -18,8 +18,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from cStringIO import StringIO
 from flask import Flask, abort, make_response, render_template, url_for
+from io import BytesIO
 from openslide import ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
 from optparse import OptionParser
@@ -95,7 +95,7 @@ def tile(slug, level, col, row, format):
     except ValueError:
         # Invalid level or coordinates
         abort(404)
-    buf = StringIO()
+    buf = BytesIO()
     tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
     resp = make_response(buf.getvalue())
     resp.mimetype = 'image/%s' % format
