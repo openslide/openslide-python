@@ -3,7 +3,8 @@ import os
 
 # Load version string
 _verfile = os.path.join(os.path.dirname(__file__), 'openslide', '_version.py')
-exec open(_verfile)
+with open(_verfile) as _fh:
+    exec(_fh.read())
 
 setup(
     name = 'openslide-python',
