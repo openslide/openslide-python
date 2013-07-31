@@ -2,7 +2,7 @@
 #
 # deepzoom_tile - Convert whole-slide images to Deep Zoom format
 #
-# Copyright (c) 2010-2011 Carnegie Mellon University
+# Copyright (c) 2010-2013 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -206,17 +206,10 @@ class DeepZoomStaticTiler(object):
             if os.path.isfile(srcpath):
                 shutil.copy(srcpath, os.path.join(dest, name))
 
-    _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
     @classmethod
     def _slugify(cls, text):
-        """Generates an ASCII-only slug."""
-        # Based on Flask snippet 5
-        result = []
-        for word in cls._punct_re.split(unicode(text, 'UTF-8').lower()):
-            word = normalize('NFKD', word).encode('ascii', 'ignore')
-            if word:
-                result.append(word)
-        return unicode(u'_'.join(result))
+        text = normalize('NFKD', text.lower()).encode('ascii', 'ignore').decode()
+        return re.sub('[^a-z0-9]+', '_', text)
 
     def _shutdown(self):
         for _i in range(self._workers):

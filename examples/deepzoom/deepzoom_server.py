@@ -2,7 +2,7 @@
 #
 # deepzoom_server - Example web application for serving whole-slide images
 #
-# Copyright (c) 2010-2011 Carnegie Mellon University
+# Copyright (c) 2010-2013 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -102,16 +102,9 @@ def tile(slug, level, col, row, format):
     return resp
 
 
-# Based on Flask snippet 5
-_punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
-def slugify(text, delim=u'-'):
-    """Generates an ASCII-only slug."""
-    result = []
-    for word in _punct_re.split(unicode(text, 'UTF-8').lower()):
-        word = normalize('NFKD', word).encode('ascii', 'ignore')
-        if word:
-            result.append(word)
-    return unicode(delim.join(result))
+def slugify(text):
+    text = normalize('NFKD', text.lower()).encode('ascii', 'ignore').decode()
+    return re.sub('[^a-z0-9]+', '-', text)
 
 
 if __name__ == '__main__':
