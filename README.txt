@@ -4,6 +4,8 @@ OpenSlide Python requires:
 * OpenSlide >= 3.4.0
 * Python Imaging Library or Pillow
 
+Installation requires setuptools.
+
 To install:
 
     python setup.py install

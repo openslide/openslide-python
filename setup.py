@@ -1,5 +1,5 @@
-from distutils.core import setup
 import os
+from setuptools import setup
 
 # Load version string
 _verfile = os.path.join(os.path.dirname(__file__), 'openslide', '_version.py')
@@ -18,4 +18,8 @@ setup(
     license='GNU Lesser General Public License, version 2.1',
     keywords='openslide whole-slide image library',
     url='http://openslide.org/',
+    install_requires=[
+        'Pillow',
+    ],
+    zip_safe=True,
 )
