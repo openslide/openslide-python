@@ -352,9 +352,9 @@ def open_slide(filename):
 
     Return an OpenSlide object for whole-slide images and an ImageSlide
     object for other types of images."""
-    if OpenSlide.can_open(filename):
+    try:
         return OpenSlide(filename)
-    else:
+    except OpenSlideUnsupportedFormatError:
         return ImageSlide(filename)
 
 
