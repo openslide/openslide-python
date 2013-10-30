@@ -56,8 +56,10 @@ class AbstractSlide(object):
         return False
 
     @classmethod
-    def can_open(cls, filename):
-        """Return True if the specified file can be read."""
+    def detect_format(cls, filename):
+        """Return a string describing the format of the specified file.
+
+        If the file format is not recognized, return None."""
         raise NotImplementedError
 
     def close(self):
@@ -150,9 +152,11 @@ class OpenSlide(AbstractSlide):
         self._osr = lowlevel.open(filename)
 
     @classmethod
-    def can_open(cls, filename):
-        """Return True if OpenSlide can read the specified file."""
-        return lowlevel.can_open(filename)
+    def detect_format(cls, filename):
+        """Return a string describing the format vendor of the specified file.
+
+        If the file format is not recognized, return None."""
+        return lowlevel.detect_vendor(filename)
 
     def close(self):
         """Close the OpenSlide object."""
@@ -267,13 +271,14 @@ class ImageSlide(AbstractSlide):
             self._image = Image.open(file)
 
     @classmethod
-    def can_open(cls, filename):
-        """Return True if PIL can read the specified file."""
+    def detect_format(cls, filename):
+        """Return a string describing the format of the specified file.
+
+        If the file format is not recognized, return None."""
         try:
-            Image.open(filename)
-            return True
+            return Image.open(filename).format
         except IOError:
-            return False
+            return None
 
     def close(self):
         """Close the slide object."""
@@ -360,8 +365,8 @@ def open_slide(filename):
 
 if __name__ == '__main__':
     import sys
-    print("OpenSlide can open:", OpenSlide.can_open(sys.argv[1]))
-    print("PIL can open:", ImageSlide.can_open(sys.argv[1]))
+    print("OpenSlide vendor:", OpenSlide.detect_format(sys.argv[1]))
+    print("PIL format:", ImageSlide.detect_format(sys.argv[1]))
     with open_slide(sys.argv[1]) as _slide:
         print("Dimensions:", _slide.dimensions)
         print("Levels:", _slide.level_count)
