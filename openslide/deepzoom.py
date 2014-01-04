@@ -158,7 +158,7 @@ class DeepZoomGenerator(object):
 
         # Obtain the region coordinates
         z_location = [self._z_from_t(t) for t in t_location]
-        l_location = [self._l_from_z(dz_level, z) - z_tl
+        l_location = [self._l_from_z(dz_level, z - z_tl)
                     for z, z_tl in zip(z_location, z_overlap_tl)]
         # Round location down and size up
         l0_location = tuple(int(self._l0_from_l(slide_level, l))
