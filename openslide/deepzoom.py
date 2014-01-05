@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2010-2012 Carnegie Mellon University
+# Copyright (c) 2010-2014 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -33,7 +33,12 @@ from xml.etree.ElementTree import ElementTree, Element, SubElement
 class DeepZoomGenerator(object):
     """Generates Deep Zoom tiles and metadata."""
 
-    def __init__(self, osr, tile_size=256, overlap=1):
+    BOUNDS_OFFSET_PROPS = (openslide.PROPERTY_NAME_BOUNDS_X,
+                openslide.PROPERTY_NAME_BOUNDS_Y)
+    BOUNDS_SIZE_PROPS = (openslide.PROPERTY_NAME_BOUNDS_WIDTH,
+                openslide.PROPERTY_NAME_BOUNDS_HEIGHT)
+
+    def __init__(self, osr, tile_size=256, overlap=1, limit_bounds=False):
         """Create a DeepZoomGenerator wrapping an OpenSlide object.
 
         osr:       a slide object.
@@ -52,8 +57,22 @@ class DeepZoomGenerator(object):
         self._z_overlap = overlap
 
         # Precompute dimensions
-        # Slide level
-        self._l_dimensions = osr.level_dimensions
+        # Slide level and offset
+        if limit_bounds:
+            # Level 0 coordinate offset
+            self._l0_offset = tuple(int(osr.properties.get(prop, 0))
+                        for prop in self.BOUNDS_OFFSET_PROPS)
+            # Slide level dimensions scale factor in each axis
+            size_scale = tuple(int(osr.properties.get(prop, l0_lim)) / l0_lim
+                        for prop, l0_lim in zip(self.BOUNDS_SIZE_PROPS,
+                        osr.dimensions))
+            # Dimensions of active area
+            self._l_dimensions = tuple(tuple(int(math.ceil(l_lim * scale))
+                        for l_lim, scale in zip(l_size, size_scale))
+                        for l_size in osr.level_dimensions)
+        else:
+            self._l_dimensions = osr.level_dimensions
+            self._l0_offset = (0, 0)
         self._l0_dimensions = self._l_dimensions[0]
         # Deep Zoom level
         z_size = self._l0_dimensions
@@ -160,9 +179,9 @@ class DeepZoomGenerator(object):
         z_location = [self._z_from_t(t) for t in t_location]
         l_location = [self._l_from_z(dz_level, z - z_tl)
                     for z, z_tl in zip(z_location, z_overlap_tl)]
-        # Round location down and size up
-        l0_location = tuple(int(self._l0_from_l(slide_level, l))
-                    for l in l_location)
+        # Round location down and size up, and add offset of active area
+        l0_location = tuple(int(self._l0_from_l(slide_level, l) + l0_off)
+                    for l, l0_off in zip(l_location, self._l0_offset))
         l_size = tuple(int(min(math.ceil(self._l_from_z(dz_level, dz)),
                     l_lim - math.ceil(l)))
                     for l, dz, l_lim in

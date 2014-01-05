@@ -2,7 +2,7 @@
 #
 # deepzoom_tile - Convert whole-slide images to Deep Zoom format
 #
-# Copyright (c) 2010-2013 Carnegie Mellon University
+# Copyright (c) 2010-2014 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -37,13 +37,15 @@ VIEWER_SLIDE_NAME = 'slide'
 class TileWorker(Process):
     """A child process that generates and writes tiles."""
 
-    def __init__(self, queue, slidepath, tile_size, overlap, quality):
+    def __init__(self, queue, slidepath, tile_size, overlap, limit_bounds,
+                quality):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
         self._queue = queue
         self._slidepath = slidepath
         self._tile_size = tile_size
         self._overlap = overlap
+        self._limit_bounds = limit_bounds
         self._quality = quality
         self._slide = None
 
@@ -69,7 +71,8 @@ class TileWorker(Process):
             image = ImageSlide(self._slide.associated_images[associated])
         else:
             image = self._slide
-        return DeepZoomGenerator(image, self._tile_size, self._overlap)
+        return DeepZoomGenerator(image, self._tile_size, self._overlap,
+                    limit_bounds=self._limit_bounds)
 
 
 class DeepZoomImageTiler(object):
@@ -124,7 +127,7 @@ class DeepZoomStaticTiler(object):
     """Handles generation of tiles and metadata for all images in a slide."""
 
     def __init__(self, slidepath, basename, format, tile_size, overlap,
-                quality, workers, with_viewer):
+                limit_bounds, quality, workers, with_viewer):
         if with_viewer:
             # Check extra dependency before doing a bunch of work
             import jinja2
@@ -133,12 +136,14 @@ class DeepZoomStaticTiler(object):
         self._format = format
         self._tile_size = tile_size
         self._overlap = overlap
+        self._limit_bounds = limit_bounds
         self._queue = JoinableQueue(2 * workers)
         self._workers = workers
         self._with_viewer = with_viewer
         self._dzi_data = {}
         for _i in range(workers):
-            TileWorker(self._queue, slidepath, tile_size, overlap, quality).start()
+            TileWorker(self._queue, slidepath, tile_size, overlap,
+                        limit_bounds, quality).start()
 
     def run(self):
         self._run_image()
@@ -160,7 +165,8 @@ class DeepZoomStaticTiler(object):
         else:
             image = ImageSlide(self._slide.associated_images[associated])
             basename = os.path.join(self._basename, self._slugify(associated))
-        dz = DeepZoomGenerator(image, self._tile_size, self._overlap)
+        dz = DeepZoomGenerator(image, self._tile_size, self._overlap,
+                    limit_bounds=self._limit_bounds)
         tiler = DeepZoomImageTiler(dz, basename, self._format, associated,
                     self._queue)
         tiler.run()
@@ -219,6 +225,9 @@ class DeepZoomStaticTiler(object):
 
 if __name__ == '__main__':
     parser = OptionParser(usage='Usage: %prog [options] <slide>')
+    parser.add_option('-B', '--ignore-bounds', dest='limit_bounds',
+                default=True, action='store_false',
+                help='display entire scan area')
     parser.add_option('-e', '--overlap', metavar='PIXELS', dest='overlap',
                 type='int', default=1,
                 help='overlap of adjacent tiles [1]')
@@ -249,5 +258,5 @@ if __name__ == '__main__':
         opts.basename = os.path.splitext(os.path.basename(slidepath))[0]
 
     DeepZoomStaticTiler(slidepath, opts.basename, opts.format,
-                opts.tile_size, opts.overlap, opts.quality, opts.workers,
-                opts.with_viewer).run()
+                opts.tile_size, opts.overlap, opts.limit_bounds, opts.quality,
+                opts.workers, opts.with_viewer).run()
