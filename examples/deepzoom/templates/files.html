@@ -1,0 +1,36 @@
+<!doctype html>
+<title>Available Slides</title>
+
+<style type="text/css">
+li {
+    list-style-type: none;
+    margin: 0.4em 0;
+}
+li.none {
+    font-style: italic;
+}
+</style>
+
+<h1>Available Slides</h1>
+
+<ul>
+    {% for entry in root_dir.children recursive %}
+        <li>
+            {% if entry.url_path %}
+                <a href="{{ url_for('slide', path=entry.url_path) }}">
+                    {{ entry.name }}
+                </a>
+            {% else %}
+                {{ entry.name }}
+            {% endif %}
+
+            {% if entry.children %}
+                <ul>
+                    {{ loop(entry.children) }}
+                </ul>
+            {% endif %}
+        </li>
+    {% else %}
+        <li class="none">None</li>
+    {% endfor %}
+</ul>
