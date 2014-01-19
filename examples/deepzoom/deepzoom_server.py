@@ -67,7 +67,7 @@ def index():
     slide_url = url_for('dzi', slug=SLIDE_NAME)
     associated_urls = dict((name, url_for('dzi', slug=slugify(name)))
             for name in app.associated_images)
-    return render_template('index.html', slide_url=slide_url,
+    return render_template('slide-multipane.html', slide_url=slide_url,
             associated=associated_urls, properties=app.slide_properties)
 
 

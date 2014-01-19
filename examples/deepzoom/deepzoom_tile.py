@@ -183,7 +183,7 @@ class DeepZoomStaticTiler(object):
         import jinja2
         env = jinja2.Environment(loader=jinja2.PackageLoader(__name__),
                     autoescape=True)
-        template = env.get_template('index.html')
+        template = env.get_template('slide-multipane.html')
         associated_urls = dict((n, self._url_for(n))
                     for n in self._slide.associated_images)
         # Embed the dzi metadata in the HTML to work around Chrome's
