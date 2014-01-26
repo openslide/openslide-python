@@ -230,4 +230,4 @@ class DeepZoomGenerator(object):
         tree = ElementTree(element=image)
         buf = BytesIO()
         tree.write(buf, encoding='UTF-8')
-        return buf.getvalue().decode()
+        return buf.getvalue().decode('UTF-8')

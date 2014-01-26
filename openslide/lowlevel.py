@@ -128,7 +128,7 @@ def _check_close(_result, _func, args):
 # Convert returned byte array, if present, into a string
 def _check_string(result, func, _args):
     if func.restype is c_char_p and result is not None:
-        return result.decode(errors='replace')
+        return result.decode('UTF-8', 'replace')
     else:
         return result
 
@@ -147,7 +147,7 @@ def _check_name_list(result, func, args):
         name = result[i]
         if not name:
             break
-        names.append(name.decode(errors='replace'))
+        names.append(name.decode('UTF-8', 'replace'))
     return names
 
 # resolve and return an OpenSlide function with the specified properties
