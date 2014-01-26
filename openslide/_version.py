@@ -22,4 +22,4 @@
 This module is an implementation detail.  The package version should be
 obtained from openslide.__version__."""
 
-__version__ = u'0.4.0'
+__version__ = u'0.5.0'

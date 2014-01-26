@@ -1,6 +1,20 @@
 Notable Changes in OpenSlide Python
 ===================================
 
+Version 0.5.0, 2014-01-25
+ * Require OpenSlide 3.4.0
+ * Support Python 3
+ * Return Unicode strings on Python 2
+ * Replace OpenSlide.can_open() with OpenSlide.detect_format()
+ * Optionally generate Deep Zoom tiles only for the non-empty slide region
+ * Fix Deep Zoom tile positioning bug affecting Aperio slides
+ * Fix library loading with MacPorts
+ * Propagate open errors from openslide.open_slide()
+ * examples: Add multiple-slide Deep Zoom server
+ * examples: Enable multithreading in tile servers
+ * examples: Avoid loading smallest Deep Zoom levels
+ * examples: Update OpenSeadragon to 1.0.0
+
 Version 0.4.0, 2012-09-08
  * Require OpenSlide 3.3.0
  * Rename "layer" to "level" throughout API
