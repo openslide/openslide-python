@@ -106,7 +106,7 @@ class _utf8_p(object):
         if isinstance(obj, cls._bytes_type):
             return obj
         elif isinstance(obj, cls._str_type):
-            return obj.encode()
+            return obj.encode('UTF-8')
         else:
             raise TypeError('Incorrect type')
 
