@@ -34,12 +34,14 @@ OpenSlide can read virtual slides in several formats:
 .. _Ventana: http://openslide.org/formats/ventana/
 .. _`Generic tiled TIFF`: http://openslide.org/formats/generic-tiff/
 
+
 Requirements
 ============
 
 * Python 2 >= 2.6 or Python 3 >= 3.3
 * OpenSlide >= 3.4.0
 * Python Imaging Library or Pillow
+
 
 Installation
 ============
@@ -49,6 +51,25 @@ Installation
 2.  ``pip install openslide-python``
 
 .. _`Install OpenSlide`: http://openslide.org/download/
+
+
+Using PIL
+---------
+
+``setup.py`` assumes that you want to use the Pillow fork of PIL.  If you
+already have classic PIL installed, you can use it instead.  Install
+OpenSlide Python with:
+
+::
+
+  pip install --no-deps openslide-python
+
+or, if you are installing by hand:
+
+::
+
+  python setup.py install --single-version-externally-managed --record /dev/null
+
 
 License
 =======
