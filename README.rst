@@ -44,7 +44,7 @@ Requirements
 Installation
 ============
 
-1.  `Install OpenSlide`_
+1.  `Install OpenSlide`_.
 
 2.  ``pip install openslide-python``
 
@@ -53,6 +53,6 @@ Installation
 License
 =======
 
-LGPLv2.1_.
+LGPLv2.1_
 
 .. _LGPLv2.1: https://raw.github.com/openslide/openslide-python/master/lgpl-2.1.txt
