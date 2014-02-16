@@ -19,7 +19,6 @@ setup(
     license='GNU Lesser General Public License, version 2.1',
     keywords='openslide whole-slide image virtual slide library',
     url='http://openslide.org/',
-    download_url='https://github.com/openslide/openslide-python/releases/download/v%(version)s/openslide-python-%(version)s.tar.gz' % {'version': __version__},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
