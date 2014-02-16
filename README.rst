@@ -53,6 +53,7 @@ Installation
 License
 =======
 
-LGPLv2.1_
+OpenSlide Python is released under the terms of the `GNU Lesser General
+Public License, version 2.1`_.
 
-.. _LGPLv2.1: https://raw.github.com/openslide/openslide-python/master/lgpl-2.1.txt
+.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/master/lgpl-2.1.txt
