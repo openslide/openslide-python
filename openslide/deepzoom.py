@@ -41,10 +41,11 @@ class DeepZoomGenerator(object):
     def __init__(self, osr, tile_size=256, overlap=1, limit_bounds=False):
         """Create a DeepZoomGenerator wrapping an OpenSlide object.
 
-        osr:       a slide object.
-        tile_size: the width and height of a single tile.
-        overlap:   the number of extra pixels to add to each interior edge
-                   of a tile."""
+        osr:          a slide object.
+        tile_size:    the width and height of a single tile.
+        overlap:      the number of extra pixels to add to each interior edge
+                      of a tile.
+        limit_bounds: True to render only the non-empty slide region."""
 
         # We have four coordinate planes:
         # - Row and column of the tile within the Deep Zoom level (t_)
