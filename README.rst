@@ -71,6 +71,20 @@ or, if you are installing by hand:
   python setup.py install --single-version-externally-managed --record /dev/null
 
 
+More Information
+================
+
+- `API documentation`_
+- Website_
+- GitHub_
+- `Sample data`_
+
+.. _`API documentation`: http://openslide.org/api/python/
+.. _Website: http://openslide.org/
+.. _GitHub: https://github.com/openslide/openslide-python
+.. _`Sample data`: http://openslide.cs.cmu.edu/download/openslide-testdata/
+
+
 License
 =======
 
