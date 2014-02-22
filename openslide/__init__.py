@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2010-2013 Carnegie Mellon University
+# Copyright (c) 2010-2014 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -19,10 +19,7 @@
 
 """A library for reading whole-slide images.
 
-This package provides Python bindings for the OpenSlide library.  For
-documentation on the OpenSlide API, see:
-
-http://openslide.org/api/openslide_8h.html
+This package provides Python bindings for the OpenSlide library.
 """
 
 from __future__ import division, print_function
@@ -141,9 +138,9 @@ class AbstractSlide(object):
 class OpenSlide(AbstractSlide):
     """An open whole-slide image.
 
-    close() is called automatically when the object is deleted.  In
-    addition, an OpenSlide object may be used as a context manager, and
-    will be closed when exiting the context.
+    close() is called automatically when the object is deleted.
+    The object may be used as a context manager, in which case it will be
+    closed upon exiting the context.
 
     If an operation fails, OpenSlideError is raised.  Note that OpenSlide
     has latching error semantics: once OpenSlideError is raised, all future
