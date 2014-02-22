@@ -2,3 +2,4 @@
 /dist
 /MANIFEST
 /*.egg-info
+*.pyc
