@@ -1,2 +1,3 @@
 include *.txt
+recursive-include doc *.py *.rst
 recursive-include examples *.html *.js *.png *.py
