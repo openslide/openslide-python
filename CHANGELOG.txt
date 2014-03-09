@@ -1,6 +1,11 @@
 Notable Changes in OpenSlide Python
 ===================================
 
+Version 1.0.0, 2014-03-09
+ * Add documentation
+ * Switch from distutils to setuptools
+ * Declare Pillow dependency in setup.py (but still support PIL)
+
 Version 0.5.1, 2014-01-26
  * Fix breakage on Python 2.6
  * examples: Fix tile server breakage on classic PIL

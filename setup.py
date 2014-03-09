@@ -20,7 +20,7 @@ setup(
     keywords='openslide whole-slide image virtual slide library',
     url='http://openslide.org/',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Intended Audience :: Healthcare Industry',
         'Intended Audience :: Science/Research',
