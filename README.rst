@@ -75,11 +75,13 @@ More Information
 ================
 
 - `API documentation`_
+- Changelog_
 - Website_
 - GitHub_
 - `Sample data`_
 
 .. _`API documentation`: http://openslide.org/api/python/
+.. _Changelog: https://raw.github.com/openslide/openslide-python/master/CHANGELOG.txt
 .. _Website: http://openslide.org/
 .. _GitHub: https://github.com/openslide/openslide-python
 .. _`Sample data`: http://openslide.cs.cmu.edu/download/openslide-testdata/
