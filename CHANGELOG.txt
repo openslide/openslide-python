@@ -1,6 +1,9 @@
 Notable Changes in OpenSlide Python
 ===================================
 
+Version 1.0.1, 2014-03-09
+ * Fix documentation build breakage
+
 Version 1.0.0, 2014-03-09
  * Add documentation
  * Switch from distutils to setuptools
