@@ -156,6 +156,7 @@ if __name__ == '__main__':
     try:
         app.config['DEEPZOOM_SLIDE'] = args[0]
     except IndexError:
-        pass
+        if app.config['DEEPZOOM_SLIDE'] is None:
+            parser.error('No slide file specified')
 
     app.run(host=opts.host, port=opts.port, threaded=True)
