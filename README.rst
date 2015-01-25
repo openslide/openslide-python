@@ -19,6 +19,7 @@ OpenSlide can read virtual slides in several formats:
 * Hamamatsu_ (``.ndpi``, ``.vms``, ``.vmu``)
 * Leica_ (``.scn``)
 * MIRAX_ (``.mrxs``)
+* Philips_ (``.tiff``)
 * Sakura_ (``.svslide``)
 * Trestle_ (``.tif``)
 * Ventana_ (``.bif``)
@@ -29,6 +30,7 @@ OpenSlide can read virtual slides in several formats:
 .. _Hamamatsu: http://openslide.org/formats/hamamatsu/
 .. _Leica: http://openslide.org/formats/leica/
 .. _MIRAX: http://openslide.org/formats/mirax/
+.. _Philips: http://openslide.org/formats/philips/
 .. _Sakura: http://openslide.org/formats/sakura/
 .. _Trestle: http://openslide.org/formats/trestle/
 .. _Ventana: http://openslide.org/formats/ventana/
