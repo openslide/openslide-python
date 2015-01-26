@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, Extension
 
 # Load version string
 _verfile = os.path.join(os.path.dirname(__file__), 'openslide', '_version.py')
@@ -11,6 +11,9 @@ setup(
     version=__version__,
     packages=[
         'openslide',
+    ],
+    ext_modules=[
+        Extension('openslide._convert', ['openslide/_convert.c']),
     ],
     maintainer='OpenSlide project',
     maintainer_email='openslide-users@lists.andrew.cmu.edu',

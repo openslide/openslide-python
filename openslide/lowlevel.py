@@ -54,6 +54,24 @@ elif platform.system() == 'Darwin':
 else:
     _lib = cdll.LoadLibrary('libopenslide.so.0')
 
+try:
+    from . import _convert
+    def _load_image(buf, size):
+        '''buf must be a mutable buffer.'''
+        _convert.argb2rgba(buf)
+        return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBA', 0, 1)
+except ImportError:
+    def _load_image(buf, size):
+        '''buf can be a string, but should be a ctypes buffer to avoid an
+        extra copy in the caller.'''
+        # First reorder the bytes in a pixel from native-endian aRGB to
+        # big-endian RGBa to work around limitations in RGBa loader
+        rawmode = (sys.byteorder == 'little') and 'BGRA' or 'ARGB'
+        buf = PIL.Image.frombuffer('RGBA', size, buf, 'raw', rawmode, 0,
+                1).tostring()
+        # Now load the image as RGBA, undoing premultiplication
+        return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBa', 0, 1)
+
 class OpenSlideError(Exception):
     """An error produced by the OpenSlide library.
 
@@ -160,17 +178,6 @@ def _func(name, restype, argtypes, errcheck=_check_error):
     if errcheck is not None:
         func.errcheck = errcheck
     return func
-
-def _load_image(buf, size):
-    '''buf can be a string, but should be a ctypes buffer to avoid an extra
-    copy in the caller.'''
-    # First reorder the bytes in a pixel from native-endian aRGB to
-    # big-endian RGBa to work around limitations in RGBa loader
-    rawmode = (sys.byteorder == 'little') and 'BGRA' or 'ARGB'
-    buf = PIL.Image.frombuffer('RGBA', size, buf, 'raw', rawmode, 0,
-            1).tostring()
-    # Now load the image as RGBA, undoing premultiplication
-    return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBa', 0, 1)
 
 try:
     detect_vendor = _func('openslide_detect_vendor', c_char_p, [_utf8_p],
