@@ -2,7 +2,7 @@
 #
 # deepzoom_server - Example web application for serving whole-slide images
 #
-# Copyright (c) 2010-2014 Carnegie Mellon University
+# Copyright (c) 2010-2015 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -20,6 +20,7 @@
 
 from flask import Flask, abort, make_response, render_template, url_for
 from io import BytesIO
+import openslide
 from openslide import ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
 from optparse import OptionParser
@@ -66,6 +67,12 @@ def load_slide():
         app.associated_images.append(name)
         slug = slugify(name)
         app.slides[slug] = DeepZoomGenerator(ImageSlide(image), **opts)
+    try:
+        mpp_x = slide.properties[openslide.PROPERTY_NAME_MPP_X]
+        mpp_y = slide.properties[openslide.PROPERTY_NAME_MPP_Y]
+        app.slide_mpp = (float(mpp_x) + float(mpp_y)) / 2
+    except (KeyError, ValueError):
+        app.slide_mpp = 0
 
 
 @app.route('/')
@@ -74,7 +81,8 @@ def index():
     associated_urls = dict((name, url_for('dzi', slug=slugify(name)))
             for name in app.associated_images)
     return render_template('slide-multipane.html', slide_url=slide_url,
-            associated=associated_urls, properties=app.slide_properties)
+            associated=associated_urls, properties=app.slide_properties,
+            slide_mpp=app.slide_mpp)
 
 
 @app.route('/<slug>.dzi')

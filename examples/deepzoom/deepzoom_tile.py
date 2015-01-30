@@ -2,7 +2,7 @@
 #
 # deepzoom_tile - Convert whole-slide images to Deep Zoom format
 #
-# Copyright (c) 2010-2014 Carnegie Mellon University
+# Copyright (c) 2010-2015 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -23,6 +23,7 @@
 from __future__ import print_function
 import json
 from multiprocessing import Process, JoinableQueue
+import openslide
 from openslide import open_slide, ImageSlide
 from openslide.deepzoom import DeepZoomGenerator
 from optparse import OptionParser
@@ -186,10 +187,17 @@ class DeepZoomStaticTiler(object):
         template = env.get_template('slide-multipane.html')
         associated_urls = dict((n, self._url_for(n))
                     for n in self._slide.associated_images)
+        try:
+            mpp_x = self._slide.properties[openslide.PROPERTY_NAME_MPP_X]
+            mpp_y = self._slide.properties[openslide.PROPERTY_NAME_MPP_Y]
+            mpp = (float(mpp_x) + float(mpp_y)) / 2
+        except (KeyError, ValueError):
+            mpp = 0
         # Embed the dzi metadata in the HTML to work around Chrome's
         # refusal to allow XmlHttpRequest from file:///, even when
         # the originating page is also a file:///
         data = template.render(slide_url=self._url_for(None),
+                    slide_mpp=mpp,
                     associated=associated_urls,
                     properties=self._slide.properties,
                     dzi_data=json.dumps(self._dzi_data))

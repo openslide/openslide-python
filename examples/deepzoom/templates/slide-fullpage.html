@@ -1,4 +1,5 @@
 <!doctype html>
+<meta charset="utf-8">
 <title>{{ slide_filename }}</title>
 
 <style type="text/css">
@@ -23,6 +24,7 @@ div#view {
 
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='openseadragon.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='openseadragon-scalebar.js') }}"></script>
 <script type="text/javascript">
 $(document).ready(function() {
     var viewer = new OpenSeadragon({
@@ -46,6 +48,17 @@ $(document).ready(function() {
         // OpenSeadragon configuration options when the viewer is created
         // from DZI XML.
         viewer.source.minLevel = 8;
+    });
+
+    var mpp = parseFloat("{{ slide_mpp }}");
+    viewer.scalebar({
+        pixelsPerMeter: mpp ? (1e6 / mpp) : 0,
+        xOffset: 10,
+        yOffset: 10,
+        barThickness: 3,
+        color: '#555555',
+        fontColor: '#333333',
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
     });
 });
 </script>

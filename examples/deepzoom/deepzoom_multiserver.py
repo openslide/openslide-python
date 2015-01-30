@@ -2,7 +2,7 @@
 #
 # deepzoom_multiserver - Example web application for viewing multiple slides
 #
-# Copyright (c) 2010-2014 Carnegie Mellon University
+# Copyright (c) 2010-2015 Carnegie Mellon University
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -21,6 +21,7 @@
 from collections import OrderedDict
 from flask import Flask, abort, make_response, render_template, url_for
 from io import BytesIO
+import openslide
 from openslide import OpenSlide, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 import os
@@ -60,7 +61,16 @@ class _SlideCache(object):
                 slide = self._cache.pop(path)
                 self._cache[path] = slide
                 return slide
-        slide = DeepZoomGenerator(OpenSlide(path), **self.dz_opts)
+
+        osr = OpenSlide(path)
+        slide = DeepZoomGenerator(osr, **self.dz_opts)
+        try:
+            mpp_x = osr.properties[openslide.PROPERTY_NAME_MPP_X]
+            mpp_y = osr.properties[openslide.PROPERTY_NAME_MPP_Y]
+            slide.mpp = (float(mpp_x) + float(mpp_y)) / 2
+        except (KeyError, ValueError):
+            slide.mpp = 0
+
         with self._lock:
             if path not in self._cache:
                 if len(self._cache) == self.cache_size:
@@ -127,7 +137,7 @@ def slide(path):
     slide = _get_slide(path)
     slide_url = url_for('dzi', path=path)
     return render_template('slide-fullpage.html', slide_url=slide_url,
-            slide_filename=slide.filename)
+            slide_filename=slide.filename, slide_mpp=slide.mpp)
 
 
 @app.route('/<path:path>.dzi')

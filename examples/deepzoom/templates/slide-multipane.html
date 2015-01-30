@@ -1,4 +1,5 @@
 <!doctype html>
+<meta charset="utf-8">
 <title>Slide Viewer</title>
 
 <style type="text/css">
@@ -74,7 +75,8 @@ div#properties dd {
 <div id="images">
     <h1>View</h1>
     <div class="current-slide">
-        <a class="load-slide" href="#" data-url="{{ slide_url }}">Slide</a>
+        <a class="load-slide" href="#" data-url="{{ slide_url }}"
+                data-mpp="{{ slide_mpp }}">Slide</a>
     </div>
     <h2>Associated images</h2>
     {% if associated %}
@@ -109,6 +111,7 @@ div#properties dd {
 
 <script type="text/javascript" src="static/jquery.js"></script>
 <script type="text/javascript" src="static/openseadragon.js"></script>
+<script type="text/javascript" src="static/openseadragon-scalebar.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
     var dzi_data = {{ dzi_data|default('{}')|safe }};
@@ -132,7 +135,7 @@ $(document).ready(function() {
         viewer.source.minLevel = 8;
     });
 
-    function open_slide(url) {
+    function open_slide(url, mpp) {
         var tile_source;
         if (dzi_data[url]) {
             // DZI XML provided as template argument (deepzoom_tile.py)
@@ -144,13 +147,23 @@ $(document).ready(function() {
             tile_source = url;
         }
         viewer.open(tile_source);
+        viewer.scalebar({
+            pixelsPerMeter: mpp ? (1e6 / mpp) : 0,
+            xOffset: 10,
+            yOffset: 10,
+            barThickness: 3,
+            color: '#555555',
+            fontColor: '#333333',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        });
     }
 
-    open_slide("{{ slide_url }}");
+    open_slide("{{ slide_url }}", parseFloat('{{ slide_mpp }}'));
     $(".load-slide").click(function(ev) {
         $(".current-slide").removeClass("current-slide");
         $(this).parent().addClass("current-slide");
-        open_slide($(this).attr('data-url'));
+        open_slide($(this).attr('data-url'),
+                parseFloat($(this).attr('data-mpp')));
         ev.preventDefault();
     });
 });
