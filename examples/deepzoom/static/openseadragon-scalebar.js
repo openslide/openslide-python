@@ -90,6 +90,7 @@
         this.viewer.container.appendChild(this.divElt);
         this.divElt.style.position = "relative";
         this.divElt.style.margin = "0";
+        this.divElt.style.pointerEvents = "none";
 
         this.setMinWidth(options.minWidth || "150px");
 
