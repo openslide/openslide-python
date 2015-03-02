@@ -134,6 +134,14 @@ $(document).ready(function() {
         // from DZI XML.
         viewer.source.minLevel = 8;
     });
+    viewer.scalebar({
+        xOffset: 10,
+        yOffset: 10,
+        barThickness: 3,
+        color: '#555555',
+        fontColor: '#333333',
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    });
 
     function open_slide(url, mpp) {
         var tile_source;
@@ -149,12 +157,6 @@ $(document).ready(function() {
         viewer.open(tile_source);
         viewer.scalebar({
             pixelsPerMeter: mpp ? (1e6 / mpp) : 0,
-            xOffset: 10,
-            yOffset: 10,
-            barThickness: 3,
-            color: '#555555',
-            fontColor: '#333333',
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
         });
     }
 
