@@ -22,7 +22,7 @@ OpenSlide can read virtual slides in several formats:
 * Philips_ (``.tiff``)
 * Sakura_ (``.svslide``)
 * Trestle_ (``.tif``)
-* Ventana_ (``.bif``)
+* Ventana_ (``.bif``, ``.tif``)
 * `Generic tiled TIFF`_ (``.tif``)
 
 .. _OpenSlide: http://openslide.org/
