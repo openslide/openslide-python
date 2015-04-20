@@ -1,6 +1,14 @@
 Notable Changes in OpenSlide Python
 ===================================
 
+Version 1.1.0, 2015-04-20
+ * Improve pixel read performance using optional extension module
+ * examples: Add scale bar via OpenSeadragonScalebar plugin
+ * examples: Update OpenSeadragon to 1.2.1
+ * examples: Enable rotation buttons in multiserver
+ * examples: Verify at server startup that file was specified
+ * examples: Disable pinch zoom outside of viewer
+
 Version 1.0.1, 2014-03-09
  * Fix documentation build breakage
 
