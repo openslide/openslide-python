@@ -49,7 +49,7 @@ elif platform.system() == 'Darwin':
         import ctypes.util
         _lib = ctypes.util.find_library('openslide')
         if _lib is None:
-            raise ImportError("Couldn't locate OpenSlide library")
+            raise ImportError("Couldn't locate OpenSlide dylib")
         _lib = cdll.LoadLibrary(_lib)
 else:
     _lib = cdll.LoadLibrary('libopenslide.so.0')
