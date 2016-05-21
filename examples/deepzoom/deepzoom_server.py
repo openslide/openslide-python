@@ -29,7 +29,7 @@ from unicodedata import normalize
 
 DEEPZOOM_SLIDE = None
 DEEPZOOM_FORMAT = 'jpeg'
-DEEPZOOM_TILE_SIZE = 256
+DEEPZOOM_TILE_SIZE = 254
 DEEPZOOM_OVERLAP = 1
 DEEPZOOM_LIMIT_BOUNDS = True
 DEEPZOOM_TILE_QUALITY = 75
@@ -149,7 +149,7 @@ if __name__ == '__main__':
                 help='JPEG compression quality [75]')
     parser.add_option('-s', '--size', metavar='PIXELS',
                 dest='DEEPZOOM_TILE_SIZE', type='int',
-                help='tile size [256]')
+                help='tile size [254]')
 
     (opts, args) = parser.parse_args()
     # Load config file if specified

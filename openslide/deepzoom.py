@@ -38,11 +38,13 @@ class DeepZoomGenerator(object):
     BOUNDS_SIZE_PROPS = (openslide.PROPERTY_NAME_BOUNDS_WIDTH,
                 openslide.PROPERTY_NAME_BOUNDS_HEIGHT)
 
-    def __init__(self, osr, tile_size=256, overlap=1, limit_bounds=False):
+    def __init__(self, osr, tile_size=254, overlap=1, limit_bounds=False):
         """Create a DeepZoomGenerator wrapping an OpenSlide object.
 
         osr:          a slide object.
-        tile_size:    the width and height of a single tile.
+        tile_size:    the width and height of a single tile.  For best viewer
+                      performance, tile_size + 2 * overlap should be a power
+                      of two.
         overlap:      the number of extra pixels to add to each interior edge
                       of a tile.
         limit_bounds: True to render only the non-empty slide region."""

@@ -253,14 +253,15 @@ Deep Zoom or a similar format.
 
 .. _`Deep Zoom`: http://msdn.microsoft.com/en-us/library/cc645050%28VS.95%29.aspx
 
-.. class:: DeepZoomGenerator(osr, tile_size=256, overlap=1, limit_bounds=False)
+.. class:: DeepZoomGenerator(osr, tile_size=254, overlap=1, limit_bounds=False)
 
    A Deep Zoom generator that wraps an
    :class:`OpenSlide <openslide.OpenSlide>` or
    :class:`ImageSlide <openslide.ImageSlide>` object.
 
    :param osr: the slide object
-   :param int tile_size: the width and height of a single tile
+   :param int tile_size: the width and height of a single tile.  For best
+      viewer performance, ``tile_size + 2 * overlap`` should be a power of two.
    :param int overlap: the number of extra pixels to add to each interior edge
       of a tile
    :param bool limit_bounds: ``True`` to render only the non-empty slide
