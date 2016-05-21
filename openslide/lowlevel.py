@@ -68,8 +68,9 @@ except ImportError:
         # First reorder the bytes in a pixel from native-endian aRGB to
         # big-endian RGBa to work around limitations in RGBa loader
         rawmode = (sys.byteorder == 'little') and 'BGRA' or 'ARGB'
-        buf = PIL.Image.frombuffer('RGBA', size, buf, 'raw', rawmode, 0,
-                1).tostring()
+        buf = PIL.Image.frombuffer('RGBA', size, buf, 'raw', rawmode, 0, 1)
+        # Image.tobytes() is named tostring() in Pillow 1.x and PIL
+        buf = (getattr(buf, 'tobytes', None) or buf.tostring)()
         # Now load the image as RGBA, undoing premultiplication
         return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBa', 0, 1)
 
