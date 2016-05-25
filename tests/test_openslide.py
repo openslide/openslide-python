@@ -62,12 +62,16 @@ class TestSlideWithoutOpening(unittest.TestCase):
         self.assertRaises(ArgumentError, lambda: osr.level_count)
 
 
-class TestSlide(unittest.TestCase):
+class _SlideTest(object):
     def setUp(self):
-        self.osr = OpenSlide(file_path('boxes.tiff'))
+        self.osr = OpenSlide(file_path(self.FILENAME))
 
     def tearDown(self):
         self.osr.close()
+
+
+class TestSlide(_SlideTest, unittest.TestCase):
+    FILENAME = 'boxes.tiff'
 
     def test_basic_metadata(self):
         self.assertEqual(self.osr.level_count, 4)
@@ -113,12 +117,8 @@ class TestSlide(unittest.TestCase):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
 
 
-class TestAperioSlide(unittest.TestCase):
-    def setUp(self):
-        self.osr = OpenSlide(file_path('small.svs'))
-
-    def tearDown(self):
-        self.osr.close()
+class TestAperioSlide(_SlideTest, unittest.TestCase):
+    FILENAME = 'small.svs'
 
     def test_associated_images(self):
         self.assertEqual(self.osr.associated_images['thumbnail'].size,
@@ -130,12 +130,8 @@ class TestAperioSlide(unittest.TestCase):
                 len(self.osr.associated_images))
 
 
-class TestUnreadableSlide(unittest.TestCase):
-    def setUp(self):
-        self.osr = OpenSlide(file_path('unreadable.svs'))
-
-    def tearDown(self):
-        self.osr.close()
+class TestUnreadableSlide(_SlideTest, unittest.TestCase):
+    FILENAME = 'unreadable.svs'
 
     def test_read_bad_region(self):
         self.assertEqual(self.osr.properties['openslide.vendor'], 'aperio')
