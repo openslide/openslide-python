@@ -267,8 +267,10 @@ class ImageSlide(AbstractSlide):
         file can be a filename or a PIL.Image."""
         AbstractSlide.__init__(self)
         if isinstance(file, Image.Image):
+            self._close = False
             self._image = file
         else:
+            self._close = True
             self._image = Image.open(file)
 
     @classmethod
@@ -288,6 +290,11 @@ class ImageSlide(AbstractSlide):
 
     def close(self):
         """Close the slide object."""
+        if self._close:
+            if hasattr(self._image, 'close'):
+                # Pillow >= 2.5.0
+                self._image.close()
+            self._close = False
         self._image = None
 
     @property
