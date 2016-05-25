@@ -93,14 +93,6 @@ class TestSlide(unittest.TestCase):
         self.assertEqual(len([v for v in self.osr.properties]),
                 len(self.osr.properties))
 
-    def test_associated_images(self):
-        # XXX test an associated image
-        self.assertRaises(KeyError,
-                lambda: self.osr.associated_images['__missing'])
-        # test __len__ and __iter__
-        self.assertEqual(len([v for v in self.osr.associated_images]),
-                len(self.osr.associated_images))
-
     def test_read_region(self):
         self.assertEqual(self.osr.read_region((-10, -10), 1, (400, 400)).size,
                 (400, 400))
@@ -119,3 +111,20 @@ class TestSlide(unittest.TestCase):
 
     def test_thumbnail(self):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
+
+
+class TestAperioSlide(unittest.TestCase):
+    def setUp(self):
+        self.osr = OpenSlide(file_path('small.svs'))
+
+    def tearDown(self):
+        self.osr.close()
+
+    def test_associated_images(self):
+        self.assertEqual(self.osr.associated_images['thumbnail'].size,
+                (16, 16))
+        self.assertRaises(KeyError,
+                lambda: self.osr.associated_images['__missing'])
+        # test __len__ and __iter__
+        self.assertEqual(len([v for v in self.osr.associated_images]),
+                len(self.osr.associated_images))
