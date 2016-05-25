@@ -128,3 +128,29 @@ class TestAperioSlide(unittest.TestCase):
         # test __len__ and __iter__
         self.assertEqual(len([v for v in self.osr.associated_images]),
                 len(self.osr.associated_images))
+
+
+class TestUnreadableSlide(unittest.TestCase):
+    def setUp(self):
+        self.osr = OpenSlide(file_path('unreadable.svs'))
+
+    def tearDown(self):
+        self.osr.close()
+
+    def test_read_bad_region(self):
+        self.assertEqual(self.osr.properties['openslide.vendor'], 'aperio')
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.read_region((0, 0), 0, (16, 16)))
+        # verify that errors are sticky
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.properties['openslide.vendor'])
+
+    def test_read_bad_associated_image(self):
+        self.assertEqual(self.osr.properties['openslide.vendor'], 'aperio')
+        # Prints "JPEGLib: Bogus marker length." to stderr due to
+        # https://github.com/openslide/openslide/issues/36
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.associated_images['thumbnail'])
+        # verify that errors are sticky
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.properties['openslide.vendor'])
