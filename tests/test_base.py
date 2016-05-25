@@ -33,7 +33,7 @@ class TestLibrary(unittest.TestCase):
         self.assertTrue(isinstance(openslide.__library_version__, string))
 
     def test_open_slide(self):
-        self.assertTrue(isinstance(open_slide(file_path('boxes.tiff')),
-                OpenSlide))
-        self.assertTrue(isinstance(open_slide(file_path('boxes.png')),
-                ImageSlide))
+        with open_slide(file_path('boxes.tiff')) as osr:
+            self.assertTrue(isinstance(osr, OpenSlide))
+        with open_slide(file_path('boxes.png')) as osr:
+            self.assertTrue(isinstance(osr, ImageSlide))

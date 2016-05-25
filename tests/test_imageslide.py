@@ -17,6 +17,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from contextlib import contextmanager
 from openslide import ImageSlide, OpenSlideError
 from PIL import Image
 import unittest
@@ -24,6 +25,17 @@ import unittest
 from . import file_path
 
 # Tests should be written to be compatible with Python 2.6 unittest.
+
+@contextmanager
+def image_open(*args, **kwargs):
+    img = Image.open(*args, **kwargs)
+    try:
+        yield img
+    finally:
+        if hasattr(img, 'close'):
+            # Pillow >= 2.5.0
+            img.close()
+
 
 class TestImageWithoutOpening(unittest.TestCase):
     def test_detect_format(self):
@@ -41,19 +53,19 @@ class TestImageWithoutOpening(unittest.TestCase):
                 lambda: ImageSlide(file_path('../setup.py')))
 
         # passing PIL.Image to ImageSlide
-        self.assertEqual(
-                ImageSlide(Image.open(file_path('boxes.png'))).dimensions,
-                (300, 250))
+        with image_open(file_path('boxes.png')) as img:
+            with ImageSlide(img) as osr:
+                self.assertEqual(osr.dimensions, (300, 250))
 
     def test_operations_on_closed_handle(self):
-        img = Image.open(file_path('boxes.png'))
-        osr = ImageSlide(img)
-        osr.close()
-        self.assertRaises(AttributeError,
-                lambda: osr.read_region((0, 0), 0, (100, 100)))
-        # If an Image is passed to the constructor, ImageSlide.close()
-        # shouldn't close it
-        self.assertEqual(img.getpixel((0, 0)), 3)
+        with image_open(file_path('boxes.png')) as img:
+            osr = ImageSlide(img)
+            osr.close()
+            self.assertRaises(AttributeError,
+                    lambda: osr.read_region((0, 0), 0, (100, 100)))
+            # If an Image is passed to the constructor, ImageSlide.close()
+            # shouldn't close it
+            self.assertEqual(img.getpixel((0, 0)), 3)
 
     def test_context_manager(self):
         osr = ImageSlide(file_path('boxes.png'))
