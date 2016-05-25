@@ -277,7 +277,12 @@ class ImageSlide(AbstractSlide):
 
         If the file format is not recognized, return None."""
         try:
-            return Image.open(filename).format
+            img = Image.open(filename)
+            format = img.format
+            if hasattr(img, 'close'):
+                # Pillow >= 2.5.0
+                img.close()
+            return format
         except IOError:
             return None
 
