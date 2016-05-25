@@ -21,6 +21,7 @@ setup(
             ],
         ),
     },
+    test_suite='tests',
     maintainer='OpenSlide project',
     maintainer_email='openslide-users@lists.andrew.cmu.edu',
     description='Python interface to OpenSlide',
