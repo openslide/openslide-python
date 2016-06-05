@@ -228,7 +228,7 @@ class _OpenSlideMap(Mapping):
         self._osr = osr
 
     def __repr__(self):
-        return repr(dict(self))
+        return '<%s %r>' % (self.__class__.__name__, dict(self))
 
     def __len__(self):
         return len(self._keys())

@@ -20,6 +20,7 @@
 from ctypes import ArgumentError
 from openslide import (OpenSlide, OpenSlideError,
         OpenSlideUnsupportedFormatError)
+import re
 import unittest
 
 from . import file_path
@@ -100,6 +101,8 @@ class TestSlide(_SlideTest, unittest.TestCase):
         # test __len__ and __iter__
         self.assertEqual(len([v for v in self.osr.properties]),
                 len(self.osr.properties))
+        self.assertEqual(repr(self.osr.properties),
+                '<_PropertyMap %r>' % dict(self.osr.properties))
 
     def test_read_region(self):
         self.assertEqual(self.osr.read_region((-10, -10), 1, (400, 400)).size,
@@ -132,6 +135,11 @@ class TestAperioSlide(_SlideTest, unittest.TestCase):
         # test __len__ and __iter__
         self.assertEqual(len([v for v in self.osr.associated_images]),
                 len(self.osr.associated_images))
+        def mangle_repr(o):
+            return re.sub('0x[0-9a-fA-F]+', '(mangled)', repr(o))
+        self.assertEqual(mangle_repr(self.osr.associated_images),
+                '<_AssociatedImageMap %s>' % mangle_repr(
+                dict(self.osr.associated_images)))
 
 
 class TestUnreadableSlide(_SlideTest, unittest.TestCase):
