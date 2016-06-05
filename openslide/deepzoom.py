@@ -58,6 +58,7 @@ class DeepZoomGenerator(object):
         self._osr = osr
         self._z_t_downsample = tile_size
         self._z_overlap = overlap
+        self._limit_bounds = limit_bounds
 
         # Precompute dimensions
         # Slide level and offset
@@ -111,6 +112,11 @@ class DeepZoomGenerator(object):
         # Slide background color
         self._bg_color = '#' + self._osr.properties.get(
                         openslide.PROPERTY_NAME_BACKGROUND_COLOR, 'ffffff')
+
+    def __repr__(self):
+        return '%s(%r, tile_size=%r, overlap=%r, limit_bounds=%r)' % (
+                self.__class__.__name__, self._osr, self._z_t_downsample,
+                self._z_overlap, self._limit_bounds)
 
     @property
     def level_count(self):

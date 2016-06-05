@@ -150,7 +150,11 @@ class OpenSlide(AbstractSlide):
     def __init__(self, filename):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
+        self._filename = filename
         self._osr = lowlevel.open(filename)
+
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self._filename)
 
     @classmethod
     def detect_format(cls, filename):
@@ -266,12 +270,16 @@ class ImageSlide(AbstractSlide):
 
         file can be a filename or a PIL.Image."""
         AbstractSlide.__init__(self)
+        self._file_arg = file
         if isinstance(file, Image.Image):
             self._close = False
             self._image = file
         else:
             self._close = True
             self._image = Image.open(file)
+
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self._file_arg)
 
     @classmethod
     def detect_format(cls, filename):

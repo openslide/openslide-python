@@ -52,10 +52,12 @@ class TestImageWithoutOpening(unittest.TestCase):
         self.assertRaises(IOError,
                 lambda: ImageSlide(file_path('../setup.py')))
 
+    def test_open_image(self):
         # passing PIL.Image to ImageSlide
         with image_open(file_path('boxes.png')) as img:
             with ImageSlide(img) as osr:
                 self.assertEqual(osr.dimensions, (300, 250))
+                self.assertEqual(repr(osr), 'ImageSlide(%r)' % img)
 
     def test_operations_on_closed_handle(self):
         with image_open(file_path('boxes.png')) as img:
@@ -81,6 +83,10 @@ class TestImage(unittest.TestCase):
 
     def tearDown(self):
         self.osr.close()
+
+    def test_repr(self):
+        self.assertEqual(repr(self.osr),
+                'ImageSlide(%r)' % file_path('boxes.png'))
 
     def test_metadata(self):
         self.assertEqual(self.osr.level_count, 1)

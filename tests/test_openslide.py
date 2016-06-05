@@ -73,6 +73,10 @@ class _SlideTest(object):
 class TestSlide(_SlideTest, unittest.TestCase):
     FILENAME = 'boxes.tiff'
 
+    def test_repr(self):
+        self.assertEqual(repr(self.osr),
+                'OpenSlide(%r)' % file_path('boxes.tiff'))
+
     def test_basic_metadata(self):
         self.assertEqual(self.osr.level_count, 4)
         self.assertEqual(self.osr.level_dimensions,

@@ -33,6 +33,11 @@ class _BoxesDeepZoomTest(object):
     def tearDown(self):
         self.osr.close()
 
+    def test_repr(self):
+        self.assertEqual(repr(self.dz),
+                ('DeepZoomGenerator(%r, tile_size=254, overlap=1, ' +
+                'limit_bounds=False)') % self.osr)
+
     def test_metadata(self):
         self.assertEqual(self.dz.level_count, 10)
         self.assertEqual(self.dz.tile_count, 11)
