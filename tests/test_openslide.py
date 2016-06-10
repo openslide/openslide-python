@@ -20,6 +20,7 @@
 from ctypes import ArgumentError
 from openslide import (OpenSlide, OpenSlideError,
         OpenSlideUnsupportedFormatError)
+from PIL import Image
 import re
 import sys
 import unittest
@@ -122,6 +123,8 @@ class TestSlide(_SlideTest, unittest.TestCase):
                 lambda: self.osr.read_region((0, 0), 1, (400, -5)))
 
     @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
+    @skip_if(have_optimizations and not hasattr(Image, 'PILLOW_VERSION'),
+            'broken on PIL')
     def test_read_region_2GB(self):
         self.assertEqual(
                 self.osr.read_region((1000, 1000), 0, (32768, 16384)).size,
