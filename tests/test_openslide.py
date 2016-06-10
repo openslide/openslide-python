@@ -23,7 +23,7 @@ from openslide import (OpenSlide, OpenSlideError,
 import re
 import unittest
 
-from . import file_path
+from . import file_path, have_optimizations, skip_if
 
 # Tests should be written to be compatible with Python 2.6 unittest.
 
@@ -125,12 +125,8 @@ class TestSlide(_SlideTest, unittest.TestCase):
                 self.osr.read_region((1000, 1000), 0, (32768, 16384)).size,
                 (32768, 16384))
 
+    @skip_if(have_optimizations, 'only relevant --without-performance')
     def test_read_region_2GB_width(self):
-        try:
-            import openslide._convert
-            return
-        except ImportError:
-            pass
         self.assertRaises(ValueError,
                 lambda: self.osr.read_region((1000, 1000), 0, (1 << 29, 1)))
 
