@@ -120,6 +120,20 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertRaises(OpenSlideError,
                 lambda: self.osr.read_region((0, 0), 1, (400, -5)))
 
+    def test_read_region_2GB(self):
+        self.assertEqual(
+                self.osr.read_region((1000, 1000), 0, (32768, 16384)).size,
+                (32768, 16384))
+
+    def test_read_region_2GB_width(self):
+        try:
+            import openslide._convert
+            return
+        except ImportError:
+            pass
+        self.assertRaises(ValueError,
+                lambda: self.osr.read_region((1000, 1000), 0, (1 << 29, 1)))
+
     def test_thumbnail(self):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
 
