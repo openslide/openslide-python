@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'OpenSlide Python'
-copyright = u'2010-2014 Carnegie Mellon University'
+copyright = u'2010-2016 Carnegie Mellon University and others'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
