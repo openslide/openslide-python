@@ -1,6 +1,15 @@
 Notable Changes in OpenSlide Python
 ===================================
 
+Version 1.1.1, 2016-06-11
+ * Change default Deep Zoom tile size to 254 pixels
+ * Fix image reading with Pillow 3.x when installed --without-performance
+ * Fix reading >= 2**29 pixels per call --without-performance
+ * Fix some "unclosed file" ResourceWarnings on Python 3
+ * Improve object reprs
+ * Add test suite
+ * examples: Drop support for Internet Explorer < 9
+
 Version 1.1.0, 2015-04-20
  * Improve pixel read performance using optional extension module
  * examples: Add scale bar via OpenSeadragonScalebar plugin
