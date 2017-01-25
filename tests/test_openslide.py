@@ -25,7 +25,8 @@ import re
 import sys
 import unittest
 
-from . import file_path, have_optimizations, skip_if
+from . import (file_path, have_optimizations, image_dimensions_cannot_be_zero,
+        skip_if)
 
 # Tests should be written to be compatible with Python 2.6 unittest.
 
@@ -110,6 +111,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertEqual(self.osr.read_region((-10, -10), 1, (400, 400)).size,
                 (400, 400))
 
+    @skip_if(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
     def test_read_region_size_dimension_zero(self):
         self.assertEqual(self.osr.read_region((0, 0), 1, (400, 0)).size,
                 (400, 0))

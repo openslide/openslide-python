@@ -19,6 +19,7 @@
 
 from functools import wraps
 import os
+from PIL import Image
 import unittest
 
 try:
@@ -26,6 +27,15 @@ try:
     have_optimizations = True
 except ImportError:
     have_optimizations = False
+
+
+# PIL.Image cannot have zero width or height on Pillow 3.4.0 - 3.4.2
+# https://github.com/python-pillow/Pillow/issues/2259
+try:
+    Image.new('RGBA', (1, 0))
+    image_dimensions_cannot_be_zero = False
+except ValueError:
+    image_dimensions_cannot_be_zero = True
 
 
 def file_path(name):

@@ -22,7 +22,7 @@ from openslide import ImageSlide, OpenSlideError
 from PIL import Image
 import unittest
 
-from . import file_path
+from . import file_path, image_dimensions_cannot_be_zero, skip_if
 
 # Tests should be written to be compatible with Python 2.6 unittest.
 
@@ -104,6 +104,7 @@ class TestImage(unittest.TestCase):
         self.assertEqual(self.osr.read_region((-10, -10), 0, (400, 400)).size,
                 (400, 400))
 
+    @skip_if(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
     def test_read_region_size_dimension_zero(self):
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 0)).size,
                 (400, 0))
