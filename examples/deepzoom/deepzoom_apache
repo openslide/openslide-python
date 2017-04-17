@@ -1,0 +1,5 @@
+<VirtualHost *>
+    WSGIDaemonProcess application threads=<default_5> python-path=<path_to_deepzoom_server.py>  user=<specify> group=<specify>
+    WSGIProcessGroup application
+    WSGIScriptAlias / <specify_full_path_to_deepzoom.wsgi>
+</VirtualHost>
