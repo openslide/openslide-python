@@ -128,7 +128,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
     # doesn't provide a way to find out how much RAM we have
     @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
     # Also skips Pillow < 2.1.0
-    @skip_if(have_optimizations and not hasattr(Image, 'PILLOW_VERSION'),
+    @skip_if(have_optimizations and not hasattr(Image, '__version__'),
             'broken on PIL')
     def _test_read_region_2GB(self):
         self.assertEqual(
