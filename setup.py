@@ -47,8 +47,10 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
+    python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*',
     install_requires=[
         'Pillow',
     ],
