@@ -25,16 +25,16 @@ OpenSlide can read virtual slides in several formats:
 * Ventana_ (``.bif``, ``.tif``)
 * `Generic tiled TIFF`_ (``.tif``)
 
-.. _OpenSlide: http://openslide.org/
-.. _Aperio: http://openslide.org/formats/aperio/
-.. _Hamamatsu: http://openslide.org/formats/hamamatsu/
-.. _Leica: http://openslide.org/formats/leica/
-.. _MIRAX: http://openslide.org/formats/mirax/
-.. _Philips: http://openslide.org/formats/philips/
-.. _Sakura: http://openslide.org/formats/sakura/
-.. _Trestle: http://openslide.org/formats/trestle/
-.. _Ventana: http://openslide.org/formats/ventana/
-.. _`Generic tiled TIFF`: http://openslide.org/formats/generic-tiff/
+.. _OpenSlide: https://openslide.org/
+.. _Aperio: https://openslide.org/formats/aperio/
+.. _Hamamatsu: https://openslide.org/formats/hamamatsu/
+.. _Leica: https://openslide.org/formats/leica/
+.. _MIRAX: https://openslide.org/formats/mirax/
+.. _Philips: https://openslide.org/formats/philips/
+.. _Sakura: https://openslide.org/formats/sakura/
+.. _Trestle: https://openslide.org/formats/trestle/
+.. _Ventana: https://openslide.org/formats/ventana/
+.. _`Generic tiled TIFF`: https://openslide.org/formats/generic-tiff/
 
 
 Requirements
@@ -52,7 +52,7 @@ Installation
 
 2.  ``pip install openslide-python``
 
-.. _`Install OpenSlide`: http://openslide.org/download/
+.. _`Install OpenSlide`: https://openslide.org/download/
 
 
 Using PIL
@@ -82,9 +82,9 @@ More Information
 - GitHub_
 - `Sample data`_
 
-.. _`API documentation`: http://openslide.org/api/python/
+.. _`API documentation`: https://openslide.org/api/python/
 .. _Changelog: https://raw.github.com/openslide/openslide-python/master/CHANGELOG.txt
-.. _Website: http://openslide.org/
+.. _Website: https://openslide.org/
 .. _GitHub: https://github.com/openslide/openslide-python
 .. _`Sample data`: http://openslide.cs.cmu.edu/download/openslide-testdata/
 

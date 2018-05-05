@@ -28,16 +28,16 @@ OpenSlide can read virtual slides in several formats:
 OpenSlide Python is released under the terms of the `GNU Lesser General
 Public License, version 2.1`_.
 
-.. _OpenSlide: http://openslide.org/
-.. _Aperio: http://openslide.org/formats/aperio/
-.. _Hamamatsu: http://openslide.org/formats/hamamatsu/
-.. _Leica: http://openslide.org/formats/leica/
-.. _MIRAX: http://openslide.org/formats/mirax/
-.. _Philips: http://openslide.org/formats/philips/
-.. _Sakura: http://openslide.org/formats/sakura/
-.. _Trestle: http://openslide.org/formats/trestle/
-.. _Ventana: http://openslide.org/formats/ventana/
-.. _`Generic tiled TIFF`: http://openslide.org/formats/generic-tiff/
+.. _OpenSlide: https://openslide.org/
+.. _Aperio: https://openslide.org/formats/aperio/
+.. _Hamamatsu: https://openslide.org/formats/hamamatsu/
+.. _Leica: https://openslide.org/formats/leica/
+.. _MIRAX: https://openslide.org/formats/mirax/
+.. _Philips: https://openslide.org/formats/philips/
+.. _Sakura: https://openslide.org/formats/sakura/
+.. _Trestle: https://openslide.org/formats/trestle/
+.. _Ventana: https://openslide.org/formats/ventana/
+.. _`Generic tiled TIFF`: https://openslide.org/formats/generic-tiff/
 .. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/master/lgpl-2.1.txt
 
 

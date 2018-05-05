@@ -31,7 +31,7 @@ setup(
     long_description=_long_description,
     license='GNU Lesser General Public License, version 2.1',
     keywords='openslide whole-slide image virtual slide library',
-    url='http://openslide.org/',
+    url='https://openslide.org/',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
