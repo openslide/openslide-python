@@ -36,7 +36,14 @@ from sphinx.util.console import bold
 def remove_directory_underscores(app, exception):
     if exception:
         return
-    app.info(bold('fixing directory names... '), True)
+    # Get logger
+    try:
+        from sphinx.util import logging
+        logger = logging.getLogger(__name__)
+    except (ImportError, AttributeError):
+        # Sphinx < 1.6
+        logger = app
+    logger.info(bold('fixing directory names... '), nonl=True)
     # Rewrite references in HTML/JS files
     for dirpath, _, filenames in os.walk(app.outdir):
         for filename in filenames:
@@ -61,7 +68,7 @@ def remove_directory_underscores(app, exception):
                 newfile = os.path.join(newdir, filename)
                 os.rename(oldfile, newfile)
             os.rmdir(olddir)
-    app.info('done')
+    logger.info('done')
 
 
 def setup(app):
