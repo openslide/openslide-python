@@ -48,8 +48,7 @@ Requirements
 Installation
 ============
 
-1.  `Install OpenSlide`_.
-
+1.  `Install OpenSlide`_.  (On Windows, donwload the provided prebuilt binaries, extract the ZIP file, and include the full path to the bin folder in the system path.)
 2.  ``pip install openslide-python``
 
 .. _`Install OpenSlide`: https://openslide.org/download/
