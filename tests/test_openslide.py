@@ -128,7 +128,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
     # doesn't provide a way to find out how much RAM we have
     @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
     # Also skips Pillow < 2.1.0
-    # Image.PILLOW_VERSION will be replaced by Image.__version__
+    # Image.PILLOW_VERSION has been replaced by Image.__version__
     @skip_if(have_optimizations and not (
             hasattr(Image, 'PILLOW_VERSION') or hasattr(Image, '__version__')),
             'broken on PIL')
