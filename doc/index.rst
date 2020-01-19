@@ -99,7 +99,7 @@ OpenSlide objects
    .. attribute:: properties
 
       Metadata about the slide, in the form of a
-      :class:`Mapping <collections.Mapping>` from OpenSlide property name to
+      :class:`Mapping <collections.abc.Mapping>` from OpenSlide property name to
       property value.  Property values are always strings.  OpenSlide
       provides some :ref:`standard properties <Standard properties>`, plus
       additional properties that vary by slide format.
@@ -107,7 +107,7 @@ OpenSlide objects
    .. attribute:: associated_images
 
       Images, such as label or macro images, which are associated with this
-      slide.  This is a :class:`Mapping <collections.Mapping>` from image
+      slide.  This is a :class:`Mapping <collections.abc.Mapping>` from image
       name to RGBA :class:`Image <PIL.Image.Image>`.
 
       Unlike in the C interface, these images are not premultiplied.
