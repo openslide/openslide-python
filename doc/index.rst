@@ -99,7 +99,7 @@ OpenSlide objects
    .. attribute:: properties
 
       Metadata about the slide, in the form of a
-      :class:`Mapping <collections.abc.Mapping>` from OpenSlide property name to
+      :class:`~collections.abc.Mapping` from OpenSlide property name to
       property value.  Property values are always strings.  OpenSlide
       provides some :ref:`standard properties <Standard properties>`, plus
       additional properties that vary by slide format.
