@@ -107,7 +107,7 @@ OpenSlide objects
    .. attribute:: associated_images
 
       Images, such as label or macro images, which are associated with this
-      slide.  This is a :class:`Mapping <collections.abc.Mapping>` from image
+      slide.  This is a :class:`~collections.abc.Mapping` from image
       name to RGBA :class:`Image <PIL.Image.Image>`.
 
       Unlike in the C interface, these images are not premultiplied.
