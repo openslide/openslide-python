@@ -23,8 +23,14 @@ This package provides Python bindings for the OpenSlide library.
 """
 
 from __future__ import division, print_function
-from collections import Mapping
 from PIL import Image
+
+try:
+    # Python 3.3+
+    from collections.abc import Mapping
+except ImportError:
+    # Python 2
+    from collections import Mapping
 
 from openslide import lowlevel
 
