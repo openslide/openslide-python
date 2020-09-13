@@ -10,7 +10,7 @@
 - [ ] Recompress tarball with `xz`
 - [ ] Attach release notes to [GitHub release](https://github.com/openslide/openslide-python/releases/new); upload tarballs and wheels
 - [ ] `python setup.py build_sphinx` and copy `build/sphinx/html/` to website `api/python/`
-- [ ] Update website: `_data/releases.yaml`, `_includes/news.markdown`
+- [ ] Update website: `_data/releases.yaml`, `_includes/news.md`
 - [ ] Send mail to -announce and -users
 - [ ] Update Fedora package
 - [ ] Update MacPorts package
