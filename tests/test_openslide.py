@@ -25,8 +25,7 @@ import re
 import sys
 import unittest
 
-from . import (file_path, have_optimizations, image_dimensions_cannot_be_zero,
-        skip_if)
+from . import file_path, image_dimensions_cannot_be_zero, skip_if
 
 # Tests should be written to be compatible with Python 2.6 unittest.
 
@@ -127,8 +126,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
     @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
     # Broken on PIL and on Pillow >= 3.4.0, < 6.2.0.
     # https://github.com/python-pillow/Pillow/issues/3963
-    @skip_if(have_optimizations and
-            [int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6,2,0],
+    @skip_if([int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6,2,0],
             'broken on PIL and Pillow < 6.2.0')
     # Disabled to avoid OOM killer on small systems, since the stdlib
     # doesn't provide a way to find out how much RAM we have
@@ -136,12 +134,6 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertEqual(
                 self.osr.read_region((1000, 1000), 0, (32768, 16384)).size,
                 (32768, 16384))
-
-    @skip_if(have_optimizations, 'only relevant --without-performance')
-    @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
-    def test_read_region_2GB_width(self):
-        self.assertRaises(ValueError,
-                lambda: self.osr.read_region((1000, 1000), 0, (1 << 29, 1)))
 
     def test_thumbnail(self):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
