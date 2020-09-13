@@ -8,7 +8,7 @@
 - [ ] `python setup.py register sdist`
 - [ ] `twine upload dist/*`
 - [ ] Recompress tarball with `xz`
-- [ ] Attach release notes to [GitHub release](https://github.com/openslide/openslide-python/releases); upload tarballs and wheels
+- [ ] Attach release notes to [GitHub release](https://github.com/openslide/openslide-python/releases/new); upload tarballs and wheels
 - [ ] `python setup.py build_sphinx` and copy `build/sphinx/html/` to website `api/python/`
 - [ ] Update website: `_data/releases.yaml`, `_includes/news.markdown`
 - [ ] Send mail to -announce and -users

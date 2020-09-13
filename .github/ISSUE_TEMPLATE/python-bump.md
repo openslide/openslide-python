@@ -8,4 +8,4 @@
 - [ ] Upload new wheels to [GitHub release](https://github.com/openslide/openslide-python/releases)
 - [ ] [Download new AppVeyor YAML](https://ci.appveyor.com/project/OpenSlide/openslide-python/settings/yaml) and commit it to `openslide-automation/appveyor/openslide-python.yml`
 - [ ] Update MacPorts package
-- [ ] Update website: Python 3 versions in `download/index.markdown`
+- [ ] Update website: Python 3 versions in `download/index.md`
