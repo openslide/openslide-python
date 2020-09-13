@@ -125,9 +125,11 @@ class TestSlide(_SlideTest, unittest.TestCase):
                 lambda: self.osr.read_region((0, 0), 1, (400, -5)))
 
     @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
-    # Also skips Pillow < 2.1.0
-    @skip_if(have_optimizations and not hasattr(Image, 'PILLOW_VERSION'),
-            'broken on PIL')
+    # Broken on PIL and on Pillow >= 3.4.0, < 6.2.0.
+    # https://github.com/python-pillow/Pillow/issues/3963
+    @skip_if(have_optimizations and
+            [int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6,2,0],
+            'broken on PIL and Pillow < 6.2.0')
     # Disabled to avoid OOM killer on small systems, since the stdlib
     # doesn't provide a way to find out how much RAM we have
     def _test_read_region_2GB(self):
