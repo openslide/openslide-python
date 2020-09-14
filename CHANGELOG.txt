@@ -1,6 +1,12 @@
 Notable Changes in OpenSlide Python
 ===================================
 
+Version 1.1.2, 2020-09-13
+ * Fix install with setuptools >= 46
+ * Fix ImportError with Python 3.9
+ * Fix docs build with Sphinx 2.x
+ * Remove --without-performance install option
+
 Version 1.1.1, 2016-06-11
  * Change default Deep Zoom tile size to 254 pixels
  * Fix image reading with Pillow 3.x when installed --without-performance
