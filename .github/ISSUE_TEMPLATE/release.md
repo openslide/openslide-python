@@ -5,7 +5,7 @@
 - [ ] [Launch AppVeyor build](https://ci.appveyor.com/project/OpenSlide/openslide-python)
 - [ ] `git clean -dxf && mkdir dist`
 - [ ] Download wheels from each build job into `dist` directory
-- [ ] `python setup.py register sdist`
+- [ ] `python setup.py sdist`
 - [ ] `twine upload dist/*`
 - [ ] Recompress tarball with `xz`
 - [ ] Attach release notes to [GitHub release](https://github.com/openslide/openslide-python/releases/new); upload tarballs and wheels
