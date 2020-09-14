@@ -22,13 +22,6 @@ import os
 from PIL import Image
 import unittest
 
-try:
-    import openslide._convert as _
-    have_optimizations = True
-except ImportError:
-    have_optimizations = False
-
-
 # PIL.Image cannot have zero width or height on Pillow 3.4.0 - 3.4.2
 # https://github.com/python-pillow/Pillow/issues/2259
 try:
