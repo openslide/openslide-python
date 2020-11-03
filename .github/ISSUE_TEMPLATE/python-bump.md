@@ -6,5 +6,6 @@
 - [ ] Download wheels _from new build jobs only_ into `dist` directory
 - [ ] `twine upload dist/*`
 - [ ] Upload new wheels to [GitHub release](https://github.com/openslide/openslide-python/releases)
+- [ ] `git checkout master`, add classifier for new Python version to `setup.py`, commit and push
 - [ ] Update MacPorts package
 - [ ] Update website: Python 3 versions in `download/index.md`
