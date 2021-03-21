@@ -25,9 +25,7 @@ import re
 import sys
 import unittest
 
-from . import file_path, image_dimensions_cannot_be_zero, skip_if
-
-# Tests should be written to be compatible with Python 2.6 unittest.
+from . import file_path, image_dimensions_cannot_be_zero
 
 class TestSlideWithoutOpening(unittest.TestCase):
     def test_detect_format(self):
@@ -110,7 +108,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertEqual(self.osr.read_region((-10, -10), 1, (400, 400)).size,
                 (400, 400))
 
-    @skip_if(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
+    @unittest.skipIf(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
     def test_read_region_size_dimension_zero(self):
         self.assertEqual(self.osr.read_region((0, 0), 1, (400, 0)).size,
                 (400, 0))
@@ -123,11 +121,11 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertRaises(OpenSlideError,
                 lambda: self.osr.read_region((0, 0), 1, (400, -5)))
 
-    @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
-    # Broken on PIL and on Pillow >= 3.4.0, < 6.2.0.
+    @unittest.skipIf(sys.maxsize < 1 << 32, '32-bit Python')
+    # Broken on Pillow >= 3.4.0, < 6.2.0.
     # https://github.com/python-pillow/Pillow/issues/3963
-    @skip_if([int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6,2,0],
-            'broken on PIL and Pillow < 6.2.0')
+    @unittest.skipIf([int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6,2,0],
+            'broken on Pillow < 6.2.0')
     # Disabled to avoid OOM killer on small systems, since the stdlib
     # doesn't provide a way to find out how much RAM we have
     def _test_read_region_2GB(self):

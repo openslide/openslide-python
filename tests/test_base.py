@@ -19,19 +19,11 @@
 
 import openslide
 from openslide import open_slide, OpenSlide, ImageSlide
-import sys
 import unittest
 
 from . import file_path
 
-# Tests should be written to be compatible with Python 2.6 unittest.
-
 class TestLibrary(unittest.TestCase):
-    def test_version(self):
-        string = unicode if sys.version[0] == '2' else str
-        self.assertTrue(isinstance(openslide.__version__, string))
-        self.assertTrue(isinstance(openslide.__library_version__, string))
-
     def test_open_slide(self):
         with open_slide(file_path('boxes.tiff')) as osr:
             self.assertTrue(isinstance(osr, OpenSlide))

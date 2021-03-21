@@ -23,8 +23,6 @@ import unittest
 
 from . import file_path
 
-# Tests should be written to be compatible with Python 2.6 unittest.
-
 class _BoxesDeepZoomTest(object):
     def setUp(self):
         self.osr = self.CLASS(file_path(self.FILENAME))

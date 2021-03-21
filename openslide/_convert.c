@@ -95,7 +95,6 @@ static PyMethodDef ConvertMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef convertmodule = {
     PyModuleDef_HEAD_INIT,
     "_convert",
@@ -109,10 +108,3 @@ PyInit__convert(void)
 {
     return PyModule_Create(&convertmodule);
 }
-#else
-PyMODINIT_FUNC
-init_convert(void)
-{
-    Py_InitModule("_convert", ConvertMethods);
-}
-#endif
