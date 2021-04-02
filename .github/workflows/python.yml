@@ -30,3 +30,25 @@ jobs:
       run: pip install -e .
     - name: Run tests
       run: pytest -v
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    - name: Install Python tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install sphinx
+    - name: Build
+      run: |
+        basename=openslide-python-docs-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
+        sphinx-build -d doctrees doc artifact/${basename}
+        echo "basename=${basename}" >> $GITHUB_ENV
+    - name: Archive
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.basename }}
+        path: artifact
