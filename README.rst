@@ -65,7 +65,7 @@ More Information
 - `Sample data`_
 
 .. _`API documentation`: https://openslide.org/api/python/
-.. _Changelog: https://raw.github.com/openslide/openslide-python/master/CHANGELOG.txt
+.. _Changelog: https://raw.github.com/openslide/openslide-python/main/CHANGELOG.txt
 .. _Website: https://openslide.org/
 .. _GitHub: https://github.com/openslide/openslide-python
 .. _`Sample data`: http://openslide.cs.cmu.edu/download/openslide-testdata/
@@ -77,4 +77,4 @@ License
 OpenSlide Python is released under the terms of the `GNU Lesser General
 Public License, version 2.1`_.
 
-.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/master/lgpl-2.1.txt
+.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/main/lgpl-2.1.txt

@@ -1,7 +1,7 @@
 # Adding wheels for a new Python release
 
-- Update Git master
-  - [ ] `git checkout master`
+- Update Git main
+  - [ ] `git checkout main`
   - [ ] Add classifier for new Python version to `setup.py`
   - [ ] Add new Python version to `.github/workflows/python.yml`
   - [ ] Commit and push

@@ -38,7 +38,7 @@ Public License, version 2.1`_.
 .. _Trestle: https://openslide.org/formats/trestle/
 .. _Ventana: https://openslide.org/formats/ventana/
 .. _`Generic tiled TIFF`: https://openslide.org/formats/generic-tiff/
-.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/master/lgpl-2.1.txt
+.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/main/lgpl-2.1.txt
 
 
 Basic usage
@@ -346,8 +346,8 @@ deepzoom_tile.py_
   This program is intended as an example.  If you need to generate Deep Zoom
   trees for production applications, consider `using VIPS`_ instead.
 
-.. _`Deep Zoom examples`: https://github.com/openslide/openslide-python/tree/master/examples/deepzoom
-.. _deepzoom_server.py: https://github.com/openslide/openslide-python/blob/master/examples/deepzoom/deepzoom_server.py
-.. _deepzoom_multiserver.py: https://github.com/openslide/openslide-python/blob/master/examples/deepzoom/deepzoom_multiserver.py
-.. _deepzoom_tile.py: https://github.com/openslide/openslide-python/blob/master/examples/deepzoom/deepzoom_tile.py
+.. _`Deep Zoom examples`: https://github.com/openslide/openslide-python/tree/main/examples/deepzoom
+.. _deepzoom_server.py: https://github.com/openslide/openslide-python/blob/main/examples/deepzoom/deepzoom_server.py
+.. _deepzoom_multiserver.py: https://github.com/openslide/openslide-python/blob/main/examples/deepzoom/deepzoom_multiserver.py
+.. _deepzoom_tile.py: https://github.com/openslide/openslide-python/blob/main/examples/deepzoom/deepzoom_tile.py
 .. _`using VIPS`: https://github.com/openslide/openslide/wiki/OpenSlideAndVIPS
