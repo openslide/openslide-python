@@ -45,8 +45,7 @@ elif platform.system() == 'Darwin':
     except OSError:
         # MacPorts doesn't add itself to the dyld search path, but
         # does add itself to the find_library() search path
-        # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld) except on
-        # Python 3.3.
+        # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
         import ctypes.util
         _lib = ctypes.util.find_library('openslide')
         if _lib is None:

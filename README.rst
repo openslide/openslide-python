@@ -40,7 +40,7 @@ OpenSlide can read virtual slides in several formats:
 Requirements
 ============
 
-* Python 3 >= 3.3
+* Python >= 3.6
 * OpenSlide >= 3.4.0
 * Pillow
 
