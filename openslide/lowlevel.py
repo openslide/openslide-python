@@ -30,12 +30,10 @@ returned by OpenSlide into a non-premultiplied PIL.Image happens here
 rather than in the high-level interface.)
 """
 
-from __future__ import division
 from ctypes import *
 from itertools import count
 import PIL.Image
 import platform
-import sys
 
 from . import _convert
 
@@ -100,18 +98,11 @@ class _OpenSlide(object):
 class _utf8_p(object):
     """Wrapper class to convert string arguments to bytes."""
 
-    if sys.version[0] == '2':
-        _bytes_type = str
-        _str_type = unicode
-    else:
-        _bytes_type = bytes
-        _str_type = str
-
     @classmethod
     def from_param(cls, obj):
-        if isinstance(obj, cls._bytes_type):
+        if isinstance(obj, bytes):
             return obj
-        elif isinstance(obj, cls._str_type):
+        elif isinstance(obj, str):
             return obj.encode('UTF-8')
         else:
             raise TypeError('Incorrect type')

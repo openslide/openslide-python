@@ -41,12 +41,6 @@ app.config.from_object(__name__)
 app.config.from_envvar('DEEPZOOM_MULTISERVER_SETTINGS', silent=True)
 
 
-class PILBytesIO(BytesIO):
-    def fileno(self):
-        '''Classic PIL doesn't understand io.UnsupportedOperation.'''
-        raise AttributeError('Not supported')
-
-
 class _SlideCache(object):
     def __init__(self, cache_size, dz_opts):
         self.cache_size = cache_size
@@ -161,7 +155,7 @@ def tile(path, level, col, row, format):
     except ValueError:
         # Invalid level or coordinates
         abort(404)
-    buf = PILBytesIO()
+    buf = BytesIO()
     tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
     resp = make_response(buf.getvalue())
     resp.mimetype = 'image/%s' % format

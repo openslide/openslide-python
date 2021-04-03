@@ -33,19 +33,3 @@ except ValueError:
 
 def file_path(name):
     return os.path.join(os.path.dirname(__file__), name)
-
-
-def skip_if(condition, reason):
-    if hasattr(unittest, 'skipIf'):
-        # Python >= 2.7
-        return unittest.skipIf(condition, reason)
-    else:
-        # Python 2.6
-        def decorator(f):
-            @wraps(f)
-            def wrapper(*args, **kwargs):
-                if condition:
-                    return
-                return f(*args, **kwargs)
-            return wrapper
-        return decorator

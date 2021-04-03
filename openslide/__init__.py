@@ -22,15 +22,8 @@
 This package provides Python bindings for the OpenSlide library.
 """
 
-from __future__ import division, print_function
+from collections.abc import Mapping
 from PIL import Image
-
-try:
-    # Python 3.3+
-    from collections.abc import Mapping
-except ImportError:
-    # Python 2
-    from collections import Mapping
 
 from openslide import lowlevel
 
@@ -40,17 +33,17 @@ from openslide._version import __version__
 
 __library_version__ = lowlevel.get_version()
 
-PROPERTY_NAME_COMMENT          = u'openslide.comment'
-PROPERTY_NAME_VENDOR           = u'openslide.vendor'
-PROPERTY_NAME_QUICKHASH1       = u'openslide.quickhash-1'
-PROPERTY_NAME_BACKGROUND_COLOR = u'openslide.background-color'
-PROPERTY_NAME_OBJECTIVE_POWER  = u'openslide.objective-power'
-PROPERTY_NAME_MPP_X            = u'openslide.mpp-x'
-PROPERTY_NAME_MPP_Y            = u'openslide.mpp-y'
-PROPERTY_NAME_BOUNDS_X         = u'openslide.bounds-x'
-PROPERTY_NAME_BOUNDS_Y         = u'openslide.bounds-y'
-PROPERTY_NAME_BOUNDS_WIDTH     = u'openslide.bounds-width'
-PROPERTY_NAME_BOUNDS_HEIGHT    = u'openslide.bounds-height'
+PROPERTY_NAME_COMMENT          = 'openslide.comment'
+PROPERTY_NAME_VENDOR           = 'openslide.vendor'
+PROPERTY_NAME_QUICKHASH1       = 'openslide.quickhash-1'
+PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
+PROPERTY_NAME_OBJECTIVE_POWER  = 'openslide.objective-power'
+PROPERTY_NAME_MPP_X            = 'openslide.mpp-x'
+PROPERTY_NAME_MPP_Y            = 'openslide.mpp-y'
+PROPERTY_NAME_BOUNDS_X         = 'openslide.bounds-x'
+PROPERTY_NAME_BOUNDS_Y         = 'openslide.bounds-y'
+PROPERTY_NAME_BOUNDS_WIDTH     = 'openslide.bounds-width'
+PROPERTY_NAME_BOUNDS_HEIGHT    = 'openslide.bounds-height'
 
 class AbstractSlide(object):
     """The base class of a slide object."""

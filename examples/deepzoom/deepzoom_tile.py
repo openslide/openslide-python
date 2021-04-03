@@ -20,7 +20,6 @@
 
 """An example program to generate a Deep Zoom directory tree from a slide."""
 
-from __future__ import print_function
 import json
 from multiprocessing import Process, JoinableQueue
 import openslide
