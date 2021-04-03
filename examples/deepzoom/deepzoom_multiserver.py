@@ -21,12 +21,27 @@
 from collections import OrderedDict
 from flask import Flask, abort, make_response, render_template, url_for
 from io import BytesIO
-import openslide
-from openslide import OpenSlide, OpenSlideError
-from openslide.deepzoom import DeepZoomGenerator
 import os
 from optparse import OptionParser
 from threading import Lock
+
+if os.name == 'nt':
+    _dll_path = os.getenv('OPENSLIDE_PATH')
+    if _dll_path is not None:
+        if hasattr(os, 'add_dll_directory'):
+            # Python >= 3.8
+            with os.add_dll_directory(_dll_path):
+                import openslide
+        else:
+            # Python < 3.8
+            _orig_path = os.environ.get('PATH', '')
+            os.environ['PATH'] = _orig_path + ';' + _dll_path
+            import openslide
+            os.environ['PATH'] = _orig_path
+else:
+    import openslide
+from openslide import OpenSlide, OpenSlideError
+from openslide.deepzoom import DeepZoomGenerator
 
 SLIDE_DIR = '.'
 SLIDE_CACHE_SIZE = 10
