@@ -8,11 +8,12 @@ on:
     branches: [main]
 
 jobs:
-  linux:
-    name: Linux
-    runs-on: ubuntu-latest
+  tests:
+    name: Tests
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
     - name: Check out repo
@@ -26,7 +27,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest
     - name: Install OpenSlide
-      run: sudo apt-get install libopenslide0
+      run: |
+        case "${{ matrix.os }}" in
+        ubuntu-latest)
+          sudo apt-get install libopenslide0
+          ;;
+        macos-latest)
+          brew install openslide
+          ;;
+        esac
     - name: Install
       run: pip install -e .
     - name: Run tests
