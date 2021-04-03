@@ -2,9 +2,9 @@
 
 - [ ] Update `CHANGELOG.txt` and version in `openslide/_version.py`
 - [ ] Create and push signed tag
-- [ ] [Launch AppVeyor build](https://ci.appveyor.com/project/OpenSlide/openslide-python)
 - [ ] `git clean -dxf && mkdir dist`
-- [ ] Download wheels from each build job into `dist` directory
+- [ ] Find the [workflow run](https://github.com/openslide/openslide-python/actions) for the tag; download its wheels artifact
+- [ ] `unzip /path/to/downloaded/openslide-python-wheels.zip && mv openslide-python-wheels-*/* dist/`
 - [ ] `python setup.py sdist`
 - [ ] `twine upload dist/*`
 - [ ] Recompress tarball with `xz`
