@@ -22,6 +22,26 @@ import os
 from PIL import Image
 import unittest
 
+# Handle Windows-specific first-import logic here, so individual modules
+# don't have to
+if os.name == 'nt':
+    # In application code, you probably shouldn't use an environment
+    # variable for this, unless you're sure you can trust the contents of the
+    # environment.
+    _dll_path = os.getenv('OPENSLIDE_PATH')
+    if _dll_path is not None:
+        if hasattr(os, 'add_dll_directory'):
+            # Python >= 3.8
+            with os.add_dll_directory(_dll_path):
+                import openslide
+        else:
+            # Python < 3.8
+            _orig_path = os.environ.get('PATH', '')
+            os.environ['PATH'] = _orig_path + ';' + _dll_path
+            import openslide
+            os.environ['PATH'] = _orig_path
+
+
 # PIL.Image cannot have zero width or height on Pillow 3.4.0 - 3.4.2
 # https://github.com/python-pillow/Pillow/issues/2259
 try:
