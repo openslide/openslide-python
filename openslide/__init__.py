@@ -149,7 +149,9 @@ class OpenSlide(AbstractSlide):
     def __init__(self, filename):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
-        self._filename = filename
+        # Filename might be a pathlib.Path instance, but file reader expects
+        # a string.
+        self._filename = str(filename)
         self._osr = lowlevel.open(filename)
 
     def __repr__(self):
