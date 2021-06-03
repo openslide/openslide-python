@@ -52,6 +52,13 @@ repos:
         name: Lint python code with flake8
         additional_dependencies: [flake8-bugbear]
 
+  #- repo: https://github.com/myint/rstcheck
+  #  rev: 3f92957478422df87bd730abde66f089cc1ee19b
+  #  hooks:
+  #    - id: rstcheck
+  #      name: Validate reStructuredText syntax
+  #      additional_dependencies: [sphinx]
+
   - repo: meta
     hooks:
       - id: check-hooks-apply

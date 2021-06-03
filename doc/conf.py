@@ -269,6 +269,6 @@ texinfo_documents = [
 
 # intersphinx
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/', None),
-    'pillow': ('http://pillow.readthedocs.org/en/latest/', None),
+    'python': ('https://docs.python.org/3/', None),
+    'pillow': ('https://pillow.readthedocs.io/en/latest/', None),
 }
