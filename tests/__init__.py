@@ -19,6 +19,8 @@
 
 from functools import wraps
 import os
+from pathlib import Path
+
 from PIL import Image
 import unittest
 
@@ -52,4 +54,4 @@ except ValueError:
 
 
 def file_path(name):
-    return os.path.join(os.path.dirname(__file__), name)
+    return Path(__file__).parent / name

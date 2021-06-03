@@ -149,10 +149,8 @@ class OpenSlide(AbstractSlide):
     def __init__(self, filename):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
-        # Filename might be a pathlib.Path instance, but file reader expects
-        # a string.
-        self._filename = str(filename)
-        self._osr = lowlevel.open(filename)
+        self._filename = filename
+        self._osr = lowlevel.open(str(filename))
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self._filename)
@@ -162,7 +160,7 @@ class OpenSlide(AbstractSlide):
         """Return a string describing the format vendor of the specified file.
 
         If the file format is not recognized, return None."""
-        return lowlevel.detect_vendor(filename)
+        return lowlevel.detect_vendor(str(filename))
 
     def close(self):
         """Close the OpenSlide object."""
