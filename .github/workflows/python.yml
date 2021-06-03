@@ -8,8 +8,16 @@ on:
     branches: [main]
 
 jobs:
+  pre-commit:
+    name: Rerun pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - uses: pre-commit/action@v2.0.2
   tests:
     name: Tests
+    needs: pre-commit
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -42,6 +50,7 @@ jobs:
       run: pytest -v
   windows:
     name: Windows
+    needs: pre-commit
     runs-on: windows-latest
     env:
       WINBUILD_RELEASE: 20171122
@@ -100,6 +109,7 @@ jobs:
         path: artifacts
   docs:
     name: Docs
+    needs: pre-commit
     runs-on: ubuntu-latest
     steps:
     - name: Check out repo

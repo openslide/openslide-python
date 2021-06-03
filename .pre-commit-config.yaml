@@ -1,0 +1,15 @@
+# exclude vendored files
+exclude: '^(lgpl-2\.1\.txt|examples/deepzoom/static/.*\.js)$'
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-yaml
+
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
