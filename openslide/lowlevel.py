@@ -48,13 +48,16 @@ elif platform.system() == 'Darwin':
         # does add itself to the find_library() search path
         # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
         import ctypes.util
+
         _lib = ctypes.util.find_library('openslide')
         if _lib is None:
-            raise ImportError("Couldn't locate OpenSlide dylib.  " +
-                    "Is OpenSlide installed?")
+            raise ImportError(
+                "Couldn't locate OpenSlide dylib.  Is OpenSlide installed?"
+            )
         _lib = cdll.LoadLibrary(_lib)
 else:
     _lib = cdll.LoadLibrary('libopenslide.so.0')
+
 
 class OpenSlideError(Exception):
     """An error produced by the OpenSlide library.
@@ -62,11 +65,13 @@ class OpenSlideError(Exception):
     Import this from openslide rather than from openslide.lowlevel.
     """
 
+
 class OpenSlideUnsupportedFormatError(OpenSlideError):
     """OpenSlide does not support the requested file.
 
     Import this from openslide rather than from openslide.lowlevel.
     """
+
 
 class _OpenSlide:
     """Wrapper class to make sure we correctly pass an OpenSlide handle."""
@@ -95,6 +100,7 @@ class _OpenSlide:
             raise ValueError("Passing closed slide object")
         return obj
 
+
 class _utf8_p:
     """Wrapper class to convert string arguments to bytes."""
 
@@ -107,25 +113,28 @@ class _utf8_p:
         else:
             raise TypeError('Incorrect type')
 
+
 def _load_image(buf, size):
     '''buf must be a mutable buffer.'''
     _convert.argb2rgba(buf)
     return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBA', 0, 1)
 
+
 # check for errors opening an image file and wrap the resulting handle
 def _check_open(result, _func, _args):
     if result is None:
-        raise OpenSlideUnsupportedFormatError(
-                "Unsupported or missing image file")
+        raise OpenSlideUnsupportedFormatError("Unsupported or missing image file")
     slide = _OpenSlide(c_void_p(result))
     err = get_error(slide)
     if err is not None:
         raise OpenSlideError(err)
     return slide
 
+
 # prevent further operations on slide handle after it is closed
 def _check_close(_result, _func, args):
     args[0].invalidate()
+
 
 # Convert returned byte array, if present, into a string
 def _check_string(result, func, _args):
@@ -134,12 +143,14 @@ def _check_string(result, func, _args):
     else:
         return result
 
+
 # check if the library got into an error state after each library call
 def _check_error(result, func, args):
     err = get_error(args[0])
     if err is not None:
         raise OpenSlideError(err)
     return _check_string(result, func, args)
+
 
 # Convert returned NULL-terminated char** into a list of strings
 def _check_name_list(result, func, args):
@@ -152,6 +163,7 @@ def _check_name_list(result, func, args):
         names.append(name.decode('UTF-8', 'replace'))
     return names
 
+
 # resolve and return an OpenSlide function with the specified properties
 def _func(name, restype, argtypes, errcheck=_check_error):
     func = getattr(_lib, name)
@@ -161,9 +173,9 @@ def _func(name, restype, argtypes, errcheck=_check_error):
         func.errcheck = errcheck
     return func
 
+
 try:
-    detect_vendor = _func('openslide_detect_vendor', c_char_p, [_utf8_p],
-            _check_string)
+    detect_vendor = _func('openslide_detect_vendor', c_char_p, [_utf8_p], _check_string)
 except AttributeError:
     raise OpenSlideError('OpenSlide >= 3.4.0 required')
 
@@ -173,30 +185,41 @@ close = _func('openslide_close', None, [_OpenSlide], _check_close)
 
 get_level_count = _func('openslide_get_level_count', c_int32, [_OpenSlide])
 
-_get_level_dimensions = _func('openslide_get_level_dimensions', None,
-        [_OpenSlide, c_int32, POINTER(c_int64), POINTER(c_int64)])
+_get_level_dimensions = _func(
+    'openslide_get_level_dimensions',
+    None,
+    [_OpenSlide, c_int32, POINTER(c_int64), POINTER(c_int64)],
+)
+
+
 def get_level_dimensions(slide, level):
     w, h = c_int64(), c_int64()
     _get_level_dimensions(slide, level, byref(w), byref(h))
     return w.value, h.value
 
-get_level_downsample = _func('openslide_get_level_downsample', c_double,
-        [_OpenSlide, c_int32])
 
-get_best_level_for_downsample = \
-        _func('openslide_get_best_level_for_downsample', c_int32,
-        [_OpenSlide, c_double])
+get_level_downsample = _func(
+    'openslide_get_level_downsample', c_double, [_OpenSlide, c_int32]
+)
 
-_read_region = _func('openslide_read_region', None,
-        [_OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64,
-        c_int64])
+get_best_level_for_downsample = _func(
+    'openslide_get_best_level_for_downsample', c_int32, [_OpenSlide, c_double]
+)
+
+_read_region = _func(
+    'openslide_read_region',
+    None,
+    [_OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64, c_int64],
+)
+
+
 def read_region(slide, x, y, level, w, h):
     if w < 0 or h < 0:
         # OpenSlide would catch this, but not before we tried to allocate
         # a negative-size buffer
         raise OpenSlideError(
-                "negative width (%d) or negative height (%d) not allowed" % (
-                w, h))
+            "negative width (%d) or negative height (%d) not allowed" % (w, h)
+        )
     if w == 0 or h == 0:
         # PIL.Image.frombuffer() would raise an exception
         return PIL.Image.new('RGBA', (w, h))
@@ -204,31 +227,47 @@ def read_region(slide, x, y, level, w, h):
     _read_region(slide, buf, x, y, level, w, h)
     return _load_image(buf, (w, h))
 
+
 get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], _check_string)
 
-get_property_names = _func('openslide_get_property_names', POINTER(c_char_p),
-        [_OpenSlide], _check_name_list)
+get_property_names = _func(
+    'openslide_get_property_names', POINTER(c_char_p), [_OpenSlide], _check_name_list
+)
 
-get_property_value = _func('openslide_get_property_value', c_char_p,
-        [_OpenSlide, _utf8_p])
+get_property_value = _func(
+    'openslide_get_property_value', c_char_p, [_OpenSlide, _utf8_p]
+)
 
-get_associated_image_names = _func('openslide_get_associated_image_names',
-        POINTER(c_char_p), [_OpenSlide], _check_name_list)
+get_associated_image_names = _func(
+    'openslide_get_associated_image_names',
+    POINTER(c_char_p),
+    [_OpenSlide],
+    _check_name_list,
+)
 
-_get_associated_image_dimensions = \
-        _func('openslide_get_associated_image_dimensions', None,
-        [_OpenSlide, _utf8_p, POINTER(c_int64), POINTER(c_int64)])
+_get_associated_image_dimensions = _func(
+    'openslide_get_associated_image_dimensions',
+    None,
+    [_OpenSlide, _utf8_p, POINTER(c_int64), POINTER(c_int64)],
+)
+
+
 def get_associated_image_dimensions(slide, name):
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
     return w.value, h.value
 
-_read_associated_image = _func('openslide_read_associated_image', None,
-        [_OpenSlide, _utf8_p, POINTER(c_uint32)])
+
+_read_associated_image = _func(
+    'openslide_read_associated_image', None, [_OpenSlide, _utf8_p, POINTER(c_uint32)]
+)
+
+
 def read_associated_image(slide, name):
     w, h = get_associated_image_dimensions(slide, name)
     buf = (w * h * c_uint32)()
     _read_associated_image(slide, name, buf)
     return _load_image(buf, (w, h))
+
 
 get_version = _func('openslide_get_version', c_char_p, [], _check_string)

@@ -40,12 +40,9 @@ def image_open(*args, **kwargs):
 
 class TestImageWithoutOpening(unittest.TestCase):
     def test_detect_format(self):
-        self.assertTrue(
-                ImageSlide.detect_format(file_path('__missing_file')) is None)
-        self.assertTrue(
-                ImageSlide.detect_format(file_path('../setup.py')) is None)
-        self.assertEqual(
-                ImageSlide.detect_format(file_path('boxes.png')), 'PNG')
+        self.assertTrue(ImageSlide.detect_format(file_path('__missing_file')) is None)
+        self.assertTrue(ImageSlide.detect_format(file_path('../setup.py')) is None)
+        self.assertEqual(ImageSlide.detect_format(file_path('boxes.png')), 'PNG')
 
     def test_open(self):
         self.assertRaises(OSError, lambda: ImageSlide(file_path('__does_not_exist')))
@@ -62,8 +59,9 @@ class TestImageWithoutOpening(unittest.TestCase):
         with image_open(file_path('boxes.png')) as img:
             osr = ImageSlide(img)
             osr.close()
-            self.assertRaises(AttributeError,
-                    lambda: osr.read_region((0, 0), 0, (100, 100)))
+            self.assertRaises(
+                AttributeError, lambda: osr.read_region((0, 0), 0, (100, 100))
+            )
             # If an Image is passed to the constructor, ImageSlide.close()
             # shouldn't close it
             self.assertEqual(img.getpixel((0, 0)), 3)
@@ -72,8 +70,9 @@ class TestImageWithoutOpening(unittest.TestCase):
         osr = ImageSlide(file_path('boxes.png'))
         with osr:
             pass
-        self.assertRaises(AttributeError,
-                lambda: osr.read_region((0, 0), 0, (100, 100)))
+        self.assertRaises(
+            AttributeError, lambda: osr.read_region((0, 0), 0, (100, 100))
+        )
 
 
 class TestImage(unittest.TestCase):
@@ -84,8 +83,7 @@ class TestImage(unittest.TestCase):
         self.osr.close()
 
     def test_repr(self):
-        self.assertEqual(repr(self.osr),
-                'ImageSlide(%r)' % file_path('boxes.png'))
+        self.assertEqual(repr(self.osr), 'ImageSlide(%r)' % file_path('boxes.png'))
 
     def test_metadata(self):
         self.assertEqual(self.osr.level_count, 1)
@@ -100,21 +98,23 @@ class TestImage(unittest.TestCase):
         self.assertEqual(self.osr.associated_images, {})
 
     def test_read_region(self):
-        self.assertEqual(self.osr.read_region((-10, -10), 0, (400, 400)).size,
-                (400, 400))
+        self.assertEqual(
+            self.osr.read_region((-10, -10), 0, (400, 400)).size, (400, 400)
+        )
 
     @unittest.skipIf(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
     def test_read_region_size_dimension_zero(self):
-        self.assertEqual(self.osr.read_region((0, 0), 0, (400, 0)).size,
-                (400, 0))
+        self.assertEqual(self.osr.read_region((0, 0), 0, (400, 0)).size, (400, 0))
 
     def test_read_region_bad_level(self):
-        self.assertRaises(OpenSlideError,
-                lambda: self.osr.read_region((0, 0), 1, (100, 100)))
+        self.assertRaises(
+            OpenSlideError, lambda: self.osr.read_region((0, 0), 1, (100, 100))
+        )
 
     def test_read_region_bad_size(self):
-        self.assertRaises(OpenSlideError,
-                lambda: self.osr.read_region((0, 0), 0, (400, -5)))
+        self.assertRaises(
+            OpenSlideError, lambda: self.osr.read_region((0, 0), 0, (400, -5))
+        )
 
     def test_thumbnail(self):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))

@@ -40,6 +40,7 @@ def remove_directory_underscores(app, exception):
     # Get logger
     try:
         from sphinx.util import logging
+
         logger = logging.getLogger(__name__)
     except (ImportError, AttributeError):
         # Sphinx < 1.6

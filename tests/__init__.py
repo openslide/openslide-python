@@ -41,6 +41,7 @@ if os.name == 'nt':
             _orig_path = os.environ.get('PATH', '')
             os.environ['PATH'] = _orig_path + ';' + _dll_path
             import openslide
+
             os.environ['PATH'] = _orig_path
 
 

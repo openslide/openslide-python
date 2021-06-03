@@ -26,6 +26,20 @@ repos:
       - id: isort
         name: Reorder python imports with isort
 
+  - repo: https://github.com/psf/black
+    rev: 21.5b2
+    hooks:
+      - id: black
+        name: Format python code with black
+        language_version: python3
+        args: ["--skip-string-normalization"]
+
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.10.0
+    hooks:
+      - id: blacken-docs
+        name: Format python code in documentation
+
   - repo: meta
     hooks:
       - id: check-hooks-apply
