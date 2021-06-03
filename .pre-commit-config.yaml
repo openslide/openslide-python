@@ -8,6 +8,10 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: '^\.github/.*\.md$'
+      - id: trailing-whitespace
+        exclude: '^\.github/.*\.md$'
 
   - repo: meta
     hooks:

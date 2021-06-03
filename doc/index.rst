@@ -53,12 +53,12 @@ OpenSlide objects
 
    An open whole-slide image.
 
-   If any operation on the object fails, :exc:`OpenSlideError` is raised. 
+   If any operation on the object fails, :exc:`OpenSlideError` is raised.
    OpenSlide has latching error semantics: once :exc:`OpenSlideError` is
    raised, all future operations on the :class:`OpenSlide`, other than
    :meth:`close()`, will also raise :exc:`OpenSlideError`.
 
-   :meth:`close()` is called automatically when the object is deleted. 
+   :meth:`close()` is called automatically when the object is deleted.
    The object may be used as a context manager, in which case it will be
    closed upon exiting the context.
 
