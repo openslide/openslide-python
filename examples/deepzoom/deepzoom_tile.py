@@ -90,7 +90,7 @@ class TileWorker(Process):
                     limit_bounds=self._limit_bounds)
 
 
-class DeepZoomImageTiler(object):
+class DeepZoomImageTiler:
     """Handles generation of tiles and metadata for a single image."""
 
     def __init__(self, dz, basename, format, associated, queue):
@@ -138,7 +138,7 @@ class DeepZoomImageTiler(object):
         return self._dz.get_dzi(self._format)
 
 
-class DeepZoomStaticTiler(object):
+class DeepZoomStaticTiler:
     """Handles generation of tiles and metadata for all images in a slide."""
 
     def __init__(self, slidepath, basename, format, tile_size, overlap,
@@ -199,8 +199,8 @@ class DeepZoomStaticTiler(object):
         env = jinja2.Environment(loader=jinja2.PackageLoader(__name__),
                     autoescape=True)
         template = env.get_template('slide-multipane.html')
-        associated_urls = dict((n, self._url_for(n))
-                    for n in self._slide.associated_images)
+        associated_urls = {n: self._url_for(n)
+                    for n in self._slide.associated_images}
         try:
             mpp_x = self._slide.properties[openslide.PROPERTY_NAME_MPP_X]
             mpp_y = self._slide.properties[openslide.PROPERTY_NAME_MPP_Y]

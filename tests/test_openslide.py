@@ -63,7 +63,7 @@ class TestSlideWithoutOpening(unittest.TestCase):
         self.assertRaises(ArgumentError, lambda: osr.level_count)
 
 
-class _SlideTest(object):
+class _SlideTest:
     def setUp(self):
         self.osr = OpenSlide(file_path(self.FILENAME))
 

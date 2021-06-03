@@ -45,7 +45,7 @@ PROPERTY_NAME_BOUNDS_Y         = 'openslide.bounds-y'
 PROPERTY_NAME_BOUNDS_WIDTH     = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_HEIGHT    = 'openslide.bounds-height'
 
-class AbstractSlide(object):
+class AbstractSlide:
     """The base class of a slide object."""
 
     def __enter__(self):
@@ -121,8 +121,8 @@ class AbstractSlide(object):
         """Return a PIL.Image containing an RGB thumbnail of the image.
 
         size:     the maximum size of the thumbnail."""
-        downsample = max(*[dim / thumb for dim, thumb in
-                zip(self.dimensions, size)])
+        downsample = max(*(dim / thumb for dim, thumb in
+                zip(self.dimensions, size)))
         level = self.get_best_level_for_downsample(downsample)
         tile = self.read_region((0, 0), level, self.level_dimensions[level])
         # Apply on solid background
@@ -153,7 +153,7 @@ class OpenSlide(AbstractSlide):
         self._osr = lowlevel.open(str(filename))
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self._filename)
+        return f'{self.__class__.__name__}({self._filename!r})'
 
     @classmethod
     def detect_format(cls, filename):
@@ -227,7 +227,7 @@ class _OpenSlideMap(Mapping):
         self._osr = osr
 
     def __repr__(self):
-        return '<%s %r>' % (self.__class__.__name__, dict(self))
+        return f'<{self.__class__.__name__} {dict(self)!r}>'
 
     def __len__(self):
         return len(self._keys())
@@ -278,7 +278,7 @@ class ImageSlide(AbstractSlide):
             self._image = Image.open(file)
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self._file_arg)
+        return f'{self.__class__.__name__}({self._file_arg!r})'
 
     @classmethod
     def detect_format(cls, filename):
@@ -292,7 +292,7 @@ class ImageSlide(AbstractSlide):
                 # Pillow >= 2.5.0
                 img.close()
             return format
-        except IOError:
+        except OSError:
             return None
 
     def close(self):
@@ -351,7 +351,7 @@ class ImageSlide(AbstractSlide):
         if level != 0:
             raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:
-            raise OpenSlideError("Size %s must be non-negative" % (size,))
+            raise OpenSlideError(f"Size {size} must be non-negative")
         # Any corner of the requested region may be outside the bounds of
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.

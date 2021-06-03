@@ -56,7 +56,7 @@ app.config.from_object(__name__)
 app.config.from_envvar('DEEPZOOM_MULTISERVER_SETTINGS', silent=True)
 
 
-class _SlideCache(object):
+class _SlideCache:
     def __init__(self, cache_size, dz_opts):
         self.cache_size = cache_size
         self.dz_opts = dz_opts
@@ -88,7 +88,7 @@ class _SlideCache(object):
         return slide
 
 
-class _Directory(object):
+class _Directory:
     def __init__(self, basedir, relpath=''):
         self.name = os.path.basename(relpath)
         self.children = []
@@ -103,7 +103,7 @@ class _Directory(object):
                 self.children.append(_SlideFile(cur_relpath))
 
 
-class _SlideFile(object):
+class _SlideFile:
     def __init__(self, relpath):
         self.name = os.path.basename(relpath)
         self.url_path = relpath
@@ -117,7 +117,7 @@ def _setup():
         'DEEPZOOM_OVERLAP': 'overlap',
         'DEEPZOOM_LIMIT_BOUNDS': 'limit_bounds',
     }
-    opts = dict((v, app.config[k]) for k, v in config_map.items())
+    opts = {v: app.config[k] for k, v in config_map.items()}
     app.cache = _SlideCache(app.config['SLIDE_CACHE_SIZE'], opts)
 
 

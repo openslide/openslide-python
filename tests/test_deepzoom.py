@@ -23,7 +23,7 @@ import unittest
 
 from . import file_path
 
-class _BoxesDeepZoomTest(object):
+class _BoxesDeepZoomTest:
     def setUp(self):
         self.osr = self.CLASS(file_path(self.FILENAME))
         self.dz = DeepZoomGenerator(self.osr, 254, 1)

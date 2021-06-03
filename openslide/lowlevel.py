@@ -67,7 +67,7 @@ class OpenSlideUnsupportedFormatError(OpenSlideError):
     Import this from openslide rather than from openslide.lowlevel.
     """
 
-class _OpenSlide(object):
+class _OpenSlide:
     """Wrapper class to make sure we correctly pass an OpenSlide handle."""
 
     def __init__(self, ptr):
@@ -94,7 +94,7 @@ class _OpenSlide(object):
             raise ValueError("Passing closed slide object")
         return obj
 
-class _utf8_p(object):
+class _utf8_p:
     """Wrapper class to convert string arguments to bytes."""
 
     @classmethod

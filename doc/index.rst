@@ -230,7 +230,7 @@ Wrapping a PIL Image
    provides an :class:`OpenSlide`-compatible API.
 
    :param file: a filename or :class:`Image <PIL.Image.Image>` object
-   :raises IOError: if the file cannot be opened
+   :raises OSError: if the file cannot be opened
 
 .. function:: open_slide(filename)
 
@@ -240,7 +240,7 @@ Wrapping a PIL Image
    :param str filename: the file to open
    :raises OpenSlideError: if the file is recognized by OpenSlide but an
       error occurred
-   :raises IOError: if the file is not recognized at all
+   :raises OSError: if the file is not recognized at all
 
 
 Deep Zoom support

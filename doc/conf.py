@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # OpenSlide Python documentation build configuration file, created by
 # sphinx-quickstart on Sun Feb 16 15:06:45 2014.
@@ -45,8 +44,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'OpenSlide Python'
-copyright = u'2010-2016 Carnegie Mellon University and others'
+project = 'OpenSlide Python'
+copyright = '2010-2016 Carnegie Mellon University and others'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -193,8 +192,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'OpenSlidePython.tex', u'OpenSlide Python Documentation',
-   u'OpenSlide project', 'manual'),
+  ('index', 'OpenSlidePython.tex', 'OpenSlide Python Documentation',
+   'OpenSlide project', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -223,8 +222,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'openslidepython', u'OpenSlide Python Documentation',
-     [u'OpenSlide project'], 1)
+    ('index', 'openslidepython', 'OpenSlide Python Documentation',
+     ['OpenSlide project'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -237,8 +236,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'OpenSlidePython', u'OpenSlide Python Documentation',
-   u'OpenSlide project', 'OpenSlidePython', 'One line description of project.',
+  ('index', 'OpenSlidePython', 'OpenSlide Python Documentation',
+   'OpenSlide project', 'OpenSlidePython', 'One line description of project.',
    'Miscellaneous'),
 ]
 

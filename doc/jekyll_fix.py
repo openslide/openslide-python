@@ -27,9 +27,8 @@ DIRS = {
     '_static': 'static',
     '_sources': 'sources',
 }
-REWRITE_EXTENSIONS = set(['.html', '.js'])
+REWRITE_EXTENSIONS = {'.html', '.js'}
 
-from io import open
 import os
 from sphinx.util.console import bold
 

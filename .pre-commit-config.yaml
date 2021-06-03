@@ -13,6 +13,13 @@ repos:
       - id: trailing-whitespace
         exclude: '^\.github/.*\.md$'
 
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.19.1
+    hooks:
+      - id: pyupgrade
+        name: Modernize python code
+        args: ["--py36-plus"]
+
   - repo: meta
     hooks:
       - id: check-hooks-apply

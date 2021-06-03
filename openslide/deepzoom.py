@@ -29,7 +29,7 @@ import openslide
 from PIL import Image
 from xml.etree.ElementTree import ElementTree, Element, SubElement
 
-class DeepZoomGenerator(object):
+class DeepZoomGenerator:
     """Generates Deep Zoom tiles and metadata."""
 
     BOUNDS_OFFSET_PROPS = (openslide.PROPERTY_NAME_BOUNDS_X,
@@ -113,7 +113,7 @@ class DeepZoomGenerator(object):
                         openslide.PROPERTY_NAME_BACKGROUND_COLOR, 'ffffff')
 
     def __repr__(self):
-        return '%s(%r, tile_size=%r, overlap=%r, limit_bounds=%r)' % (
+        return '{}({!r}, tile_size={!r}, overlap={!r}, limit_bounds={!r})'.format(
                 self.__class__.__name__, self._osr, self._z_t_downsample,
                 self._z_overlap, self._limit_bounds)
 

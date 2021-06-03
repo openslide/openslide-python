@@ -45,10 +45,8 @@ class TestImageWithoutOpening(unittest.TestCase):
                 ImageSlide.detect_format(file_path('boxes.png')), 'PNG')
 
     def test_open(self):
-        self.assertRaises(IOError,
-                lambda: ImageSlide(file_path('__does_not_exist')))
-        self.assertRaises(IOError,
-                lambda: ImageSlide(file_path('../setup.py')))
+        self.assertRaises(OSError, lambda: ImageSlide(file_path('__does_not_exist')))
+        self.assertRaises(OSError, lambda: ImageSlide(file_path('../setup.py')))
 
     def test_open_image(self):
         # passing PIL.Image to ImageSlide
