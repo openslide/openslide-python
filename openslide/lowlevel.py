@@ -32,8 +32,9 @@ rather than in the high-level interface.)
 
 from ctypes import *
 from itertools import count
-import PIL.Image
 import platform
+
+import PIL.Image
 
 from . import _convert
 

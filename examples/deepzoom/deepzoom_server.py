@@ -18,12 +18,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from flask import Flask, abort, make_response, render_template, url_for
 from io import BytesIO
 from optparse import OptionParser
 import os
 import re
 from unicodedata import normalize
+
+from flask import Flask, abort, make_response, render_template, url_for
 
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
@@ -40,6 +41,7 @@ if os.name == 'nt':
             os.environ['PATH'] = _orig_path
 else:
     import openslide
+
 from openslide import ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
 

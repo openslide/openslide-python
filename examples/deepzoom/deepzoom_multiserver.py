@@ -19,11 +19,12 @@
 #
 
 from collections import OrderedDict
-from flask import Flask, abort, make_response, render_template, url_for
 from io import BytesIO
-import os
 from optparse import OptionParser
+import os
 from threading import Lock
+
+from flask import Flask, abort, make_response, render_template, url_for
 
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
@@ -40,6 +41,7 @@ if os.name == 'nt':
             os.environ['PATH'] = _orig_path
 else:
     import openslide
+
 from openslide import OpenSlide, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 

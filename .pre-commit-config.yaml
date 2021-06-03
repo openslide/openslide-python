@@ -20,6 +20,12 @@ repos:
         name: Modernize python code
         args: ["--py36-plus"]
 
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.8.0
+    hooks:
+      - id: isort
+        name: Reorder python imports with isort
+
   - repo: meta
     hooks:
       - id: check-hooks-apply

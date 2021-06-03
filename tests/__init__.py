@@ -20,9 +20,9 @@
 from functools import wraps
 import os
 from pathlib import Path
+import unittest
 
 from PIL import Image
-import unittest
 
 # Handle Windows-specific first-import logic here, so individual modules
 # don't have to

@@ -23,13 +23,14 @@ This package provides Python bindings for the OpenSlide library.
 """
 
 from collections.abc import Mapping
+
 from PIL import Image
 
 from openslide import lowlevel
 
 # For the benefit of library users
-from openslide.lowlevel import OpenSlideError, OpenSlideUnsupportedFormatError
 from openslide._version import __version__
+from openslide.lowlevel import OpenSlideError, OpenSlideUnsupportedFormatError
 
 __library_version__ = lowlevel.get_version()
 

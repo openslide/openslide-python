@@ -21,7 +21,7 @@
 """An example program to generate a Deep Zoom directory tree from a slide."""
 
 import json
-from multiprocessing import Process, JoinableQueue
+from multiprocessing import JoinableQueue, Process
 from optparse import OptionParser
 import os
 import re
@@ -44,7 +44,8 @@ if os.name == 'nt':
             os.environ['PATH'] = _orig_path
 else:
     import openslide
-from openslide import open_slide, ImageSlide
+
+from openslide import ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
 
 VIEWER_SLIDE_NAME = 'slide'

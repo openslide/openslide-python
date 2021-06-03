@@ -25,9 +25,12 @@ OpenSlide objects.
 
 from io import BytesIO
 import math
-import openslide
+from xml.etree.ElementTree import Element, ElementTree, SubElement
+
 from PIL import Image
-from xml.etree.ElementTree import ElementTree, Element, SubElement
+
+import openslide
+
 
 class DeepZoomGenerator:
     """Generates Deep Zoom tiles and metadata."""

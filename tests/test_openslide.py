@@ -18,14 +18,16 @@
 #
 
 from ctypes import ArgumentError
-from openslide import (OpenSlide, OpenSlideError,
-        OpenSlideUnsupportedFormatError)
-from PIL import Image
 import re
 import sys
 import unittest
 
+from PIL import Image
+
+from openslide import OpenSlide, OpenSlideError, OpenSlideUnsupportedFormatError
+
 from . import file_path, image_dimensions_cannot_be_zero
+
 
 class TestSlideWithoutOpening(unittest.TestCase):
     def test_detect_format(self):

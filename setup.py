@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, Extension
+
+from setuptools import Extension, setup
 
 # Load version string
 _verfile = os.path.join(os.path.dirname(__file__), 'openslide', '_version.py')

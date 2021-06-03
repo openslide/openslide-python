@@ -18,11 +18,14 @@
 #
 
 from contextlib import contextmanager
-from openslide import ImageSlide, OpenSlideError
-from PIL import Image
 import unittest
 
+from PIL import Image
+
+from openslide import ImageSlide, OpenSlideError
+
 from . import file_path, image_dimensions_cannot_be_zero
+
 
 @contextmanager
 def image_open(*args, **kwargs):

@@ -30,7 +30,9 @@ DIRS = {
 REWRITE_EXTENSIONS = {'.html', '.js'}
 
 import os
+
 from sphinx.util.console import bold
+
 
 def remove_directory_underscores(app, exception):
     if exception:

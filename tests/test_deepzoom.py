@@ -17,11 +17,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from openslide import OpenSlide, ImageSlide
-from openslide.deepzoom import DeepZoomGenerator
 import unittest
 
+from openslide import ImageSlide, OpenSlide
+from openslide.deepzoom import DeepZoomGenerator
+
 from . import file_path
+
 
 class _BoxesDeepZoomTest:
     def setUp(self):

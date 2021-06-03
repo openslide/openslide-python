@@ -17,11 +17,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-import openslide
-from openslide import open_slide, OpenSlide, ImageSlide
 import unittest
 
+import openslide
+from openslide import ImageSlide, OpenSlide, open_slide
+
 from . import file_path
+
 
 class TestLibrary(unittest.TestCase):
     def test_open_slide(self):
