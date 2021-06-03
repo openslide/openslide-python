@@ -1,0 +1,6 @@
+# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
+# also ignore,
+# - E741 ambiguous variable name
+[flake8]
+max-line-length = 88
+extend-ignore = E203,E741

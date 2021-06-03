@@ -97,8 +97,11 @@ class DeepZoomGenerator:
             z_size = tuple(max(1, int(math.ceil(z / 2))) for z in z_size)
             z_dimensions.append(z_size)
         self._z_dimensions = tuple(reversed(z_dimensions))
+
         # Tile
-        tiles = lambda z_lim: int(math.ceil(z_lim / self._z_t_downsample))
+        def tiles(z_lim):
+            return int(math.ceil(z_lim / self._z_t_downsample))
+
         self._t_dimensions = tuple(
             (tiles(z_w), tiles(z_h)) for z_w, z_h in self._z_dimensions
         )

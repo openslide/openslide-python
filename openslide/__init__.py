@@ -29,7 +29,7 @@ from PIL import Image
 from openslide import lowlevel
 
 # For the benefit of library users
-from openslide._version import __version__
+from openslide._version import __version__  # noqa: F401  module-imported-but-unused
 from openslide.lowlevel import OpenSlideError, OpenSlideUnsupportedFormatError
 
 __library_version__ = lowlevel.get_version()

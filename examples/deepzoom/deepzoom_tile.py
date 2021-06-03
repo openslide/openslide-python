@@ -161,7 +161,7 @@ class DeepZoomStaticTiler:
     ):
         if with_viewer:
             # Check extra dependency before doing a bunch of work
-            import jinja2
+            import jinja2  # noqa: F401  module-imported-but-unused
         self._slide = open_slide(slidepath)
         self._basename = basename
         self._format = format

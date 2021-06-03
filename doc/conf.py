@@ -52,7 +52,7 @@ copyright = '2010-2016 Carnegie Mellon University and others'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-import _version
+import _version  # noqa: E402  module-level-import-not-at-top-of-file
 
 # The short X.Y version.
 version = _version.__version__
@@ -182,11 +182,11 @@ htmlhelp_basename = 'OpenSlidePythondoc'
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
+    # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
+    # 'pointsize': '10pt',
     # Additional stuff for the LaTeX preamble.
-    #'preamble': '',
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

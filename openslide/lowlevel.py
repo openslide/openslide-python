@@ -30,7 +30,17 @@ returned by OpenSlide into a non-premultiplied PIL.Image happens here
 rather than in the high-level interface.)
 """
 
-from ctypes import *
+from ctypes import (
+    POINTER,
+    byref,
+    c_char_p,
+    c_double,
+    c_int32,
+    c_int64,
+    c_uint32,
+    c_void_p,
+    cdll,
+)
 from itertools import count
 import platform
 

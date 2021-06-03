@@ -5,14 +5,14 @@ from setuptools import Extension, setup
 # Load version string
 _verfile = os.path.join(os.path.dirname(__file__), 'openslide', '_version.py')
 with open(_verfile) as _fh:
-    exec(_fh.read())
+    exec(_fh.read())  # instantiates __version__
 
 with open('README.rst') as _fh:
     _long_description = _fh.read()
 
 setup(
     name='openslide-python',
-    version=__version__,
+    version=__version__,  # noqa: F821  undefined-name __version__
     packages=[
         'openslide',
     ],

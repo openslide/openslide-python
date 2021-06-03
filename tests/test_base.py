@@ -19,7 +19,6 @@
 
 import unittest
 
-import openslide
 from openslide import ImageSlide, OpenSlide, open_slide
 
 from . import file_path

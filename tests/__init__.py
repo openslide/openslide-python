@@ -17,10 +17,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from functools import wraps
 import os
 from pathlib import Path
-import unittest
 
 from PIL import Image
 
@@ -40,7 +38,7 @@ if os.name == 'nt':
             # Python < 3.8
             _orig_path = os.environ.get('PATH', '')
             os.environ['PATH'] = _orig_path + ';' + _dll_path
-            import openslide
+            import openslide  # noqa: F401  module-imported-but-unused
 
             os.environ['PATH'] = _orig_path
 

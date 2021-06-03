@@ -40,6 +40,18 @@ repos:
       - id: blacken-docs
         name: Format python code in documentation
 
+  - repo: https://github.com/asottile/yesqa
+    rev: v1.2.3
+    hooks:
+      - id: yesqa
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        name: Lint python code with flake8
+        additional_dependencies: [flake8-bugbear]
+
   - repo: meta
     hooks:
       - id: check-hooks-apply
