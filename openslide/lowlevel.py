@@ -224,6 +224,13 @@ def get_associated_image_dimensions(slide, name):
 
 _read_associated_image = _func('openslide_read_associated_image', None,
         [_OpenSlide, _utf8_p, POINTER(c_uint32)])
+
+try:
+    get_cache_capacity = _func('openslide_cache_get_capacity', c_int32, [_OpenSlide], None)
+    set_cache_capacity = _func('openslide_cache_set_capacity', None, [_OpenSlide, c_int32], None)
+except AttributeError:
+    raise OpenSlideError('OpenSlide >= 3.5.0 required')
+
 def read_associated_image(slide, name):
     w, h = get_associated_image_dimensions(slide, name)
     buf = (w * h * c_uint32)()

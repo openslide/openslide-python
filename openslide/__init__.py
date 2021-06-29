@@ -162,6 +162,14 @@ class OpenSlide(AbstractSlide):
         If the file format is not recognized, return None."""
         return lowlevel.detect_vendor(str(filename))
 
+    @property
+    def cache_size(self):
+        return lowlevel.get_cache_capacity(self._osr)
+
+    @cache_size.setter
+    def cache_size(self, size):
+        return lowlevel.set_cache_capacity(self._osr, size)
+
     def close(self):
         """Close the OpenSlide object."""
         lowlevel.close(self._osr)
