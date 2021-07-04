@@ -2,6 +2,7 @@
 # openslide-python - Python bindings for the OpenSlide library
 #
 # Copyright (c) 2010-2014 Carnegie Mellon University
+# Copyright (c) 2021      Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -123,6 +124,12 @@ class AbstractSlide:
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
+    def set_cache(self, cache):
+        """Use the specified cache to store recently decoded slide tiles.
+
+        cache: an OpenSlideCache object."""
+        raise NotImplementedError
+
     def get_thumbnail(self, size):
         """Return a PIL.Image containing an RGB thumbnail of the image.
 
@@ -228,6 +235,16 @@ class OpenSlide(AbstractSlide):
             self._osr, location[0], location[1], level, size[0], size[1]
         )
 
+    def set_cache(self, cache):
+        """Use the specified cache to store recently decoded slide tiles.
+
+        cache: an OpenSlideCache object."""
+        try:
+            llcache = cache._openslide_cache
+        except AttributeError:
+            raise TypeError('Not a cache object')
+        lowlevel.set_cache(self._osr, llcache)
+
 
 class _OpenSlideMap(Mapping):
     def __init__(self, osr):
@@ -266,6 +283,23 @@ class _AssociatedImageMap(_OpenSlideMap):
         if key not in self._keys():
             raise KeyError()
         return lowlevel.read_associated_image(self._osr, key)
+
+
+class OpenSlideCache:
+    """An OpenSlide in-memory tile cache.
+
+    Tile caches have a capacity in bytes, and can be attached to one or more
+    OpenSlide objects to cache recently-decoded tiles.  By default, each
+    OpenSlide object has its own cache with a default size.
+    """
+
+    def __init__(self, capacity):
+        """Create a tile cache."""
+        self._capacity = capacity
+        self._openslide_cache = lowlevel.cache_create(capacity)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self._capacity!r})'
 
 
 class ImageSlide(AbstractSlide):
@@ -379,6 +413,12 @@ class ImageSlide(AbstractSlide):
             tile_offset = tuple(il - l for il, l in zip(image_topleft, location))
             tile.paste(crop, tile_offset)
         return tile
+
+    def set_cache(self, cache):
+        """Use the specified cache to store recently decoded slide tiles.
+
+        cache: an OpenSlideCache object."""
+        pass
 
 
 def open_slide(filename):

@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2016 Benjamin Gilbert
+# Copyright (c) 2016-2021 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -17,10 +17,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from functools import wraps
 import os
 from pathlib import Path
 
 from PIL import Image
+
+from openslide import OpenSlideVersionError
 
 # Handle Windows-specific first-import logic here, so individual modules
 # don't have to
@@ -54,3 +57,17 @@ except ValueError:
 
 def file_path(name):
     return Path(__file__).parent / name
+
+
+def maybe_supported(f):
+    '''Decorator to ignore test failures caused by an OpenSlide version that
+    doesn't support the tested functionality.'''
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except OpenSlideVersionError:
+            pass
+
+    return wrapper

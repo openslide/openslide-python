@@ -37,6 +37,7 @@ from ctypes import (
     c_double,
     c_int32,
     c_int64,
+    c_size_t,
     c_uint32,
     c_void_p,
     cdll,
@@ -122,6 +123,27 @@ class _OpenSlide:
         return obj
 
 
+class _OpenSlideCache:
+    """Wrapper class to make sure we correctly pass an OpenSlide cache."""
+
+    def __init__(self, ptr):
+        self._as_parameter_ = ptr
+        # Retain a reference to cache_release() to avoid GC problems during
+        # interpreter shutdown
+        self._cache_release = cache_release
+
+    def __del__(self):
+        self._cache_release(self)
+
+    @classmethod
+    def from_param(cls, obj):
+        if obj.__class__ != cls:
+            raise ValueError("Not an OpenSlide cache reference")
+        if not obj._as_parameter_:
+            raise ValueError("Passing undefined cache object")
+        return obj
+
+
 class _utf8_p:
     """Wrapper class to convert string arguments to bytes."""
 
@@ -133,6 +155,18 @@ class _utf8_p:
             return obj.encode('UTF-8')
         else:
             raise TypeError('Incorrect type')
+
+
+class _size_t:
+    """Wrapper class to convert size_t arguments to c_size_t."""
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, int):
+            raise TypeError('Incorrect type')
+        if obj < 0:
+            raise ValueError('Value out of range')
+        return c_size_t(obj)
 
 
 def _load_image(buf, size):
@@ -155,6 +189,11 @@ def _check_open(result, _func, _args):
 # prevent further operations on slide handle after it is closed
 def _check_close(_result, _func, args):
     args[0].invalidate()
+
+
+# wrap the handle returned when creating a cache
+def _check_cache_create(result, _func, _args):
+    return _OpenSlideCache(c_void_p(result))
 
 
 # Convert returned byte array, if present, into a string
@@ -302,3 +341,23 @@ def read_associated_image(slide, name):
 
 
 get_version = _func('openslide_get_version', c_char_p, [], _check_string)
+
+cache_create = _func(
+    'openslide_cache_create',
+    c_void_p,
+    [_size_t],
+    _check_cache_create,
+    minimum_version='3.5.0',
+)
+
+set_cache = _func(
+    'openslide_set_cache',
+    None,
+    [_OpenSlide, _OpenSlideCache],
+    None,
+    minimum_version='3.5.0',
+)
+
+cache_release = _func(
+    'openslide_cache_release', None, [_OpenSlideCache], None, minimum_version='3.5.0'
+)

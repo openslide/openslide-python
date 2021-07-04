@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2016 Benjamin Gilbert
+# Copyright (c) 2016-2021 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -24,9 +24,24 @@ import unittest
 
 from PIL import Image
 
-from openslide import OpenSlide, OpenSlideError, OpenSlideUnsupportedFormatError
+from openslide import (
+    OpenSlide,
+    OpenSlideCache,
+    OpenSlideError,
+    OpenSlideUnsupportedFormatError,
+)
 
-from . import file_path, image_dimensions_cannot_be_zero
+from . import file_path, image_dimensions_cannot_be_zero, maybe_supported
+
+
+class TestCache(unittest.TestCase):
+    @maybe_supported
+    def test_create_cache(self):
+        OpenSlideCache(0)
+        OpenSlideCache(1)
+        OpenSlideCache(4 << 20)
+        self.assertRaises(ArgumentError, lambda: OpenSlideCache(-1))
+        self.assertRaises(ArgumentError, lambda: OpenSlideCache(1.3))
 
 
 class TestSlideWithoutOpening(unittest.TestCase):
@@ -137,6 +152,13 @@ class TestSlide(_SlideTest, unittest.TestCase):
 
     def test_thumbnail(self):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
+
+    @maybe_supported
+    def test_set_cache(self):
+        self.osr.set_cache(OpenSlideCache(64 << 10))
+        self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
+        self.assertRaises(TypeError, lambda: self.osr.set_cache(None))
+        self.assertRaises(TypeError, lambda: self.osr.set_cache(3))
 
 
 class TestAperioSlide(_SlideTest, unittest.TestCase):
