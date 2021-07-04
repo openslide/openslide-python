@@ -2,7 +2,7 @@
 # openslide-python - Python bindings for the OpenSlide library
 #
 # Copyright (c) 2010-2013 Carnegie Mellon University
-# Copyright (c) 2016 Benjamin Gilbert
+# Copyright (c) 2016-2021 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -186,8 +186,18 @@ def _check_name_list(result, func, args):
 
 
 # resolve and return an OpenSlide function with the specified properties
-def _func(name, restype, argtypes, errcheck=_check_error):
-    func = getattr(_lib, name)
+def _func(name, restype, argtypes, errcheck=_check_error, minimum_version=None):
+    try:
+        func = getattr(_lib, name)
+    except AttributeError:
+        if minimum_version is None:
+            raise
+
+        # optional function doesn't exist; fail at runtime
+        def function_unavailable(*_args):
+            raise OpenSlideVersionError(minimum_version)
+
+        return function_unavailable
     func.argtypes = argtypes
     func.restype = restype
     if errcheck is not None:
