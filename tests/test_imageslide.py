@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2016 Benjamin Gilbert
+# Copyright (c) 2016-2021 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -22,9 +22,9 @@ import unittest
 
 from PIL import Image
 
-from openslide import ImageSlide, OpenSlideError
+from openslide import ImageSlide, OpenSlideCache, OpenSlideError
 
-from . import file_path, image_dimensions_cannot_be_zero
+from . import file_path, image_dimensions_cannot_be_zero, maybe_supported
 
 
 @contextmanager
@@ -118,3 +118,8 @@ class TestImage(unittest.TestCase):
 
     def test_thumbnail(self):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
+
+    @maybe_supported
+    def test_set_cache(self):
+        self.osr.set_cache(OpenSlideCache(64 << 10))
+        self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
