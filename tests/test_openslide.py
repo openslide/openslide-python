@@ -59,7 +59,11 @@ class TestSlideWithoutOpening(unittest.TestCase):
         self.assertRaises(
             OpenSlideUnsupportedFormatError, lambda: OpenSlide('setup.py')
         )
-        self.assertRaises(OpenSlideError, lambda: OpenSlide('unopenable.tiff'))
+        self.assertRaises(OpenSlideUnsupportedFormatError, lambda: OpenSlide(None))
+        self.assertRaises(OpenSlideUnsupportedFormatError, lambda: OpenSlide(3))
+        self.assertRaises(
+            OpenSlideUnsupportedFormatError, lambda: OpenSlide('unopenable.tiff')
+        )
 
     def test_operations_on_closed_handle(self):
         osr = OpenSlide(file_path('boxes.tiff'))
