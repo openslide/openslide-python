@@ -220,6 +220,11 @@ Exceptions
    OpenSlide does not support the requested file.  Subclass of
    :exc:`OpenSlideError`.
 
+.. exception:: OpenSlideVersionError
+
+   This version of OpenSlide does not support the requested functionality.
+   Subclass of :exc:`OpenSlideError`.
+
 
 Wrapping a PIL Image
 ====================

@@ -76,6 +76,17 @@ class OpenSlideError(Exception):
     """
 
 
+class OpenSlideVersionError(OpenSlideError):
+    """This version of OpenSlide does not support the requested functionality.
+
+    Import this from openslide rather than from openslide.lowlevel.
+    """
+
+    def __init__(self, minimum_version):
+        super().__init__(f'OpenSlide >= {minimum_version} required')
+        self.minimum_version = minimum_version
+
+
 class OpenSlideUnsupportedFormatError(OpenSlideError):
     """OpenSlide does not support the requested file.
 
@@ -187,7 +198,7 @@ def _func(name, restype, argtypes, errcheck=_check_error):
 try:
     detect_vendor = _func('openslide_detect_vendor', c_char_p, [_utf8_p], _check_string)
 except AttributeError:
-    raise OpenSlideError('OpenSlide >= 3.4.0 required')
+    raise OpenSlideVersionError('3.4.0')
 
 open = _func('openslide_open', c_void_p, [_utf8_p], _check_open)
 
