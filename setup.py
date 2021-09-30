@@ -1,5 +1,5 @@
 import os
-
+#This is an amazing project
 from setuptools import Extension, setup
 
 # Load version string
