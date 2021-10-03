@@ -1,4 +1,4 @@
-import os
+import os  # os is the python library that provides the functions to work with operating system.
 
 from setuptools import Extension, setup
 
