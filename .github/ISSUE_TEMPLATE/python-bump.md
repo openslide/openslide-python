@@ -4,7 +4,9 @@
   - [ ] `git checkout main`
   - [ ] Add classifier for new Python version to `setup.py`
   - [ ] Add new Python version to lists in `.github/workflows/python.yml`
-  - [ ] Commit and push
+  - [ ] Commit and open a PR
+  - [ ] Merge the PR when CI passes
+  - [ ] Add new Python jobs to [branch protection required checks](https://github.com/openslide/openslide-python/settings/branches)
 - Build new wheels
   - [ ] Check out a new branch from the most recent release tag
   - [ ] Add new Python version to lists in `.github/workflows/python.yml`, commit, and open a DNM PR
