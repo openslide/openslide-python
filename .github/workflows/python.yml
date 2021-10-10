@@ -36,7 +36,7 @@ jobs:
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install pytest
+        pip install pytest wheel
     - name: Install OpenSlide
       run: |
         case "${{ matrix.os }}" in
@@ -47,10 +47,22 @@ jobs:
           brew install openslide
           ;;
         esac
+    - name: Build wheel
+      run: |
+        python setup.py bdist_wheel
+        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
+        mkdir -p "artifacts/${basename}"
+        mv dist/*.whl "artifacts/${basename}"
+        echo "basename=${basename}" >> $GITHUB_ENV
     - name: Install
       run: pip install -e .
     - name: Run tests
       run: pytest -v
+    - name: Archive wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.basename }}
+        path: artifacts
   windows:
     name: Windows
     needs: pre-commit
