@@ -22,32 +22,37 @@
 This package provides Python bindings for the OpenSlide library.
 """
 
-from collections.abc import Mapping
-
+from __future__ import division, print_function
 from PIL import Image
+
+try:
+    # Python 3.3+
+    from collections.abc import Mapping
+except ImportError:
+    # Python 2
+    from collections import Mapping
 
 from openslide import lowlevel
 
 # For the benefit of library users
-from openslide._version import __version__  # noqa: F401  module-imported-but-unused
 from openslide.lowlevel import OpenSlideError, OpenSlideUnsupportedFormatError
+from openslide._version import __version__
 
 __library_version__ = lowlevel.get_version()
 
-PROPERTY_NAME_COMMENT = 'openslide.comment'
-PROPERTY_NAME_VENDOR = 'openslide.vendor'
-PROPERTY_NAME_QUICKHASH1 = 'openslide.quickhash-1'
-PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
-PROPERTY_NAME_OBJECTIVE_POWER = 'openslide.objective-power'
-PROPERTY_NAME_MPP_X = 'openslide.mpp-x'
-PROPERTY_NAME_MPP_Y = 'openslide.mpp-y'
-PROPERTY_NAME_BOUNDS_X = 'openslide.bounds-x'
-PROPERTY_NAME_BOUNDS_Y = 'openslide.bounds-y'
-PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
-PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
+PROPERTY_NAME_COMMENT          = u'openslide.comment'
+PROPERTY_NAME_VENDOR           = u'openslide.vendor'
+PROPERTY_NAME_QUICKHASH1       = u'openslide.quickhash-1'
+PROPERTY_NAME_BACKGROUND_COLOR = u'openslide.background-color'
+PROPERTY_NAME_OBJECTIVE_POWER  = u'openslide.objective-power'
+PROPERTY_NAME_MPP_X            = u'openslide.mpp-x'
+PROPERTY_NAME_MPP_Y            = u'openslide.mpp-y'
+PROPERTY_NAME_BOUNDS_X         = u'openslide.bounds-x'
+PROPERTY_NAME_BOUNDS_Y         = u'openslide.bounds-y'
+PROPERTY_NAME_BOUNDS_WIDTH     = u'openslide.bounds-width'
+PROPERTY_NAME_BOUNDS_HEIGHT    = u'openslide.bounds-height'
 
-
-class AbstractSlide:
+class AbstractSlide(object):
     """The base class of a slide object."""
 
     def __enter__(self):
@@ -123,11 +128,13 @@ class AbstractSlide:
         """Return a PIL.Image containing an RGB thumbnail of the image.
 
         size:     the maximum size of the thumbnail."""
-        downsample = max(*(dim / thumb for dim, thumb in zip(self.dimensions, size)))
+        downsample = max(*[dim / thumb for dim, thumb in
+                zip(self.dimensions, size)])
         level = self.get_best_level_for_downsample(downsample)
         tile = self.read_region((0, 0), level, self.level_dimensions[level])
         # Apply on solid background
-        bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR, 'ffffff')
+        bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR,
+                'ffffff')
         thumb = Image.new('RGB', tile.size, bg_color)
         thumb.paste(tile, None, tile)
         thumb.thumbnail(size, Image.ANTIALIAS)
@@ -150,17 +157,17 @@ class OpenSlide(AbstractSlide):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
         self._filename = filename
-        self._osr = lowlevel.open(str(filename))
+        self._osr = lowlevel.open(filename)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self._filename!r})'
+        return '%s(%r)' % (self.__class__.__name__, self._filename)
 
     @classmethod
     def detect_format(cls, filename):
         """Return a string describing the format vendor of the specified file.
 
         If the file format is not recognized, return None."""
-        return lowlevel.detect_vendor(str(filename))
+        return lowlevel.detect_vendor(filename)
 
     def close(self):
         """Close the OpenSlide object."""
@@ -176,18 +183,16 @@ class OpenSlide(AbstractSlide):
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
-        return tuple(
-            lowlevel.get_level_dimensions(self._osr, i) for i in range(self.level_count)
-        )
+        return tuple(lowlevel.get_level_dimensions(self._osr, i)
+                for i in range(self.level_count))
 
     @property
     def level_downsamples(self):
         """A list of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
-        return tuple(
-            lowlevel.get_level_downsample(self._osr, i) for i in range(self.level_count)
-        )
+        return tuple(lowlevel.get_level_downsample(self._osr, i)
+                for i in range(self.level_count))
 
     @property
     def properties(self):
@@ -220,9 +225,8 @@ class OpenSlide(AbstractSlide):
 
         Unlike in the C interface, the image data returned by this
         function is not premultiplied."""
-        return lowlevel.read_region(
-            self._osr, location[0], location[1], level, size[0], size[1]
-        )
+        return lowlevel.read_region(self._osr, location[0], location[1],
+                level, size[0], size[1])
 
 
 class _OpenSlideMap(Mapping):
@@ -230,7 +234,7 @@ class _OpenSlideMap(Mapping):
         self._osr = osr
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} {dict(self)!r}>'
+        return '<%s %r>' % (self.__class__.__name__, dict(self))
 
     def __len__(self):
         return len(self._keys())
@@ -281,7 +285,7 @@ class ImageSlide(AbstractSlide):
             self._image = Image.open(file)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self._file_arg!r})'
+        return '%s(%r)' % (self.__class__.__name__, self._file_arg)
 
     @classmethod
     def detect_format(cls, filename):
@@ -295,7 +299,7 @@ class ImageSlide(AbstractSlide):
                 # Pillow >= 2.5.0
                 img.close()
             return format
-        except OSError:
+        except IOError:
             return None
 
     def close(self):
@@ -354,25 +358,23 @@ class ImageSlide(AbstractSlide):
         if level != 0:
             raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:
-            raise OpenSlideError(f"Size {size} must be non-negative")
+            raise OpenSlideError("Size %s must be non-negative" % (size,))
         # Any corner of the requested region may be outside the bounds of
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.
-        image_topleft = [
-            max(0, min(l, limit - 1)) for l, limit in zip(location, self._image.size)
-        ]
-        image_bottomright = [
-            max(0, min(l + s - 1, limit - 1))
-            for l, s, limit in zip(location, size, self._image.size)
-        ]
+        image_topleft = [max(0, min(l, limit - 1))
+                    for l, limit in zip(location, self._image.size)]
+        image_bottomright = [max(0, min(l + s - 1, limit - 1))
+                    for l, s, limit in zip(location, size, self._image.size)]
         tile = Image.new("RGBA", size, (0,) * 4)
-        if not [
-            'fail' for tl, br in zip(image_topleft, image_bottomright) if br - tl < 0
-        ]:  # "< 0" not a typo
+        if not ['fail' for tl, br in zip(image_topleft, image_bottomright)
+                if br - tl < 0]:  # "< 0" not a typo
             # Crop size is greater than zero in both dimensions.
             # PIL thinks the bottom right is the first *excluded* pixel
-            crop = self._image.crop(image_topleft + [d + 1 for d in image_bottomright])
-            tile_offset = tuple(il - l for il, l in zip(image_topleft, location))
+            crop = self._image.crop(image_topleft +
+                    [d + 1 for d in image_bottomright])
+            tile_offset = tuple(il - l for il, l in
+                    zip(image_topleft, location))
             tile.paste(crop, tile_offset)
         return tile
 
@@ -390,7 +392,6 @@ def open_slide(filename):
 
 if __name__ == '__main__':
     import sys
-
     print("OpenSlide vendor:", OpenSlide.detect_format(sys.argv[1]))
     print("PIL format:", ImageSlide.detect_format(sys.argv[1]))
     with open_slide(sys.argv[1]) as _slide:

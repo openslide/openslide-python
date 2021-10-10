@@ -38,7 +38,7 @@ Public License, version 2.1`_.
 .. _Trestle: https://openslide.org/formats/trestle/
 .. _Ventana: https://openslide.org/formats/ventana/
 .. _`Generic tiled TIFF`: https://openslide.org/formats/generic-tiff/
-.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/main/lgpl-2.1.txt
+.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/master/lgpl-2.1.txt
 
 
 Basic usage
@@ -53,12 +53,12 @@ OpenSlide objects
 
    An open whole-slide image.
 
-   If any operation on the object fails, :exc:`OpenSlideError` is raised.
+   If any operation on the object fails, :exc:`OpenSlideError` is raised. 
    OpenSlide has latching error semantics: once :exc:`OpenSlideError` is
    raised, all future operations on the :class:`OpenSlide`, other than
    :meth:`close()`, will also raise :exc:`OpenSlideError`.
 
-   :meth:`close()` is called automatically when the object is deleted.
+   :meth:`close()` is called automatically when the object is deleted. 
    The object may be used as a context manager, in which case it will be
    closed upon exiting the context.
 
@@ -101,7 +101,7 @@ OpenSlide objects
       Metadata about the slide, in the form of a
       :class:`~collections.abc.Mapping` from OpenSlide property name to
       property value.  Property values are always strings.  OpenSlide
-      provides some :ref:`standard-properties`, plus
+      provides some :ref:`standard properties <Standard properties>`, plus
       additional properties that vary by slide format.
 
    .. attribute:: associated_images
@@ -143,7 +143,7 @@ OpenSlide objects
       Close the OpenSlide object.
 
 
-.. _standard-properties:
+.. _`Standard properties`:
 
 Standard properties
 -------------------
@@ -230,7 +230,7 @@ Wrapping a PIL Image
    provides an :class:`OpenSlide`-compatible API.
 
    :param file: a filename or :class:`Image <PIL.Image.Image>` object
-   :raises OSError: if the file cannot be opened
+   :raises IOError: if the file cannot be opened
 
 .. function:: open_slide(filename)
 
@@ -240,7 +240,7 @@ Wrapping a PIL Image
    :param str filename: the file to open
    :raises OpenSlideError: if the file is recognized by OpenSlide but an
       error occurred
-   :raises OSError: if the file is not recognized at all
+   :raises IOError: if the file is not recognized at all
 
 
 Deep Zoom support
@@ -346,8 +346,8 @@ deepzoom_tile.py_
   This program is intended as an example.  If you need to generate Deep Zoom
   trees for production applications, consider `using VIPS`_ instead.
 
-.. _`Deep Zoom examples`: https://github.com/openslide/openslide-python/tree/main/examples/deepzoom
-.. _deepzoom_server.py: https://github.com/openslide/openslide-python/blob/main/examples/deepzoom/deepzoom_server.py
-.. _deepzoom_multiserver.py: https://github.com/openslide/openslide-python/blob/main/examples/deepzoom/deepzoom_multiserver.py
-.. _deepzoom_tile.py: https://github.com/openslide/openslide-python/blob/main/examples/deepzoom/deepzoom_tile.py
+.. _`Deep Zoom examples`: https://github.com/openslide/openslide-python/tree/master/examples/deepzoom
+.. _deepzoom_server.py: https://github.com/openslide/openslide-python/blob/master/examples/deepzoom/deepzoom_server.py
+.. _deepzoom_multiserver.py: https://github.com/openslide/openslide-python/blob/master/examples/deepzoom/deepzoom_multiserver.py
+.. _deepzoom_tile.py: https://github.com/openslide/openslide-python/blob/master/examples/deepzoom/deepzoom_tile.py
 .. _`using VIPS`: https://github.com/openslide/openslide/wiki/OpenSlideAndVIPS

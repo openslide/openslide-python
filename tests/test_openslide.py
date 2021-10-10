@@ -18,40 +18,42 @@
 #
 
 from ctypes import ArgumentError
+from openslide import (OpenSlide, OpenSlideError,
+        OpenSlideUnsupportedFormatError)
+from PIL import Image
 import re
 import sys
 import unittest
 
-from PIL import Image
+from . import file_path, image_dimensions_cannot_be_zero, skip_if
 
-from openslide import OpenSlide, OpenSlideError, OpenSlideUnsupportedFormatError
-
-from . import file_path, image_dimensions_cannot_be_zero
-
+# Tests should be written to be compatible with Python 2.6 unittest.
 
 class TestSlideWithoutOpening(unittest.TestCase):
     def test_detect_format(self):
-        self.assertTrue(OpenSlide.detect_format(file_path('__missing_file')) is None)
-        self.assertTrue(OpenSlide.detect_format(file_path('../setup.py')) is None)
+        self.assertTrue(
+                OpenSlide.detect_format(file_path('__missing_file')) is None)
+        self.assertTrue(
+                OpenSlide.detect_format(file_path('../setup.py')) is None)
         self.assertEqual(
-            OpenSlide.detect_format(file_path('boxes.tiff')), 'generic-tiff'
-        )
+                OpenSlide.detect_format(file_path('boxes.tiff')),
+                'generic-tiff')
 
     def test_open(self):
-        self.assertRaises(
-            OpenSlideUnsupportedFormatError, lambda: OpenSlide('__does_not_exist')
-        )
-        self.assertRaises(
-            OpenSlideUnsupportedFormatError, lambda: OpenSlide('setup.py')
-        )
-        self.assertRaises(OpenSlideError, lambda: OpenSlide('unopenable.tiff'))
+        self.assertRaises(OpenSlideUnsupportedFormatError,
+                lambda: OpenSlide('__does_not_exist'))
+        self.assertRaises(OpenSlideUnsupportedFormatError,
+                lambda: OpenSlide('setup.py'))
+        self.assertRaises(OpenSlideError,
+                lambda: OpenSlide('unopenable.tiff'))
 
     def test_operations_on_closed_handle(self):
         osr = OpenSlide(file_path('boxes.tiff'))
         props = osr.properties
         associated = osr.associated_images
         osr.close()
-        self.assertRaises(ArgumentError, lambda: osr.read_region((0, 0), 0, (100, 100)))
+        self.assertRaises(ArgumentError,
+                lambda: osr.read_region((0, 0), 0, (100, 100)))
         self.assertRaises(ArgumentError, lambda: osr.close())
         self.assertRaises(ArgumentError, lambda: props['openslide.vendor'])
         self.assertRaises(ArgumentError, lambda: associated['label'])
@@ -63,7 +65,7 @@ class TestSlideWithoutOpening(unittest.TestCase):
         self.assertRaises(ArgumentError, lambda: osr.level_count)
 
 
-class _SlideTest:
+class _SlideTest(object):
     def setUp(self):
         self.osr = OpenSlide(file_path(self.FILENAME))
 
@@ -75,13 +77,13 @@ class TestSlide(_SlideTest, unittest.TestCase):
     FILENAME = 'boxes.tiff'
 
     def test_repr(self):
-        self.assertEqual(repr(self.osr), 'OpenSlide(%r)' % file_path('boxes.tiff'))
+        self.assertEqual(repr(self.osr),
+                'OpenSlide(%r)' % file_path('boxes.tiff'))
 
     def test_basic_metadata(self):
         self.assertEqual(self.osr.level_count, 4)
-        self.assertEqual(
-            self.osr.level_dimensions, ((300, 250), (150, 125), (75, 62), (37, 31))
-        )
+        self.assertEqual(self.osr.level_dimensions,
+                ((300, 250), (150, 125), (75, 62), (37, 31)))
         self.assertEqual(self.osr.dimensions, (300, 250))
 
         self.assertEqual(len(self.osr.level_downsamples), self.osr.level_count)
@@ -94,46 +96,44 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertEqual(self.osr.get_best_level_for_downsample(37), 3)
 
     def test_properties(self):
-        self.assertEqual(self.osr.properties['openslide.vendor'], 'generic-tiff')
-        self.assertRaises(KeyError, lambda: self.osr.properties['__does_not_exist'])
+        self.assertEqual(self.osr.properties['openslide.vendor'],
+                'generic-tiff')
+        self.assertRaises(KeyError,
+                lambda: self.osr.properties['__does_not_exist'])
         # test __len__ and __iter__
-        self.assertEqual(
-            len([v for v in self.osr.properties]), len(self.osr.properties)
-        )
-        self.assertEqual(
-            repr(self.osr.properties), '<_PropertyMap %r>' % dict(self.osr.properties)
-        )
+        self.assertEqual(len([v for v in self.osr.properties]),
+                len(self.osr.properties))
+        self.assertEqual(repr(self.osr.properties),
+                '<_PropertyMap %r>' % dict(self.osr.properties))
 
     def test_read_region(self):
-        self.assertEqual(
-            self.osr.read_region((-10, -10), 1, (400, 400)).size, (400, 400)
-        )
+        self.assertEqual(self.osr.read_region((-10, -10), 1, (400, 400)).size,
+                (400, 400))
 
-    @unittest.skipIf(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
+    @skip_if(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
     def test_read_region_size_dimension_zero(self):
-        self.assertEqual(self.osr.read_region((0, 0), 1, (400, 0)).size, (400, 0))
+        self.assertEqual(self.osr.read_region((0, 0), 1, (400, 0)).size,
+                (400, 0))
 
     def test_read_region_bad_level(self):
-        self.assertEqual(self.osr.read_region((0, 0), 4, (100, 100)).size, (100, 100))
+        self.assertEqual(self.osr.read_region((0, 0), 4, (100, 100)).size,
+                (100, 100))
 
     def test_read_region_bad_size(self):
-        self.assertRaises(
-            OpenSlideError, lambda: self.osr.read_region((0, 0), 1, (400, -5))
-        )
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.read_region((0, 0), 1, (400, -5)))
 
-    @unittest.skipIf(sys.maxsize < 1 << 32, '32-bit Python')
-    # Broken on Pillow >= 3.4.0, < 6.2.0.
+    @skip_if(sys.maxsize < 1 << 32, '32-bit Python')
+    # Broken on PIL and on Pillow >= 3.4.0, < 6.2.0.
     # https://github.com/python-pillow/Pillow/issues/3963
-    @unittest.skipIf(
-        [int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6, 2, 0],
-        'broken on Pillow < 6.2.0',
-    )
+    @skip_if([int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6,2,0],
+            'broken on PIL and Pillow < 6.2.0')
     # Disabled to avoid OOM killer on small systems, since the stdlib
     # doesn't provide a way to find out how much RAM we have
     def _test_read_region_2GB(self):
         self.assertEqual(
-            self.osr.read_region((1000, 1000), 0, (32768, 16384)).size, (32768, 16384)
-        )
+                self.osr.read_region((1000, 1000), 0, (32768, 16384)).size,
+                (32768, 16384))
 
     def test_thumbnail(self):
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
@@ -143,21 +143,18 @@ class TestAperioSlide(_SlideTest, unittest.TestCase):
     FILENAME = 'small.svs'
 
     def test_associated_images(self):
-        self.assertEqual(self.osr.associated_images['thumbnail'].size, (16, 16))
-        self.assertRaises(KeyError, lambda: self.osr.associated_images['__missing'])
+        self.assertEqual(self.osr.associated_images['thumbnail'].size,
+                (16, 16))
+        self.assertRaises(KeyError,
+                lambda: self.osr.associated_images['__missing'])
         # test __len__ and __iter__
-        self.assertEqual(
-            len([v for v in self.osr.associated_images]),
-            len(self.osr.associated_images),
-        )
-
+        self.assertEqual(len([v for v in self.osr.associated_images]),
+                len(self.osr.associated_images))
         def mangle_repr(o):
             return re.sub('0x[0-9a-fA-F]+', '(mangled)', repr(o))
-
-        self.assertEqual(
-            mangle_repr(self.osr.associated_images),
-            '<_AssociatedImageMap %s>' % mangle_repr(dict(self.osr.associated_images)),
-        )
+        self.assertEqual(mangle_repr(self.osr.associated_images),
+                '<_AssociatedImageMap %s>' % mangle_repr(
+                dict(self.osr.associated_images)))
 
 
 class TestUnreadableSlide(_SlideTest, unittest.TestCase):
@@ -165,22 +162,18 @@ class TestUnreadableSlide(_SlideTest, unittest.TestCase):
 
     def test_read_bad_region(self):
         self.assertEqual(self.osr.properties['openslide.vendor'], 'aperio')
-        self.assertRaises(
-            OpenSlideError, lambda: self.osr.read_region((0, 0), 0, (16, 16))
-        )
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.read_region((0, 0), 0, (16, 16)))
         # verify that errors are sticky
-        self.assertRaises(
-            OpenSlideError, lambda: self.osr.properties['openslide.vendor']
-        )
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.properties['openslide.vendor'])
 
     def test_read_bad_associated_image(self):
         self.assertEqual(self.osr.properties['openslide.vendor'], 'aperio')
         # Prints "JPEGLib: Bogus marker length." to stderr due to
         # https://github.com/openslide/openslide/issues/36
-        self.assertRaises(
-            OpenSlideError, lambda: self.osr.associated_images['thumbnail']
-        )
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.associated_images['thumbnail'])
         # verify that errors are sticky
-        self.assertRaises(
-            OpenSlideError, lambda: self.osr.properties['openslide.vendor']
-        )
+        self.assertRaises(OpenSlideError,
+                lambda: self.osr.properties['openslide.vendor'])

@@ -18,33 +18,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from io import BytesIO
-from optparse import OptionParser
-import os
-import re
-from unicodedata import normalize
-
 from flask import Flask, abort, make_response, render_template, url_for
-
-if os.name == 'nt':
-    _dll_path = os.getenv('OPENSLIDE_PATH')
-    if _dll_path is not None:
-        if hasattr(os, 'add_dll_directory'):
-            # Python >= 3.8
-            with os.add_dll_directory(_dll_path):
-                import openslide
-        else:
-            # Python < 3.8
-            _orig_path = os.environ.get('PATH', '')
-            os.environ['PATH'] = _orig_path + ';' + _dll_path
-            import openslide
-
-            os.environ['PATH'] = _orig_path
-else:
-    import openslide
-
+from io import BytesIO
+import openslide
 from openslide import ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
+from optparse import OptionParser
+import re
+from unicodedata import normalize
 
 DEEPZOOM_SLIDE = None
 DEEPZOOM_FORMAT = 'jpeg'
@@ -59,6 +40,12 @@ app.config.from_object(__name__)
 app.config.from_envvar('DEEPZOOM_TILER_SETTINGS', silent=True)
 
 
+class PILBytesIO(BytesIO):
+    def fileno(self):
+        '''Classic PIL doesn't understand io.UnsupportedOperation.'''
+        raise AttributeError('Not supported')
+
+
 @app.before_first_request
 def load_slide():
     slidefile = app.config['DEEPZOOM_SLIDE']
@@ -69,9 +56,11 @@ def load_slide():
         'DEEPZOOM_OVERLAP': 'overlap',
         'DEEPZOOM_LIMIT_BOUNDS': 'limit_bounds',
     }
-    opts = {v: app.config[k] for k, v in config_map.items()}
+    opts = dict((v, app.config[k]) for k, v in config_map.items())
     slide = open_slide(slidefile)
-    app.slides = {SLIDE_NAME: DeepZoomGenerator(slide, **opts)}
+    app.slides = {
+        SLIDE_NAME: DeepZoomGenerator(slide, **opts)
+    }
     app.associated_images = []
     app.slide_properties = slide.properties
     for name, image in slide.associated_images.items():
@@ -89,16 +78,11 @@ def load_slide():
 @app.route('/')
 def index():
     slide_url = url_for('dzi', slug=SLIDE_NAME)
-    associated_urls = {
-        name: url_for('dzi', slug=slugify(name)) for name in app.associated_images
-    }
-    return render_template(
-        'slide-multipane.html',
-        slide_url=slide_url,
-        associated=associated_urls,
-        properties=app.slide_properties,
-        slide_mpp=app.slide_mpp,
-    )
+    associated_urls = dict((name, url_for('dzi', slug=slugify(name)))
+            for name in app.associated_images)
+    return render_template('slide-multipane.html', slide_url=slide_url,
+            associated=associated_urls, properties=app.slide_properties,
+            slide_mpp=app.slide_mpp)
 
 
 @app.route('/<slug>.dzi')
@@ -127,7 +111,7 @@ def tile(slug, level, col, row, format):
     except ValueError:
         # Invalid level or coordinates
         abort(404)
-    buf = BytesIO()
+    buf = PILBytesIO()
     tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
     resp = make_response(buf.getvalue())
     resp.mimetype = 'image/%s' % format
@@ -141,72 +125,31 @@ def slugify(text):
 
 if __name__ == '__main__':
     parser = OptionParser(usage='Usage: %prog [options] [slide]')
-    parser.add_option(
-        '-B',
-        '--ignore-bounds',
-        dest='DEEPZOOM_LIMIT_BOUNDS',
-        default=True,
-        action='store_false',
-        help='display entire scan area',
-    )
-    parser.add_option(
-        '-c', '--config', metavar='FILE', dest='config', help='config file'
-    )
-    parser.add_option(
-        '-d',
-        '--debug',
-        dest='DEBUG',
-        action='store_true',
-        help='run in debugging mode (insecure)',
-    )
-    parser.add_option(
-        '-e',
-        '--overlap',
-        metavar='PIXELS',
-        dest='DEEPZOOM_OVERLAP',
-        type='int',
-        help='overlap of adjacent tiles [1]',
-    )
-    parser.add_option(
-        '-f',
-        '--format',
-        metavar='{jpeg|png}',
-        dest='DEEPZOOM_FORMAT',
-        help='image format for tiles [jpeg]',
-    )
-    parser.add_option(
-        '-l',
-        '--listen',
-        metavar='ADDRESS',
-        dest='host',
-        default='127.0.0.1',
-        help='address to listen on [127.0.0.1]',
-    )
-    parser.add_option(
-        '-p',
-        '--port',
-        metavar='PORT',
-        dest='port',
-        type='int',
-        default=5000,
-        help='port to listen on [5000]',
-    )
-    parser.add_option(
-        '-Q',
-        '--quality',
-        metavar='QUALITY',
-        dest='DEEPZOOM_TILE_QUALITY',
-        type='int',
-        help='JPEG compression quality [75]',
-    )
-    parser.add_option(
-        '-s',
-        '--size',
-        metavar='PIXELS',
-        dest='DEEPZOOM_TILE_SIZE',
-        type='int',
-        help='tile size [254]',
-    )
+    parser.add_option('-B', '--ignore-bounds', dest='DEEPZOOM_LIMIT_BOUNDS',
+                default=True, action='store_false',
+                help='display entire scan area')
+    parser.add_option('-c', '--config', metavar='FILE', dest='config',
+                help='config file')
+    parser.add_option('-d', '--debug', dest='DEBUG', action='store_true',
+                help='run in debugging mode (insecure)')
+    parser.add_option('-e', '--overlap', metavar='PIXELS',
+                dest='DEEPZOOM_OVERLAP', type='int',
+                help='overlap of adjacent tiles [1]')
+    parser.add_option('-f', '--format', metavar='{jpeg|png}',
+                dest='DEEPZOOM_FORMAT',
+                help='image format for tiles [jpeg]')
+    parser.add_option('-l', '--listen', metavar='ADDRESS', dest='host',
+                default='127.0.0.1',
+                help='address to listen on [127.0.0.1]')
+    parser.add_option('-p', '--port', metavar='PORT', dest='port',
+                type='int', default=5000,
+                help='port to listen on [5000]')
+    parser.add_option('-Q', '--quality', metavar='QUALITY',
+                dest='DEEPZOOM_TILE_QUALITY', type='int',
+                help='JPEG compression quality [75]')
+    parser.add_option('-s', '--size', metavar='PIXELS',
+                dest='DEEPZOOM_TILE_SIZE', type='int',
+                help='tile size [254]')
 
     (opts, args) = parser.parse_args()
     # Load config file if specified

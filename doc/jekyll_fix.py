@@ -23,16 +23,15 @@
 # deployed to the website.
 # Rename Sphinx output directories to drop the underscore.
 
-import os
-
-from sphinx.util.console import bold
-
 DIRS = {
     '_static': 'static',
     '_sources': 'sources',
 }
-REWRITE_EXTENSIONS = {'.html', '.js'}
+REWRITE_EXTENSIONS = set(['.html', '.js'])
 
+from io import open
+import os
+from sphinx.util.console import bold
 
 def remove_directory_underscores(app, exception):
     if exception:
@@ -40,7 +39,6 @@ def remove_directory_underscores(app, exception):
     # Get logger
     try:
         from sphinx.util import logging
-
         logger = logging.getLogger(__name__)
     except (ImportError, AttributeError):
         # Sphinx < 1.6

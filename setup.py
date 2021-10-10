@@ -1,18 +1,17 @@
 import os
-
-from setuptools import Extension, setup
+from setuptools import setup, Extension
 
 # Load version string
 _verfile = os.path.join(os.path.dirname(__file__), 'openslide', '_version.py')
 with open(_verfile) as _fh:
-    exec(_fh.read())  # instantiates __version__
+    exec(_fh.read())
 
 with open('README.rst') as _fh:
     _long_description = _fh.read()
 
 setup(
     name='openslide-python',
-    version=__version__,  # noqa: F821  undefined-name __version__
+    version=__version__,
     packages=[
         'openslide',
     ],
@@ -37,15 +36,19 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
-    python_requires='>=3.6',
+    python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*',
     install_requires=[
         'Pillow',
     ],

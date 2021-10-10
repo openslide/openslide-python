@@ -17,31 +17,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from functools import wraps
 import os
-from pathlib import Path
-
 from PIL import Image
-
-# Handle Windows-specific first-import logic here, so individual modules
-# don't have to
-if os.name == 'nt':
-    # In application code, you probably shouldn't use an environment
-    # variable for this, unless you're sure you can trust the contents of the
-    # environment.
-    _dll_path = os.getenv('OPENSLIDE_PATH')
-    if _dll_path is not None:
-        if hasattr(os, 'add_dll_directory'):
-            # Python >= 3.8
-            with os.add_dll_directory(_dll_path):
-                import openslide
-        else:
-            # Python < 3.8
-            _orig_path = os.environ.get('PATH', '')
-            os.environ['PATH'] = _orig_path + ';' + _dll_path
-            import openslide  # noqa: F401  module-imported-but-unused
-
-            os.environ['PATH'] = _orig_path
-
+import unittest
 
 # PIL.Image cannot have zero width or height on Pillow 3.4.0 - 3.4.2
 # https://github.com/python-pillow/Pillow/issues/2259
@@ -53,4 +32,20 @@ except ValueError:
 
 
 def file_path(name):
-    return Path(__file__).parent / name
+    return os.path.join(os.path.dirname(__file__), name)
+
+
+def skip_if(condition, reason):
+    if hasattr(unittest, 'skipIf'):
+        # Python >= 2.7
+        return unittest.skipIf(condition, reason)
+    else:
+        # Python 2.6
+        def decorator(f):
+            @wraps(f)
+            def wrapper(*args, **kwargs):
+                if condition:
+                    return
+                return f(*args, **kwargs)
+            return wrapper
+        return decorator
