@@ -49,24 +49,26 @@ import PIL.Image
 from . import _convert
 
 if platform.system() == 'Windows':
-    _lib = cdll.LoadLibrary('libopenslide-0.dll')
+    _libname = 'libopenslide-0.dll'
 elif platform.system() == 'Darwin':
-    try:
-        _lib = cdll.LoadLibrary('libopenslide.0.dylib')
-    except OSError:
-        # MacPorts doesn't add itself to the dyld search path, but
-        # does add itself to the find_library() search path
-        # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
-        import ctypes.util
-
-        _lib = ctypes.util.find_library('openslide')
-        if _lib is None:
-            raise ImportError(
-                "Couldn't locate OpenSlide dylib.  Is OpenSlide installed?"
-            )
-        _lib = cdll.LoadLibrary(_lib)
+    _libname = 'libopenslide.0.dylib'
 else:
-    _lib = cdll.LoadLibrary('libopenslide.so.0')
+    _libname = 'libopenslide.so.0'
+
+try:
+    _lib = cdll.LoadLibrary(_libname)
+except OSError:
+    # MacPorts doesn't add itself to the dyld search path, but
+    # does add itself to the find_library() search path
+    # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
+    import ctypes.util
+
+    _lib = ctypes.util.find_library('openslide')
+    if _lib is None:
+        raise ImportError(
+            "Couldn't locate OpenSlide library.  Is OpenSlide installed?"
+        )
+    _lib = cdll.LoadLibrary(_lib)
 
 
 class OpenSlideError(Exception):
