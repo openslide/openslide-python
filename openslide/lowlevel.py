@@ -49,7 +49,8 @@ import PIL.Image
 from . import _convert
 
 if platform.system() == 'Windows':
-    _lib = cdll.LoadLibrary('libopenslide-0.dll')
+    import ctypes.util
+    _lib = cdll.LoadLibrary(ctypes.util.find_library('libopenslide-0.dll'))
 elif platform.system() == 'Darwin':
     try:
         _lib = cdll.LoadLibrary('libopenslide.0.dylib')
