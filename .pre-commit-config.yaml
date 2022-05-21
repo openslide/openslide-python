@@ -35,7 +35,7 @@ repos:
         args: ["--skip-string-normalization"]
 
   - repo: https://github.com/asottile/blacken-docs
-    rev: v1.10.0
+    rev: v1.12.1
     hooks:
       - id: blacken-docs
         name: Format python code in documentation
