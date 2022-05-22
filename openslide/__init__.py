@@ -130,7 +130,9 @@ class AbstractSlide:
         bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR, 'ffffff')
         thumb = Image.new('RGB', tile.size, bg_color)
         thumb.paste(tile, None, tile)
-        thumb.thumbnail(size, Image.ANTIALIAS)
+        # Image.Resampling added in Pillow 9.1.0
+        # Image.LANCZOS removed in Pillow 10
+        thumb.thumbnail(size, getattr(Image, 'Resampling', Image).LANCZOS)
         return thumb
 
 
