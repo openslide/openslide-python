@@ -48,11 +48,11 @@ Requirements
 Installation
 ============
 
-1.  `Install OpenSlide`_.
+OpenSlide Python requires OpenSlide_.  For instructions on installing both
+components so OpenSlide Python can find OpenSlide, see the package
+documentation_.
 
-2.  ``pip install openslide-python``
-
-.. _`Install OpenSlide`: https://openslide.org/download/
+.. _documentation: https://openslide.org/api/python/#installing
 
 
 More Information
