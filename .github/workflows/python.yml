@@ -57,14 +57,17 @@ jobs:
   windows:
     name: Windows
     needs: pre-commit
-    runs-on: windows-latest
+    # test_read_bad_associated_image crashes with "Windows fatal exception:
+    # code 0x80000003" on 64-bit windows-2022.  It probably doesn't help
+    # that we're using an OpenSlide and library stack from 2017, compiled
+    # with a 2017 compiler.  Pin to windows-2019 for now.
+    runs-on: windows-2019
     env:
       WINBUILD_RELEASE: 20171122
     defaults:
       run:
         shell: bash
     strategy:
-      fail-fast: false
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9, "3.10"]
         python-arch: [x86, x64]
