@@ -61,8 +61,9 @@ elif platform.system() == 'Darwin':
 
         _lib = ctypes.util.find_library('openslide')
         if _lib is None:
-            raise ImportError(
-                "Couldn't locate OpenSlide dylib.  Is OpenSlide installed?"
+            raise ModuleNotFoundError(
+                "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
+                "correctly?  https://openslide.org/api/python/#installing"
             )
         _lib = cdll.LoadLibrary(_lib)
 else:
