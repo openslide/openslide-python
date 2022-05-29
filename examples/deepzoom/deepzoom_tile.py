@@ -3,6 +3,7 @@
 # deepzoom_tile - Convert whole-slide images to Deep Zoom format
 #
 # Copyright (c) 2010-2015 Carnegie Mellon University
+# Copyright (c) 2022      Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
