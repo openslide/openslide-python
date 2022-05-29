@@ -42,13 +42,6 @@ $(document).ready(function() {
         zoomPerScroll: 2,
         timeout: 120000,
     });
-    viewer.addHandler("open", function() {
-        // To improve load times, ignore the lowest-resolution Deep Zoom
-        // levels.  This is a hack: we can't configure the minLevel via
-        // OpenSeadragon configuration options when the viewer is created
-        // from DZI XML.
-        viewer.source.minLevel = 8;
-    });
 
     var mpp = parseFloat("{{ slide_mpp }}");
     viewer.scalebar({
