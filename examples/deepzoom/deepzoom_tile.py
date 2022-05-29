@@ -214,7 +214,19 @@ class DeepZoomStaticTiler:
     def _write_html(self):
         import jinja2
 
-        env = jinja2.Environment(loader=jinja2.PackageLoader(__name__), autoescape=True)
+        # https://docs.python.org/3/reference/import.html#main-spec
+        if __spec__ is not None:
+            # We're running from a module (e.g. "python -m deepzoom_tile")
+            # so load templates from the containing package.
+            loader = jinja2.PackageLoader('__main__')
+        else:
+            # We're not running from a module (e.g. "python deepzoom_tile.py")
+            # so PackageLoader('__main__') doesn't work in jinja2 3.x.
+            # Load templates directly from the filesystem.
+            loader = jinja2.FileSystemLoader(
+                os.path.join(os.path.dirname(__file__), 'templates')
+            )
+        env = jinja2.Environment(loader=loader, autoescape=True)
         template = env.get_template('slide-multipane.html')
         associated_urls = {n: self._url_for(n) for n in self._slide.associated_images}
         try:
