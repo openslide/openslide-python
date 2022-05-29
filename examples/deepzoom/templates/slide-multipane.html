@@ -114,7 +114,7 @@ div#properties dd {
 <script type="text/javascript" src="static/openseadragon.js"></script>
 <script type="text/javascript" src="static/openseadragon-scalebar.js"></script>
 <script type="text/javascript">
-$(document).ready(function() {
+$(function() {
     var dzi_data = {{ dzi_data|default('{}')|safe }};
     var viewer = new OpenSeadragon({
         id: "view",
@@ -155,7 +155,7 @@ $(document).ready(function() {
     }
 
     open_slide("{{ slide_url }}", parseFloat('{{ slide_mpp }}'));
-    $(".load-slide").click(function(ev) {
+    $(".load-slide").on("click", function(ev) {
         $(".current-slide").removeClass("current-slide");
         $(this).parent().addClass("current-slide");
         open_slide($(this).attr('data-url'),

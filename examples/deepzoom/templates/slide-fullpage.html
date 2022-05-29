@@ -26,7 +26,7 @@ div#view {
 <script type="text/javascript" src="{{ url_for('static', filename='openseadragon.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='openseadragon-scalebar.js') }}"></script>
 <script type="text/javascript">
-$(document).ready(function() {
+$(function() {
     var viewer = new OpenSeadragon({
         id: "view",
         tileSources: "{{ slide_url }}",
