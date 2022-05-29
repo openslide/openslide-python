@@ -177,9 +177,33 @@ OpenSlide objects
       :param tuple size: the maximum size of the thumbnail as a
          ``(width, height)`` tuple
 
+   .. method:: set_cache(cache)
+
+      Use the specified :class:`OpenSlideCache` to store recently decoded
+      slide tiles.  By default, the :class:`OpenSlide` has a private cache
+      with a default size.
+
+      :param OpenSlideCache cache: a cache object
+      :raises OpenSlideVersionError: if OpenSlide is older than version 3.5.0
+
    .. method:: close()
 
       Close the OpenSlide object.
+
+
+Caching
+-------
+
+.. class:: OpenSlideCache(capacity)
+
+   An in-memory tile cache.
+
+   Tile caches can be attached to one or more :class:`OpenSlide` objects
+   with :meth:`OpenSlide.set_cache` to cache recently-decoded tiles.  By
+   default, each :class:`OpenSlide` has its own cache with a default size.
+
+   :param int capacity: the cache capacity in bytes
+   :raises OpenSlideVersionError: if OpenSlide is older than version 3.5.0
 
 
 .. _standard-properties:
@@ -258,6 +282,11 @@ Exceptions
 
    OpenSlide does not support the requested file.  Subclass of
    :exc:`OpenSlideError`.
+
+.. exception:: OpenSlideVersionError
+
+   This version of OpenSlide does not support the requested functionality.
+   Subclass of :exc:`OpenSlideError`.
 
 
 Wrapping a PIL Image
