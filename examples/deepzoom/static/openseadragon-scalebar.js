@@ -16,8 +16,9 @@
  */
 (function($) {
 
-    if (!$.version || $.version.major < 1) {
-        throw new Error('OpenSeadragonScalebar requires OpenSeadragon version 1.0.0+');
+    if (!$.version || $.version.major < 2) {
+        throw new Error('This version of OpenSeadragonScalebar requires ' +
+                'OpenSeadragon version 2.0.0+');
     }
 
     $.Viewer.prototype.scalebar = function(options) {
@@ -55,6 +56,9 @@
      * @param {Integer} options.pixelsPerMeter The pixels per meter of the
      * zoomable image at the original image size. If null, the scale bar is not
      * displayed. default: null
+     * @param {Integer} options.referenceItemIdx Specify the item from
+     * viewer.world to which options.pixelsPerMeter is refering.
+     * default: 0
      * @param (String} options.minWidth The minimal width of the scale bar as a
      * CSS string (ex: 100px, 1em, 1% etc...) default: 150px
      * @param {OpenSeadragon.ScalebarLocation} options.location The location
@@ -70,6 +74,7 @@
      * @param {String} options.fontColor The font color. default: black
      * @param {String} options.backgroundColor The background color. default: none
      * @param {String} options.fontSize The font size. default: not set
+     * @param {String} options.fontFamily The font-family. default: not set
      * @param {String} options.barThickness The thickness of the scale bar in px.
      * default: 2
      * @param {function} options.sizeAndTextRenderer A function which will be
@@ -99,8 +104,10 @@
         this.fontColor = options.fontColor || "black";
         this.backgroundColor = options.backgroundColor || "none";
         this.fontSize = options.fontSize || "";
+        this.fontFamily = options.fontFamily || "";
         this.barThickness = options.barThickness || 2;
         this.pixelsPerMeter = options.pixelsPerMeter || null;
+        this.referenceItemIdx = options.referenceItemIdx || 0;
         this.location = options.location || $.ScalebarLocation.BOTTOM_LEFT;
         this.xOffset = options.xOffset || 5;
         this.yOffset = options.yOffset || 5;
@@ -144,11 +151,17 @@
             if (isDefined(options.fontSize)) {
                 this.fontSize = options.fontSize;
             }
+            if (isDefined(options.fontFamily)) {
+                this.fontFamily = options.fontFamily;
+            }
             if (isDefined(options.barThickness)) {
                 this.barThickness = options.barThickness;
             }
             if (isDefined(options.pixelsPerMeter)) {
                 this.pixelsPerMeter = options.pixelsPerMeter;
+            }
+            if (isDefined(options.referenceItemIdx)) {
+                this.referenceItemIdx = options.referenceItemIdx;
             }
             if (isDefined(options.location)) {
                 this.location = options.location;
@@ -190,6 +203,9 @@
          * @param {Integer} options.pixelsPerMeter The pixels per meter of the
          * zoomable image at the original image size. If null, the scale bar is not
          * displayed. default: null
+         * @param {Integer} options.referenceItemIdx Specify the item from
+         * viewer.world to which options.pixelsPerMeter is refering.
+         * default: 0
          * @param (String} options.minWidth The minimal width of the scale bar as a
          * CSS string (ex: 100px, 1em, 1% etc...) default: 150px
          * @param {OpenSeadragon.ScalebarLocation} options.location The location
@@ -227,7 +243,9 @@
             this.divElt.style.display = "";
 
             var viewport = this.viewer.viewport;
-            var zoom = viewport.viewportToImageZoom(viewport.getZoom(true));
+            var tiledImage = this.viewer.world.getItemAt(this.referenceItemIdx);
+            var zoom = tiledImageViewportToImageZoom(tiledImage,
+                    viewport.getZoom(true));
             var currentPPM = zoom * this.pixelsPerMeter;
             var props = this.sizeAndTextRenderer(currentPPM, this.minWidth);
 
@@ -238,6 +256,7 @@
         },
         drawMicroscopyScalebar: function(size, text) {
             this.divElt.style.fontSize = this.fontSize;
+            this.divElt.style.fontFamily = this.fontFamily;
             this.divElt.style.textAlign = "center";
             this.divElt.style.color = this.fontColor;
             this.divElt.style.border = "none";
@@ -248,6 +267,7 @@
         },
         drawMapScalebar: function(size, text) {
             this.divElt.style.fontSize = this.fontSize;
+            this.divElt.style.fontFamily = this.fontFamily;
             this.divElt.style.textAlign = "center";
             this.divElt.style.color = this.fontColor;
             this.divElt.style.border = this.barThickness + "px solid " + this.color;
@@ -330,6 +350,50 @@
                 }
                 return new $.Point(x + this.xOffset, y - this.yOffset);
             }
+        },
+        /**
+         * Get the rendered scalebar in a canvas.
+         * @returns {Element} A canvas containing the scalebar representation
+         */
+        getAsCanvas: function() {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.divElt.offsetWidth;
+            canvas.height = this.divElt.offsetHeight;
+            var context = canvas.getContext("2d");
+            context.fillStyle = this.backgroundColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = this.color;
+            context.fillRect(0, canvas.height - this.barThickness,
+                    canvas.width, canvas.height);
+            if (this.drawScalebar === this.drawMapScalebar) {
+                context.fillRect(0, 0, this.barThickness, canvas.height);
+                context.fillRect(canvas.width - this.barThickness, 0,
+                        this.barThickness, canvas.height);
+            }
+            context.font = window.getComputedStyle(this.divElt).font;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillStyle = this.fontColor;
+            var hCenter = canvas.width / 2;
+            var vCenter = canvas.height / 2;
+            context.fillText(this.divElt.textContent, hCenter, vCenter);
+            return canvas;
+        },
+        /**
+         * Get a copy of the current OpenSeadragon canvas with the scalebar.
+         * @returns {Element} A canvas containing a copy of the current OpenSeadragon canvas with the scalebar
+         */
+        getImageWithScalebarAsCanvas: function() {
+            var imgCanvas = this.viewer.drawer.canvas;
+            var newCanvas = document.createElement("canvas");
+            newCanvas.width = imgCanvas.width;
+            newCanvas.height = imgCanvas.height;
+            var newCtx = newCanvas.getContext("2d");
+            newCtx.drawImage(imgCanvas, 0, 0);
+            var scalebarCanvas = this.getAsCanvas();
+            var location = this.getScalebarLocation();
+            newCtx.drawImage(scalebarCanvas, location.x, location.y);
+            return newCanvas;
         }
     };
 
@@ -360,6 +424,21 @@
             var ppmi = ppf * 5280;
             return getScalebarSizeAndText(ppmi, minSize, "mi");
         },
+        /**
+         * Astronomy units. Choosing the best unit from arcsec, arcminute, and degree
+         */
+        ASTRONOMY: function(ppa, minSize) {
+	    var maxSize = minSize * 2;
+            if (maxSize < ppa * 60) {
+                return getScalebarSizeAndText(ppa, minSize, "\"", false, '');
+            }
+            var ppminutes = ppa * 60;
+            if (maxSize < ppminutes * 60) {
+                return getScalebarSizeAndText(ppminutes, minSize, "\'", false, '');
+            }
+            var ppd = ppminutes * 60;
+            return getScalebarSizeAndText(ppd, minSize, "&#176", false, '');
+	},
         /**
          * Standard time. Choosing the best unit from second (and metric divisions),
          * minute, hour, day and year.
@@ -395,14 +474,23 @@
         METRIC_GENERIC: getScalebarSizeAndTextForMetric
     };
 
-    function getScalebarSizeAndText(ppm, minSize, unitSuffix, handlePlural) {
+    // Missing TiledImage.viewportToImageZoom function in OSD 2.0.0
+    function tiledImageViewportToImageZoom(tiledImage, viewportZoom) {
+        var ratio = tiledImage._scaleSpring.current.value *
+                tiledImage.viewport._containerInnerSize.x /
+                tiledImage.source.dimensions.x;
+        return ratio * viewportZoom;
+    }
+
+    function getScalebarSizeAndText(ppm, minSize, unitSuffix, handlePlural, spacer) {
+	spacer = spacer === undefined ? ' ' : spacer;
         var value = normalize(ppm, minSize);
         var factor = roundSignificand(value / ppm * minSize, 3);
         var size = value * minSize;
         var plural = handlePlural && factor > 1 ? "s" : "";
         return {
             size: size,
-            text: factor + " " + unitSuffix + plural
+            text: factor + spacer + unitSuffix + plural
         };
     }
 
