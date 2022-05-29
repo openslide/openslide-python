@@ -49,7 +49,20 @@ import PIL.Image
 from . import _convert
 
 if platform.system() == 'Windows':
-    _lib = cdll.LoadLibrary('libopenslide-0.dll')
+    try:
+        _lib = cdll.LoadLibrary('libopenslide-0.dll')
+    except FileNotFoundError:
+        import os
+
+        if hasattr(os, 'add_dll_directory'):
+            # Python >= 3.8
+            _admonition = 'Did you call os.add_dll_directory()?'
+        else:
+            _admonition = 'Did you add OpenSlide to PATH?'
+        raise ModuleNotFoundError(
+            f"Couldn't locate OpenSlide DLL.  {_admonition}  "
+            "https://openslide.org/api/python/#installing"
+        )
 elif platform.system() == 'Darwin':
     try:
         _lib = cdll.LoadLibrary('libopenslide.0.dylib')
@@ -61,8 +74,9 @@ elif platform.system() == 'Darwin':
 
         _lib = ctypes.util.find_library('openslide')
         if _lib is None:
-            raise ImportError(
-                "Couldn't locate OpenSlide dylib.  Is OpenSlide installed?"
+            raise ModuleNotFoundError(
+                "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
+                "correctly?  https://openslide.org/api/python/#installing"
             )
         _lib = cdll.LoadLibrary(_lib)
 else:

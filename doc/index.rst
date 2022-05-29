@@ -41,6 +41,45 @@ Public License, version 2.1`_.
 .. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/main/lgpl-2.1.txt
 
 
+Installing
+==========
+
+OpenSlide Python requires OpenSlide_, which must be installed separately.
+
+On Linux and macOS, the easiest way to get both components is to install_
+with a package manager that packages both, such as Anaconda_, DNF or Apt on
+Linux systems, or MacPorts_ on macOS systems.  You can also install
+OpenSlide Python with pip_ after installing OpenSlide with a package manager
+or from source_.  Except for pip, do not mix OpenSlide and OpenSlide Python
+from different package managers (for example, OpenSlide from MacPorts and
+OpenSlide Python from Anaconda), since you'll get library conflicts.
+
+On Windows, download the OpenSlide `Windows binaries`_ and extract them
+to a known path.  Then, import ``openslide`` inside a
+``with os.add_dll_directory()`` statement::
+
+    # The path can also be read from a config file, etc.
+    OPENSLIDE_PATH = r'c:\path\to\openslide-win64\bin'
+
+    import os
+    if hasattr(os, 'add_dll_directory'):
+        # Python >= 3.8 on Windows
+        with os.add_dll_directory(OPENSLIDE_PATH):
+            import openslide
+    else:
+        import openslide
+
+This won't work with Python 3.7 or earlier; you'll need to add the OpenSlide
+``bin`` directory to your ``PATH`` instead.
+
+.. _install: https://openslide.org/download/#distribution-packages
+.. _Anaconda: https://anaconda.org/
+.. _MacPorts: https://www.macports.org/
+.. _pip: https://pip.pypa.io/en/stable/
+.. _source: https://openslide.org/download/#source
+.. _`Windows binaries`: https://openslide.org/download/#windows-binaries
+
+
 Basic usage
 ===========
 
