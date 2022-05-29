@@ -39,7 +39,7 @@ jobs:
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install pytest
+        pip install jinja2 pytest
     - name: Install OpenSlide
       run: |
         case "${{ matrix.os }}" in
@@ -54,6 +54,8 @@ jobs:
       run: pip install -e .
     - name: Run tests
       run: pytest -v
+    - name: Tile slide
+      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
   windows:
     name: Windows
     needs: pre-commit
@@ -112,6 +114,9 @@ jobs:
         python examples/deepzoom/deepzoom_multiserver.py -h >/dev/null
         python examples/deepzoom/deepzoom_server.py -h >/dev/null
         python examples/deepzoom/deepzoom_tile.py -h >/dev/null
+    - name: Tile slide
+      # Reads OPENSLIDE_PATH
+      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
     - name: Archive wheel
       uses: actions/upload-artifact@v2
       with:
