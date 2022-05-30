@@ -3,7 +3,7 @@
 # deepzoom_multiserver - Example web application for viewing multiple slides
 #
 # Copyright (c) 2010-2015 Carnegie Mellon University
-# Copyright (c) 2021      Benjamin Gilbert
+# Copyright (c) 2021-2022 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -44,7 +44,7 @@ if os.name == 'nt':
 else:
     import openslide
 
-from openslide import OpenSlide, OpenSlideCache, OpenSlideError
+from openslide import OpenSlide, OpenSlideCache, OpenSlideError, OpenSlideVersionError
 from openslide.deepzoom import DeepZoomGenerator
 
 SLIDE_DIR = '.'
@@ -67,8 +67,11 @@ class _SlideCache:
         self.dz_opts = dz_opts
         self._lock = Lock()
         self._cache = OrderedDict()
-        # Share a single tile cache among all slide handles
-        self._tile_cache = OpenSlideCache(tile_cache_mb * 1024 * 1024)
+        # Share a single tile cache among all slide handles, if supported
+        try:
+            self._tile_cache = OpenSlideCache(tile_cache_mb * 1024 * 1024)
+        except OpenSlideVersionError:
+            self._tile_cache = None
 
     def get(self, path):
         with self._lock:
@@ -79,7 +82,8 @@ class _SlideCache:
                 return slide
 
         osr = OpenSlide(path)
-        osr.set_cache(self._tile_cache)
+        if self._tile_cache is not None:
+            osr.set_cache(self._tile_cache)
         slide = DeepZoomGenerator(osr, **self.dz_opts)
         try:
             mpp_x = osr.properties[openslide.PROPERTY_NAME_MPP_X]
