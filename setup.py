@@ -7,7 +7,7 @@ _verfile = os.path.join(os.path.dirname(__file__), 'openslide', '_version.py')
 with open(_verfile) as _fh:
     exec(_fh.read())  # instantiates __version__
 
-with open('README.rst') as _fh:
+with open('README.md') as _fh:
     _long_description = _fh.read()
 
 setup(
@@ -24,6 +24,7 @@ setup(
     maintainer_email='openslide-users@lists.andrew.cmu.edu',
     description='Python interface to OpenSlide',
     long_description=_long_description,
+    long_description_content_type='text/markdown',
     license='GNU Lesser General Public License, version 2.1',
     keywords='openslide whole-slide image virtual slide library',
     url='https://openslide.org/',
