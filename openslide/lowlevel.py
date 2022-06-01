@@ -47,7 +47,7 @@ import platform
 
 import PIL.Image
 
-from . import _convert
+from . import _convert  # type: ignore
 
 if platform.system() == 'Windows':
     try:
@@ -73,13 +73,13 @@ elif platform.system() == 'Darwin':
         # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
         import ctypes.util
 
-        _lib = ctypes.util.find_library('openslide')
-        if _lib is None:
+        _lib_path = ctypes.util.find_library('openslide')
+        if _lib_path is None:
             raise ModuleNotFoundError(
                 "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
                 "correctly?  https://openslide.org/api/python/#installing"
             )
-        _lib = cdll.LoadLibrary(_lib)
+        _lib = cdll.LoadLibrary(_lib_path)
 else:
     _lib = cdll.LoadLibrary('libopenslide.so.0')
 
