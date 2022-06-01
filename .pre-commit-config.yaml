@@ -18,7 +18,7 @@ repos:
     hooks:
       - id: pyupgrade
         name: Modernize python code
-        args: ["--py36-plus"]
+        args: ["--py37-plus"]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.8.0
