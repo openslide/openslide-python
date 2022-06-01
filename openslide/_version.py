@@ -22,4 +22,13 @@
 This module is an implementation detail.  The package version should be
 obtained from openslide.__version__."""
 
-__version__ = '1.1.2'
+import sys
+
+if sys.version_info < (3, 8):
+    import pkg_resources
+
+    __version__ = pkg_resources.require("openslide-python")[0].version
+else:
+    from importlib.metadata import version
+
+    __version__ = version("openslide-python")

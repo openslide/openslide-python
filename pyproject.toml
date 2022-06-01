@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "openslide-python"
+version = "1.1.2"
+description = "Python interface to OpenSlide"
+authors = []
+maintainers = ["OpenSlide project <openslide-users@lists.andrew.cmu.edu>"]
+license = "LGPL-2.1-only"
+readme = "README.md"
+homepage = "https://openslide.org/"
+repository = "https://github.com/openslide/openslide-python"
+keywords = [
+    "openslide",
+    "whole-slide",
+    "image",
+    "virtual slide",
+    "library"
+]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Healthcare Industry',
+    'Intended Audience :: Science/Research',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX :: Linux',
+    'Topic :: Scientific/Engineering :: Bio-Informatics'
+]
+packages = [
+    { include = "openslide" },
+]
+include = [
+    { path = "*.txt", format = "sdist" },
+    { path = "doc/*.py", format = "sdist" },
+    { path = "doc/*.rst", format = "sdist" },
+    { path = "examples/**/*.html", format = "sdist" },
+    { path = "examples/**/*.js", format = "sdist" },
+    { path = "examples/**/*.png", format = "sdist" },
+    { path = "examples/**/*.py", format = "sdist" },
+    { path = "tests/*.png", format = "sdist" },
+    { path = "tests/*.py", format = "sdist" },
+    { path = "tests/*.svs", format = "sdist" },
+    { path = "tests/*.tiff", format = "sdist" },
+]
+build = "build.py"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+Pillow = "^9.1.1"
+setuptools = {version = ">=58.3.0", python = "3.7"}
+
+[tool.poetry.dev-dependencies]
+pre-commit = "^2.19.0"
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
