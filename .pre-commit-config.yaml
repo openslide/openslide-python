@@ -3,7 +3,7 @@ exclude: '^(lgpl-2\.1\.txt|examples/deepzoom/static/.*\.js)$'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.2.0
     hooks:
       - id: check-added-large-files
       - id: check-merge-conflict
@@ -14,14 +14,14 @@ repos:
         exclude: '^\.github/.*\.md$'
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.19.1
+    rev: v2.32.1
     hooks:
       - id: pyupgrade
         name: Modernize python code
         args: ["--py37-plus"]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.8.0
+    rev: 5.10.1
     hooks:
       - id: isort
         name: Reorder python imports with isort
@@ -41,12 +41,12 @@ repos:
         name: Format python code in documentation
 
   - repo: https://github.com/asottile/yesqa
-    rev: v1.2.3
+    rev: v1.3.0
     hooks:
       - id: yesqa
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 3.9.2
+    rev: 4.0.1
     hooks:
       - id: flake8
         name: Lint python code with flake8
