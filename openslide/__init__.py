@@ -331,21 +331,15 @@ class ImageSlide(AbstractSlide):
 
         If the file format is not recognized, return None."""
         try:
-            img = Image.open(filename)
-            format = img.format
-            if hasattr(img, 'close'):
-                # Pillow >= 2.5.0
-                img.close()
-            return format
+            with Image.open(filename) as img:
+                return img.format
         except OSError:
             return None
 
     def close(self):
         """Close the slide object."""
         if self._close:
-            if hasattr(self._image, 'close'):
-                # Pillow >= 2.5.0
-                self._image.close()
+            self._image.close()
             self._close = False
         self._image = None
 

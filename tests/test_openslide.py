@@ -31,7 +31,7 @@ from openslide import (
     OpenSlideUnsupportedFormatError,
 )
 
-from . import file_path, image_dimensions_cannot_be_zero, maybe_supported
+from . import file_path, maybe_supported
 
 
 class TestCache(unittest.TestCase):
@@ -128,7 +128,6 @@ class TestSlide(_SlideTest, unittest.TestCase):
             self.osr.read_region((-10, -10), 1, (400, 400)).size, (400, 400)
         )
 
-    @unittest.skipIf(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
     def test_read_region_size_dimension_zero(self):
         self.assertEqual(self.osr.read_region((0, 0), 1, (400, 0)).size, (400, 0))
 
@@ -141,7 +140,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
         )
 
     @unittest.skipIf(sys.maxsize < 1 << 32, '32-bit Python')
-    # Broken on Pillow >= 3.4.0, < 6.2.0.
+    # Broken on Pillow < 6.2.0.
     # https://github.com/python-pillow/Pillow/issues/3963
     @unittest.skipIf(
         [int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6, 2, 0],

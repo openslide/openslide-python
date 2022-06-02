@@ -17,25 +17,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from contextlib import contextmanager
 import unittest
 
 from PIL import Image
 
 from openslide import ImageSlide, OpenSlideCache, OpenSlideError
 
-from . import file_path, image_dimensions_cannot_be_zero, maybe_supported
-
-
-@contextmanager
-def image_open(*args, **kwargs):
-    img = Image.open(*args, **kwargs)
-    try:
-        yield img
-    finally:
-        if hasattr(img, 'close'):
-            # Pillow >= 2.5.0
-            img.close()
+from . import file_path, maybe_supported
 
 
 class TestImageWithoutOpening(unittest.TestCase):
@@ -50,13 +38,13 @@ class TestImageWithoutOpening(unittest.TestCase):
 
     def test_open_image(self):
         # passing PIL.Image to ImageSlide
-        with image_open(file_path('boxes.png')) as img:
+        with Image.open(file_path('boxes.png')) as img:
             with ImageSlide(img) as osr:
                 self.assertEqual(osr.dimensions, (300, 250))
                 self.assertEqual(repr(osr), 'ImageSlide(%r)' % img)
 
     def test_operations_on_closed_handle(self):
-        with image_open(file_path('boxes.png')) as img:
+        with Image.open(file_path('boxes.png')) as img:
             osr = ImageSlide(img)
             osr.close()
             self.assertRaises(
@@ -102,7 +90,6 @@ class TestImage(unittest.TestCase):
             self.osr.read_region((-10, -10), 0, (400, 400)).size, (400, 400)
         )
 
-    @unittest.skipIf(image_dimensions_cannot_be_zero, 'Pillow issue #2259')
     def test_read_region_size_dimension_zero(self):
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 0)).size, (400, 0))
 
