@@ -138,7 +138,9 @@ jobs:
         examples/deepzoom/deepzoom_tile.py -h >/dev/null
     - name: Tile slide
       # Reads OPENSLIDE_PATH
-      run: poetry run examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
+      run: |
+        source $VENV
+        examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
     - name: Archive wheel
       uses: actions/upload-artifact@v2
       with:
@@ -168,6 +170,8 @@ jobs:
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
+    - name: Install openslide-python
+      run: poetry install --no-interaction
     - name: Build
       run: |
         basename=openslide-python-docs-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
