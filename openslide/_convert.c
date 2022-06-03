@@ -21,37 +21,41 @@
 
 typedef unsigned char u8;
 
-#ifdef WORDS_BIGENDIAN
-#define CA 0
-#define CR 1
-#define CG 2
-#define CB 3
-#else
-#define CB 0
-#define CG 1
-#define CR 2
-#define CA 3
-#endif
-
 static void
-argb2rgba(u8 *buf, Py_ssize_t len)
+argb2rgba(PY_UINT32_T *buf, Py_ssize_t len)
 {
     Py_ssize_t cur;
 
-    for (cur = 0; cur < len; cur += 4) {
-        u8 a = buf[cur + CA];
-        u8 r = buf[cur + CR];
-        u8 g = buf[cur + CG];
-        u8 b = buf[cur + CB];
-        if (a != 0 && a != 255) {
-            r = r * 255 / a;
-            g = g * 255 / a;
-            b = b * 255 / a;
+    for (cur = 0; cur < len; cur++) {
+        PY_UINT32_T val = buf[cur];
+        u8 a = val >> 24;
+        switch (a) {
+        case 0:
+            break;
+        case 255:
+            val = (val << 8) | a;
+#ifndef WORDS_BIGENDIAN
+            // compiler should optimize this to bswap
+            val = (((val & 0x000000ff) << 24) |
+                   ((val & 0x0000ff00) <<  8) |
+                   ((val & 0x00ff0000) >>  8) |
+                   ((val & 0xff000000) >> 24));
+#endif
+            buf[cur] = val;
+            break;
+        default:
+            ; // label cannot point to a variable declaration
+            u8 r = 255 * ((val >> 16) & 0xff) / a;
+            u8 g = 255 * ((val >>  8) & 0xff) / a;
+            u8 b = 255 * ((val >>  0) & 0xff) / a;
+#ifdef WORDS_BIGENDIAN
+            val = r << 24 | g << 16 | b << 8 | a;
+#else
+            val = a << 24 | b << 16 | g << 8 | r;
+#endif
+            buf[cur] = val;
+            break;
         }
-        buf[cur + 0] = r;
-        buf[cur + 1] = g;
-        buf[cur + 2] = b;
-        buf[cur + 3] = a;
     }
 }
 
@@ -76,9 +80,13 @@ _convert_argb2rgba(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Argument has invalid size");
         goto DONE;
     }
+    if (view.itemsize != 4) {
+        PyErr_SetString(PyExc_ValueError, "Argument has invalid item size");
+        goto DONE;
+    }
 
     Py_BEGIN_ALLOW_THREADS
-    argb2rgba(view.buf, view.len);
+    argb2rgba(view.buf, view.len / 4);
     Py_END_ALLOW_THREADS
 
     Py_INCREF(Py_None);
