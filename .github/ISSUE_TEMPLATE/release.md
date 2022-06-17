@@ -1,6 +1,6 @@
 # OpenSlide Python release process
 
-- [ ] Update `CHANGELOG.txt` and version in `openslide/_version.py`
+- [ ] Update `CHANGELOG.md` and version in `openslide/_version.py`
 - [ ] Create and push signed tag
 - [ ] `git clean -dxf && mkdir dist`
 - [ ] Find the [workflow run](https://github.com/openslide/openslide-python/actions) for the tag; download its docs and wheels artifacts
