@@ -66,7 +66,7 @@
 
 ## Version 0.3.0, 2011-12-16
 
-* Fix segfault if properties/associated images accessed after OpenSlide
+* Fix segfault if properties/associated images accessed after `OpenSlide`
   is closed
 * Add methods to get Deep Zoom tile coordinates and dimensions
 * Fix loading libopenslide on Windows
