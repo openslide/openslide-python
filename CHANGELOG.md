@@ -1,5 +1,21 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.2.0, 2022-06-17
+
+* Drop support for Python &lt; 3.7
+* Support cache customization with OpenSlide 3.5.0
+* Improve pixel read performance
+* Clarify exception raised on Windows or macOS when OpenSlide can't be found
+* Raise `OpenSlideVersionError` when an operation requires a newer OpenSlide
+* Support `pathlib.Path` in filename arguments
+* Fix Pillow `Image.ANTIALIAS` deprecation warning
+* docs: Add detailed installation instructions
+* docs: Convert `README` and `CHANGELOG` to Markdown
+* examples: Share cache among all multiserver slides, if supported
+* examples: Fix `deepzoom_tile.py --viewer` with Jinja 3.x
+* examples: Read OpenSlide DLL path from `OPENSLIDE_PATH` env var on Windows
+* examples: Update OpenSeadragon to 3.0.0
+
 ## Version 1.1.2, 2020-09-13
 
 * Fix install with setuptools &ge; 46
@@ -66,7 +82,7 @@
 
 ## Version 0.3.0, 2011-12-16
 
-* Fix segfault if properties/associated images accessed after OpenSlide
+* Fix segfault if properties/associated images accessed after `OpenSlide`
   is closed
 * Add methods to get Deep Zoom tile coordinates and dimensions
 * Fix loading libopenslide on Windows
