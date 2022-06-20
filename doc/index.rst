@@ -38,7 +38,7 @@ Public License, version 2.1`_.
 .. _Trestle: https://openslide.org/formats/trestle/
 .. _Ventana: https://openslide.org/formats/ventana/
 .. _`Generic tiled TIFF`: https://openslide.org/formats/generic-tiff/
-.. _`GNU Lesser General Public License, version 2.1`: https://raw.github.com/openslide/openslide-python/main/lgpl-2.1.txt
+.. _`GNU Lesser General Public License, version 2.1`: https://openslide.org/license/
 
 
 Installing
