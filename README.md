@@ -63,4 +63,9 @@ components so OpenSlide Python can find OpenSlide, see the package
 ## License
 
 OpenSlide Python is released under the terms of the [GNU Lesser General
-Public License, version 2.1](https://raw.github.com/openslide/openslide-python/main/lgpl-2.1.txt).
+Public License, version 2.1](https://openslide.org/license/).
+
+OpenSlide Python is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
