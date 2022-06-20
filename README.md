@@ -13,15 +13,15 @@ closest to a desired zoom level.
 
 OpenSlide can read virtual slides in several formats:
 
-* [Aperio][]: (`.svs`, `.tif`)
-* [Hamamatsu][]: (`.ndpi`, `.vms`, `.vmu`)
-* [Leica][]: (`.scn`)
-* [MIRAX][]: (`.mrxs`)
-* [Philips][]: (`.tiff`)
-* [Sakura][]: (`.svslide`)
-* [Trestle][]: (`.tif`)
-* [Ventana][]: (`.bif`, `.tif`)
-* [Generic tiled TIFF][]: (`.tif`)
+* [Aperio][] (`.svs`, `.tif`)
+* [Hamamatsu][] (`.ndpi`, `.vms`, `.vmu`)
+* [Leica][] (`.scn`)
+* [MIRAX][] (`.mrxs`)
+* [Philips][] (`.tiff`)
+* [Sakura][] (`.svslide`)
+* [Trestle][] (`.tif`)
+* [Ventana][] (`.bif`, `.tif`)
+* [Generic tiled TIFF][] (`.tif`)
 
 [OpenSlide]: https://openslide.org/
 [Aperio]: https://openslide.org/formats/aperio/
