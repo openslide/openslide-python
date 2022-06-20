@@ -1,5 +1,5 @@
 # exclude vendored files
-exclude: '^(lgpl-2\.1\.txt|examples/deepzoom/static/.*\.js)$'
+exclude: '^(COPYING\.LESSER|examples/deepzoom/static/.*\.js)$'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
