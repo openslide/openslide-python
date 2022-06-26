@@ -321,7 +321,7 @@ OpenSlide Python provides functionality for generating individual
 whole-slide images in a web browser without converting the entire slide to
 Deep Zoom or a similar format.
 
-.. _`Deep Zoom`: http://msdn.microsoft.com/en-us/library/cc645050%28VS.95%29.aspx
+.. _`Deep Zoom`: https://docs.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/cc645050(v=vs.95)
 
 .. class:: DeepZoomGenerator(osr, tile_size=254, overlap=1, limit_bounds=False)
 

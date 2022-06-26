@@ -57,7 +57,7 @@ components so OpenSlide Python can find OpenSlide, see the package
 - [Changelog](https://github.com/openslide/openslide-python/blob/main/CHANGELOG.md#notable-changes-in-openslide-python)
 - [Website][OpenSlide]
 - [GitHub](https://github.com/openslide/openslide-python)
-- [Sample data](http://openslide.cs.cmu.edu/download/openslide-testdata/)
+- [Sample data](https://openslide.cs.cmu.edu/download/openslide-testdata/)
 
 
 ## License
