@@ -59,12 +59,9 @@ jobs:
   windows:
     name: Windows
     needs: pre-commit
-    # test_read_bad_associated_image crashes with "Windows fatal exception:
-    # code 0xc0000028" on 64-bit windows-2022.  Pin to windows-2019 for now.
-    # https://github.com/openslide/openslide-winbuild/issues/47
-    runs-on: windows-2019
+    runs-on: windows-latest
     env:
-      WINBUILD_RELEASE: 20220806
+      WINBUILD_RELEASE: 20220811
     defaults:
       run:
         shell: bash
