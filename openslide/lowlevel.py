@@ -49,39 +49,44 @@ import PIL.Image
 
 from . import _convert
 
-if platform.system() == 'Windows':
-    try:
-        _lib = cdll.LoadLibrary('libopenslide-0.dll')
-    except FileNotFoundError:
-        import os
 
-        if hasattr(os, 'add_dll_directory'):
-            # Python >= 3.8
-            _admonition = 'Did you call os.add_dll_directory()?'
-        else:
-            _admonition = 'Did you add OpenSlide to PATH?'
-        raise ModuleNotFoundError(
-            f"Couldn't locate OpenSlide DLL.  {_admonition}  "
-            "https://openslide.org/api/python/#installing"
-        )
-elif platform.system() == 'Darwin':
-    try:
-        _lib = cdll.LoadLibrary('libopenslide.0.dylib')
-    except OSError:
-        # MacPorts doesn't add itself to the dyld search path, but
-        # does add itself to the find_library() search path
-        # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
-        import ctypes.util
+def _load_library():
+    if platform.system() == 'Windows':
+        try:
+            return cdll.LoadLibrary('libopenslide-0.dll')
+        except FileNotFoundError:
+            import os
 
-        _lib = ctypes.util.find_library('openslide')
-        if _lib is None:
+            if hasattr(os, 'add_dll_directory'):
+                # Python >= 3.8
+                admonition = 'Did you call os.add_dll_directory()?'
+            else:
+                admonition = 'Did you add OpenSlide to PATH?'
             raise ModuleNotFoundError(
-                "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
-                "correctly?  https://openslide.org/api/python/#installing"
+                f"Couldn't locate OpenSlide DLL.  {admonition}  "
+                "https://openslide.org/api/python/#installing"
             )
-        _lib = cdll.LoadLibrary(_lib)
-else:
-    _lib = cdll.LoadLibrary('libopenslide.so.0')
+    elif platform.system() == 'Darwin':
+        try:
+            return cdll.LoadLibrary('libopenslide.0.dylib')
+        except OSError:
+            # MacPorts doesn't add itself to the dyld search path, but
+            # does add itself to the find_library() search path
+            # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
+            import ctypes.util
+
+            lib = ctypes.util.find_library('openslide')
+            if lib is None:
+                raise ModuleNotFoundError(
+                    "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
+                    "correctly?  https://openslide.org/api/python/#installing"
+                )
+            return cdll.LoadLibrary(lib)
+    else:
+        return cdll.LoadLibrary('libopenslide.so.0')
+
+
+_lib = _load_library()
 
 
 class OpenSlideError(Exception):
