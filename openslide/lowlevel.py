@@ -361,7 +361,7 @@ cache_create = _func(
     c_void_p,
     [_size_t],
     _check_cache_create,
-    minimum_version='3.5.0',
+    minimum_version='4.0.0',
 )
 
 set_cache = _func(
@@ -369,9 +369,9 @@ set_cache = _func(
     None,
     [_OpenSlide, _OpenSlideCache],
     None,
-    minimum_version='3.5.0',
+    minimum_version='4.0.0',
 )
 
 cache_release = _func(
-    'openslide_cache_release', None, [_OpenSlideCache], None, minimum_version='3.5.0'
+    'openslide_cache_release', None, [_OpenSlideCache], None, minimum_version='4.0.0'
 )
