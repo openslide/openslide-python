@@ -2,10 +2,10 @@ name: Python
 
 on:
   push:
-    branches: [main]
-    tags: ["*"]
+    branches: "*"
+    tags: "*"
   pull_request:
-    branches: [main]
+    branches: "*"
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
     steps:
     - name: Check out repo
       uses: actions/checkout@v2
@@ -50,12 +50,24 @@ jobs:
           brew install openslide
           ;;
         esac
+    - name: Build wheel
+      run: |
+        python setup.py bdist_wheel
+        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
+        mkdir -p "artifacts/${basename}"
+        mv dist/*.whl "artifacts/${basename}"
+        echo "basename=${basename}" >> $GITHUB_ENV
     - name: Install
       run: pip install -e .
     - name: Run tests
       run: pytest -v
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
+    - name: Archive wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.basename }}
+        path: artifacts
   windows:
     name: Windows
     needs: pre-commit
@@ -67,7 +79,7 @@ jobs:
         shell: bash
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         python-arch: [x86, x64]
     steps:
     - name: Check out repo
