@@ -2,10 +2,10 @@ name: Python
 
 on:
   push:
-    branches: "*"
-    tags: "*"
+    branches: [main]
+    tags: ["*"]
   pull_request:
-    branches: "*"
+    branches: [main]
 
 permissions:
   contents: read
