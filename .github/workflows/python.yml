@@ -39,7 +39,7 @@ jobs:
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install jinja2 pytest
+        pip install jinja2 pytest wheel
     - name: Install OpenSlide
       run: |
         case "${{ matrix.os }}" in
