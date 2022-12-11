@@ -58,7 +58,7 @@ jobs:
         mv dist/*.whl "artifacts/${basename}"
         echo "basename=${basename}" >> $GITHUB_ENV
     - name: Install
-      run: pip install -e .
+      run: pip install --find-links=${{github.workspace}} openslide_python
     - name: Run tests
       run: pytest -v
     - name: Tile slide
@@ -112,7 +112,7 @@ jobs:
         mv dist/*.whl "artifacts/${basename}"
         echo "basename=${basename}" >> $GITHUB_ENV
     - name: Install
-      run: pip install -e .
+      run: pip install --find-links=${{github.workspace}} openslide_python
     - name: Run tests
       # Reads OPENSLIDE_PATH
       run: pytest -v
