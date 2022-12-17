@@ -18,8 +18,10 @@ jobs:
     name: Rerun pre-commit checks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
     - uses: pre-commit/action@v3.0.0
   tests:
     name: Tests
@@ -31,9 +33,9 @@ jobs:
         python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
     steps:
     - name: Check out repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install Python tools
@@ -71,9 +73,9 @@ jobs:
         python-arch: [x86, x64]
     steps:
     - name: Check out repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }} ${{ matrix.python-arch }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         architecture: ${{ matrix.python-arch }}
@@ -114,7 +116,7 @@ jobs:
       # Reads OPENSLIDE_PATH
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
     - name: Archive wheel
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.basename }}
         path: artifacts
@@ -124,9 +126,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
@@ -137,7 +141,7 @@ jobs:
         sphinx-build -d doctrees doc artifact/${basename}
         echo "basename=${basename}" >> $GITHUB_ENV
     - name: Archive
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.basename }}
         path: artifact
