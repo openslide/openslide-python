@@ -1,0 +1,46 @@
+name: Bug report
+description: Report an bug in OpenSlide Python
+labels: ["defect"]
+body:
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Fedora 37, macOS 12, Windows 11
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      placeholder: e.g. 64-bit x86, 32-bit ARM
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: OpenSlide Python version
+      description: "`openslide.__version__`"
+    validations:
+      required: true
+  - type: input
+    id: openslide-version
+    attributes:
+      label: OpenSlide version
+      description: "`openslide.__library_version__`"
+    validations:
+      required: true
+  - type: input
+    id: format
+    attributes:
+      label: Slide format
+      placeholder: e.g. SVS, NDPI, MRXS
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Issue details
+      placeholder: Describe your issue
+    validations:
+      required: true
