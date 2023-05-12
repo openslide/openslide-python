@@ -46,21 +46,27 @@ else:
 from openslide import ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
 
-DEEPZOOM_SLIDE = None
-DEEPZOOM_FORMAT = 'jpeg'
-DEEPZOOM_TILE_SIZE = 254
-DEEPZOOM_OVERLAP = 1
-DEEPZOOM_LIMIT_BOUNDS = True
-DEEPZOOM_TILE_QUALITY = 75
 SLIDE_NAME = 'slide'
 
-app = Flask(__name__)
-app.config.from_object(__name__)
-app.config.from_envvar('DEEPZOOM_TILER_SETTINGS', silent=True)
 
+def create_app(config=None, config_file=None):
+    # Create and configure app
+    app = Flask(__name__)
+    app.config.from_mapping(
+        DEEPZOOM_SLIDE=None,
+        DEEPZOOM_FORMAT='jpeg',
+        DEEPZOOM_TILE_SIZE=254,
+        DEEPZOOM_OVERLAP=1,
+        DEEPZOOM_LIMIT_BOUNDS=True,
+        DEEPZOOM_TILE_QUALITY=75,
+    )
+    app.config.from_envvar('DEEPZOOM_TILER_SETTINGS', silent=True)
+    if config_file is not None:
+        app.config.from_pyfile(config_file)
+    if config is not None:
+        app.config.from_mapping(config)
 
-@app.before_first_request
-def load_slide():
+    # Open slide
     slidefile = app.config['DEEPZOOM_SLIDE']
     if slidefile is None:
         raise ValueError('No slide file specified')
@@ -85,53 +91,53 @@ def load_slide():
     except (KeyError, ValueError):
         app.slide_mpp = 0
 
+    # Set up routes
+    @app.route('/')
+    def index():
+        slide_url = url_for('dzi', slug=SLIDE_NAME)
+        associated_urls = {
+            name: url_for('dzi', slug=slugify(name)) for name in app.associated_images
+        }
+        return render_template(
+            'slide-multipane.html',
+            slide_url=slide_url,
+            associated=associated_urls,
+            properties=app.slide_properties,
+            slide_mpp=app.slide_mpp,
+        )
 
-@app.route('/')
-def index():
-    slide_url = url_for('dzi', slug=SLIDE_NAME)
-    associated_urls = {
-        name: url_for('dzi', slug=slugify(name)) for name in app.associated_images
-    }
-    return render_template(
-        'slide-multipane.html',
-        slide_url=slide_url,
-        associated=associated_urls,
-        properties=app.slide_properties,
-        slide_mpp=app.slide_mpp,
-    )
+    @app.route('/<slug>.dzi')
+    def dzi(slug):
+        format = app.config['DEEPZOOM_FORMAT']
+        try:
+            resp = make_response(app.slides[slug].get_dzi(format))
+            resp.mimetype = 'application/xml'
+            return resp
+        except KeyError:
+            # Unknown slug
+            abort(404)
 
-
-@app.route('/<slug>.dzi')
-def dzi(slug):
-    format = app.config['DEEPZOOM_FORMAT']
-    try:
-        resp = make_response(app.slides[slug].get_dzi(format))
-        resp.mimetype = 'application/xml'
+    @app.route('/<slug>_files/<int:level>/<int:col>_<int:row>.<format>')
+    def tile(slug, level, col, row, format):
+        format = format.lower()
+        if format != 'jpeg' and format != 'png':
+            # Not supported by Deep Zoom
+            abort(404)
+        try:
+            tile = app.slides[slug].get_tile(level, (col, row))
+        except KeyError:
+            # Unknown slug
+            abort(404)
+        except ValueError:
+            # Invalid level or coordinates
+            abort(404)
+        buf = BytesIO()
+        tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
+        resp = make_response(buf.getvalue())
+        resp.mimetype = 'image/%s' % format
         return resp
-    except KeyError:
-        # Unknown slug
-        abort(404)
 
-
-@app.route('/<slug>_files/<int:level>/<int:col>_<int:row>.<format>')
-def tile(slug, level, col, row, format):
-    format = format.lower()
-    if format != 'jpeg' and format != 'png':
-        # Not supported by Deep Zoom
-        abort(404)
-    try:
-        tile = app.slides[slug].get_tile(level, (col, row))
-    except KeyError:
-        # Unknown slug
-        abort(404)
-    except ValueError:
-        # Invalid level or coordinates
-        abort(404)
-    buf = BytesIO()
-    tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
-    resp = make_response(buf.getvalue())
-    resp.mimetype = 'image/%s' % format
-    return resp
+    return app
 
 
 def slugify(text):
@@ -209,19 +215,18 @@ if __name__ == '__main__':
     )
 
     (opts, args) = parser.parse_args()
-    # Load config file if specified
-    if opts.config is not None:
-        app.config.from_pyfile(opts.config)
-    # Overwrite only those settings specified on the command line
+    config = {}
+    config_file = opts.config
+    # Set only those settings specified on the command line
     for k in dir(opts):
-        if not k.startswith('_') and getattr(opts, k) is None:
-            delattr(opts, k)
-    app.config.from_object(opts)
-    # Set slide file
+        v = getattr(opts, k)
+        if not k.startswith('_') and v is not None:
+            config[k] = v
+    # Set slide file if specified
     try:
-        app.config['DEEPZOOM_SLIDE'] = args[0]
+        config['DEEPZOOM_SLIDE'] = args[0]
     except IndexError:
-        if app.config['DEEPZOOM_SLIDE'] is None:
-            parser.error('No slide file specified')
+        pass
+    app = create_app(config, config_file)
 
     app.run(host=opts.host, port=opts.port, threaded=True)

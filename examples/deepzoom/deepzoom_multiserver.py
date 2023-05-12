@@ -47,18 +47,96 @@ else:
 from openslide import OpenSlide, OpenSlideCache, OpenSlideError, OpenSlideVersionError
 from openslide.deepzoom import DeepZoomGenerator
 
-SLIDE_DIR = '.'
-SLIDE_CACHE_SIZE = 10
-SLIDE_TILE_CACHE_MB = 128
-DEEPZOOM_FORMAT = 'jpeg'
-DEEPZOOM_TILE_SIZE = 254
-DEEPZOOM_OVERLAP = 1
-DEEPZOOM_LIMIT_BOUNDS = True
-DEEPZOOM_TILE_QUALITY = 75
 
-app = Flask(__name__)
-app.config.from_object(__name__)
-app.config.from_envvar('DEEPZOOM_MULTISERVER_SETTINGS', silent=True)
+def create_app(config=None, config_file=None):
+    # Create and configure app
+    app = Flask(__name__)
+    app.config.from_mapping(
+        SLIDE_DIR='.',
+        SLIDE_CACHE_SIZE=10,
+        SLIDE_TILE_CACHE_MB=128,
+        DEEPZOOM_FORMAT='jpeg',
+        DEEPZOOM_TILE_SIZE=254,
+        DEEPZOOM_OVERLAP=1,
+        DEEPZOOM_LIMIT_BOUNDS=True,
+        DEEPZOOM_TILE_QUALITY=75,
+    )
+    app.config.from_envvar('DEEPZOOM_MULTISERVER_SETTINGS', silent=True)
+    if config_file is not None:
+        app.config.from_pyfile(config_file)
+    if config is not None:
+        app.config.from_mapping(config)
+
+    # Set up cache
+    app.basedir = os.path.abspath(app.config['SLIDE_DIR'])
+    config_map = {
+        'DEEPZOOM_TILE_SIZE': 'tile_size',
+        'DEEPZOOM_OVERLAP': 'overlap',
+        'DEEPZOOM_LIMIT_BOUNDS': 'limit_bounds',
+    }
+    opts = {v: app.config[k] for k, v in config_map.items()}
+    app.cache = _SlideCache(
+        app.config['SLIDE_CACHE_SIZE'], app.config['SLIDE_TILE_CACHE_MB'], opts
+    )
+
+    # Helper functions
+    def get_slide(path):
+        path = os.path.abspath(os.path.join(app.basedir, path))
+        if not path.startswith(app.basedir + os.path.sep):
+            # Directory traversal
+            abort(404)
+        if not os.path.exists(path):
+            abort(404)
+        try:
+            slide = app.cache.get(path)
+            slide.filename = os.path.basename(path)
+            return slide
+        except OpenSlideError:
+            abort(404)
+
+    # Set up routes
+    @app.route('/')
+    def index():
+        return render_template('files.html', root_dir=_Directory(app.basedir))
+
+    @app.route('/<path:path>')
+    def slide(path):
+        slide = get_slide(path)
+        slide_url = url_for('dzi', path=path)
+        return render_template(
+            'slide-fullpage.html',
+            slide_url=slide_url,
+            slide_filename=slide.filename,
+            slide_mpp=slide.mpp,
+        )
+
+    @app.route('/<path:path>.dzi')
+    def dzi(path):
+        slide = get_slide(path)
+        format = app.config['DEEPZOOM_FORMAT']
+        resp = make_response(slide.get_dzi(format))
+        resp.mimetype = 'application/xml'
+        return resp
+
+    @app.route('/<path:path>_files/<int:level>/<int:col>_<int:row>.<format>')
+    def tile(path, level, col, row, format):
+        slide = get_slide(path)
+        format = format.lower()
+        if format != 'jpeg' and format != 'png':
+            # Not supported by Deep Zoom
+            abort(404)
+        try:
+            tile = slide.get_tile(level, (col, row))
+        except ValueError:
+            # Invalid level or coordinates
+            abort(404)
+        buf = BytesIO()
+        tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
+        resp = make_response(buf.getvalue())
+        resp.mimetype = 'image/%s' % format
+        return resp
+
+    return app
 
 
 class _SlideCache:
@@ -119,80 +197,6 @@ class _SlideFile:
     def __init__(self, relpath):
         self.name = os.path.basename(relpath)
         self.url_path = relpath
-
-
-@app.before_first_request
-def _setup():
-    app.basedir = os.path.abspath(app.config['SLIDE_DIR'])
-    config_map = {
-        'DEEPZOOM_TILE_SIZE': 'tile_size',
-        'DEEPZOOM_OVERLAP': 'overlap',
-        'DEEPZOOM_LIMIT_BOUNDS': 'limit_bounds',
-    }
-    opts = {v: app.config[k] for k, v in config_map.items()}
-    app.cache = _SlideCache(
-        app.config['SLIDE_CACHE_SIZE'], app.config['SLIDE_TILE_CACHE_MB'], opts
-    )
-
-
-def _get_slide(path):
-    path = os.path.abspath(os.path.join(app.basedir, path))
-    if not path.startswith(app.basedir + os.path.sep):
-        # Directory traversal
-        abort(404)
-    if not os.path.exists(path):
-        abort(404)
-    try:
-        slide = app.cache.get(path)
-        slide.filename = os.path.basename(path)
-        return slide
-    except OpenSlideError:
-        abort(404)
-
-
-@app.route('/')
-def index():
-    return render_template('files.html', root_dir=_Directory(app.basedir))
-
-
-@app.route('/<path:path>')
-def slide(path):
-    slide = _get_slide(path)
-    slide_url = url_for('dzi', path=path)
-    return render_template(
-        'slide-fullpage.html',
-        slide_url=slide_url,
-        slide_filename=slide.filename,
-        slide_mpp=slide.mpp,
-    )
-
-
-@app.route('/<path:path>.dzi')
-def dzi(path):
-    slide = _get_slide(path)
-    format = app.config['DEEPZOOM_FORMAT']
-    resp = make_response(slide.get_dzi(format))
-    resp.mimetype = 'application/xml'
-    return resp
-
-
-@app.route('/<path:path>_files/<int:level>/<int:col>_<int:row>.<format>')
-def tile(path, level, col, row, format):
-    slide = _get_slide(path)
-    format = format.lower()
-    if format != 'jpeg' and format != 'png':
-        # Not supported by Deep Zoom
-        abort(404)
-    try:
-        tile = slide.get_tile(level, (col, row))
-    except ValueError:
-        # Invalid level or coordinates
-        abort(404)
-    buf = BytesIO()
-    tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
-    resp = make_response(buf.getvalue())
-    resp.mimetype = 'image/%s' % format
-    return resp
 
 
 if __name__ == '__main__':
@@ -265,18 +269,18 @@ if __name__ == '__main__':
     )
 
     (opts, args) = parser.parse_args()
-    # Load config file if specified
-    if opts.config is not None:
-        app.config.from_pyfile(opts.config)
-    # Overwrite only those settings specified on the command line
+    config = {}
+    config_file = opts.config
+    # Set only those settings specified on the command line
     for k in dir(opts):
-        if not k.startswith('_') and getattr(opts, k) is None:
-            delattr(opts, k)
-    app.config.from_object(opts)
-    # Set slide directory
+        v = getattr(opts, k)
+        if not k.startswith('_') and v is not None:
+            config[k] = v
+    # Set slide directory if specified
     try:
-        app.config['SLIDE_DIR'] = args[0]
+        config['SLIDE_DIR'] = args[0]
     except IndexError:
         pass
+    app = create_app(config, config_file)
 
     app.run(host=opts.host, port=opts.port, threaded=True)
