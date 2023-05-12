@@ -2,7 +2,7 @@
 # openslide-python - Python bindings for the OpenSlide library
 #
 # Copyright (c) 2010-2013 Carnegie Mellon University
-# Copyright (c) 2016-2021 Benjamin Gilbert
+# Copyright (c) 2016-2023 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -51,9 +51,17 @@ from . import _convert
 
 
 def _load_library():
+    def try_load(names):
+        for name in names:
+            try:
+                return cdll.LoadLibrary(name)
+            except OSError:
+                if name == names[-1]:
+                    raise
+
     if platform.system() == 'Windows':
         try:
-            return cdll.LoadLibrary('libopenslide-0.dll')
+            return try_load(['libopenslide-1.dll', 'libopenslide-0.dll'])
         except FileNotFoundError:
             import os
 
@@ -68,7 +76,7 @@ def _load_library():
             )
     elif platform.system() == 'Darwin':
         try:
-            return cdll.LoadLibrary('libopenslide.0.dylib')
+            return try_load(['libopenslide.1.dylib', 'libopenslide.0.dylib'])
         except OSError:
             # MacPorts doesn't add itself to the dyld search path, but
             # does add itself to the find_library() search path
@@ -83,7 +91,7 @@ def _load_library():
                 )
             return cdll.LoadLibrary(lib)
     else:
-        return cdll.LoadLibrary('libopenslide.so.0')
+        return try_load(['libopenslide.so.1', 'libopenslide.so.0'])
 
 
 _lib = _load_library()
