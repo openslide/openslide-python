@@ -23,6 +23,10 @@ from optparse import OptionParser
 import os
 import re
 from unicodedata import normalize
+from functools import lru_cache
+
+import PIL
+from PIL import ImageFile, ImageCms, Image
 
 from flask import Flask, abort, make_response, render_template, url_for
 
@@ -125,6 +129,8 @@ def create_app(config=None, config_file=None):
             abort(404)
         try:
             tile = app.slides[slug].get_tile(level, (col, row))
+            if app.config["USE_ICC"]:
+                tile = icc_apply(img=tile, fname=config['DEEPZOOM_SLIDE'])
         except KeyError:
             # Unknown slug
             abort(404)
@@ -143,6 +149,50 @@ def create_app(config=None, config_file=None):
 def slugify(text):
     text = normalize('NFKD', text.lower()).encode('ascii', 'ignore').decode()
     return re.sub('[^a-z0-9]+', '-', text)
+
+def icc_apply(img, fname):
+    icc_profile = get_icc_profile(fname)
+    if icc_profile is None:
+        return img
+    else:
+        return ImageCms.applyTransform(img, icc_profile)
+    
+    
+@lru_cache()
+def get_icc_profile(fname):
+    #Source: http://www.andrewjanowczyk.com/application-of-icc-profiles-to-digital-pathology-images/
+    
+    if fname is None:
+        fname = app.config['DEEPZOOM_SLIDE']
+
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+ 
+    #Need to set this to none, otherwise PIL raises an error as its concerned our image is too big and is in fact a decompression bomb
+    Image.MAX_IMAGE_PIXELS = None
+
+    try:
+        icc = Image.open(fname).info.get('icc_profile') 
+    except PIL.UnidentifiedImageError:
+        return
+    
+    if icc is not None:
+        f = BytesIO(icc)
+        prf = ImageCms.ImageCmsProfile(f)
+
+        #create a profile for RGB 
+        rgbp=ImageCms.createProfile("sRGB")
+        #and build a transform to for our RGB to ICC space, so that we can apply it faster later
+        #Update Nov2022, it was pointed out to me that the previous version of this code had the two profiles switched
+        #however when I tested both versions, the 'swapped' version appeared to result in a better colored image
+        #practically speaking, I'm unsure what to make of that...i leave it to the user to decide is it better for it to be correct or for it to look nicer?
+        #experiments to be done....
+
+        #icc2rgb = ImageCms.buildTransformFromOpenProfiles(rgbp, prf, "RGB", "RGB") #inverted version
+        icc2rgb = ImageCms.buildTransformFromOpenProfiles(prf,rgbp, "RGB", "RGB")   #correct version
+
+        return icc2rgb
+    else:
+        return
 
 
 if __name__ == '__main__':
@@ -212,6 +262,15 @@ if __name__ == '__main__':
         dest='DEEPZOOM_TILE_SIZE',
         type='int',
         help='tile size [254]',
+    )
+
+    parser.add_option(
+        '-i',
+        '--apply-icc',
+        default=False,
+        action="store_true",
+        dest="USE_ICC",
+        help='apply icc if file has icc profile',
     )
 
     (opts, args) = parser.parse_args()
