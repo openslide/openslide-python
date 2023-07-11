@@ -1,4 +1,4 @@
-include *.md
+include *.md pytest.ini
 recursive-include doc *.py *.rst
 recursive-include examples *.html *.js *.png *.py
 recursive-include tests *.png *.py *.svs *.tiff

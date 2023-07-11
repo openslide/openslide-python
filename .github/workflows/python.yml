@@ -53,7 +53,7 @@ jobs:
           ;;
         esac
     - name: Install
-      run: pip install -e .
+      run: pip install .
     - name: Run tests
       run: pytest -v
     - name: Tile slide
