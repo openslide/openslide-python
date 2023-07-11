@@ -20,10 +20,9 @@
 import unittest
 
 from PIL import Image
+from common import file_path, maybe_supported
 
 from openslide import ImageSlide, OpenSlideCache, OpenSlideError
-
-from . import file_path, maybe_supported
 
 
 class TestImageWithoutOpening(unittest.TestCase):

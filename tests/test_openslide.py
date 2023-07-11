@@ -23,6 +23,7 @@ import sys
 import unittest
 
 from PIL import Image
+from common import file_path, maybe_supported
 
 from openslide import (
     OpenSlide,
@@ -30,8 +31,6 @@ from openslide import (
     OpenSlideError,
     OpenSlideUnsupportedFormatError,
 )
-
-from . import file_path, maybe_supported
 
 
 class TestCache(unittest.TestCase):

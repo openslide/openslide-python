@@ -19,10 +19,10 @@
 
 import unittest
 
+from common import file_path
+
 from openslide import ImageSlide, OpenSlide
 from openslide.deepzoom import DeepZoomGenerator
-
-from . import file_path
 
 
 class _BoxesDeepZoomTest:
