@@ -57,7 +57,7 @@ jobs:
     - name: Run tests
       run: pytest -v
     - name: Tile slide
-      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
+      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
   windows:
     name: Windows
     needs: pre-commit
@@ -117,7 +117,7 @@ jobs:
         python examples/deepzoom/deepzoom_tile.py -h >/dev/null
     - name: Tile slide
       # Reads OPENSLIDE_PATH
-      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/small.svs
+      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
     - name: Archive wheel
       uses: actions/upload-artifact@v3
       with:
