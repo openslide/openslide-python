@@ -19,9 +19,9 @@
 
 import unittest
 
-from openslide import ImageSlide, OpenSlide, open_slide
+from common import file_path
 
-from . import file_path
+from openslide import ImageSlide, OpenSlide, open_slide
 
 
 class TestLibrary(unittest.TestCase):
