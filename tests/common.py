@@ -17,7 +17,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from functools import wraps
 import os
 from pathlib import Path
 
@@ -41,22 +40,6 @@ if os.name == 'nt':
 
             os.environ['PATH'] = _orig_path
 
-from openslide import OpenSlideVersionError
-
 
 def file_path(name):
     return Path(__file__).parent / 'fixtures' / name
-
-
-def maybe_supported(f):
-    '''Decorator to ignore test failures caused by an OpenSlide version that
-    doesn't support the tested functionality.'''
-
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except OpenSlideVersionError:
-            pass
-
-    return wrapper

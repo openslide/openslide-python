@@ -263,12 +263,26 @@ def _func(name, restype, argtypes, errcheck=_check_error, minimum_version=None):
         def function_unavailable(*_args):
             raise OpenSlideVersionError(minimum_version)
 
+        # allow checking for availability without calling the function
+        function_unavailable.available = False
+
         return function_unavailable
     func.argtypes = argtypes
     func.restype = restype
     if errcheck is not None:
         func.errcheck = errcheck
+    func.available = True
     return func
+
+
+def _wraps_funcs(wrapped):
+    def decorator(f):
+        f.available = True
+        for w in wrapped:
+            f.available = f.available and w.available
+        return f
+
+    return decorator
 
 
 try:
@@ -289,6 +303,7 @@ _get_level_dimensions = _func(
 )
 
 
+@_wraps_funcs([_get_level_dimensions])
 def get_level_dimensions(slide, level):
     w, h = c_int64(), c_int64()
     _get_level_dimensions(slide, level, byref(w), byref(h))
@@ -310,6 +325,7 @@ _read_region = _func(
 )
 
 
+@_wraps_funcs([_read_region])
 def read_region(slide, x, y, level, w, h):
     if w < 0 or h < 0:
         # OpenSlide would catch this, but not before we tried to allocate
@@ -349,6 +365,7 @@ _get_associated_image_dimensions = _func(
 )
 
 
+@_wraps_funcs([_get_associated_image_dimensions])
 def get_associated_image_dimensions(slide, name):
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
@@ -360,6 +377,7 @@ _read_associated_image = _func(
 )
 
 
+@_wraps_funcs([get_associated_image_dimensions, _read_associated_image])
 def read_associated_image(slide, name):
     w, h = get_associated_image_dimensions(slide, name)
     buf = (w * h * c_uint32)()
