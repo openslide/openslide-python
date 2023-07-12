@@ -45,7 +45,7 @@ from ctypes import (
 from itertools import count
 import platform
 
-import PIL.Image
+from PIL import Image
 
 from . import _convert
 
@@ -199,7 +199,7 @@ class _size_t:
 def _load_image(buf, size):
     '''buf must be a mutable buffer.'''
     _convert.argb2rgba(buf)
-    return PIL.Image.frombuffer('RGBA', size, buf, 'raw', 'RGBA', 0, 1)
+    return Image.frombuffer('RGBA', size, buf, 'raw', 'RGBA', 0, 1)
 
 
 # check for errors opening an image file and wrap the resulting handle
@@ -318,8 +318,8 @@ def read_region(slide, x, y, level, w, h):
             "negative width (%d) or negative height (%d) not allowed" % (w, h)
         )
     if w == 0 or h == 0:
-        # PIL.Image.frombuffer() would raise an exception
-        return PIL.Image.new('RGBA', (w, h))
+        # Image.frombuffer() would raise an exception
+        return Image.new('RGBA', (w, h))
     buf = (w * h * c_uint32)()
     _read_region(slide, buf, x, y, level, w, h)
     return _load_image(buf, (w, h))
