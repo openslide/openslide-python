@@ -286,8 +286,8 @@ Exceptions
    Subclass of :exc:`OpenSlideError`.
 
 
-Wrapping a PIL Image
-====================
+Wrapping a Pillow Image
+=======================
 
 .. class:: ImageSlide(file)
 
