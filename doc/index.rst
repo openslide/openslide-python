@@ -184,7 +184,7 @@ OpenSlide objects
       with a default size.
 
       :param OpenSlideCache cache: a cache object
-      :raises OpenSlideVersionError: if OpenSlide is older than version 3.5.0
+      :raises OpenSlideVersionError: if OpenSlide is older than version 4.0.0
 
    .. method:: close()
 
@@ -203,7 +203,7 @@ Caching
    default, each :class:`OpenSlide` has its own cache with a default size.
 
    :param int capacity: the cache capacity in bytes
-   :raises OpenSlideVersionError: if OpenSlide is older than version 3.5.0
+   :raises OpenSlideVersionError: if OpenSlide is older than version 4.0.0
 
 
 .. _standard-properties:
