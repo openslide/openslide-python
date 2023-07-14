@@ -123,6 +123,14 @@ class TestSlide(_SlideTest, unittest.TestCase):
             repr(self.osr.properties), '<_PropertyMap %r>' % dict(self.osr.properties)
         )
 
+    @unittest.skipUnless(
+        lowlevel.read_icc_profile.available, "requires OpenSlide 4.0.0"
+    )
+    def test_color_profile(self):
+        self.assertEqual(
+            len(self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']), 588
+        )
+
     def test_read_region(self):
         self.assertEqual(
             self.osr.read_region((-10, -10), 1, (400, 400)).size, (400, 400)
@@ -182,6 +190,11 @@ class TestAperioSlide(_SlideTest, unittest.TestCase):
         self.assertEqual(
             mangle_repr(self.osr.associated_images),
             '<_AssociatedImageMap %s>' % mangle_repr(dict(self.osr.associated_images)),
+        )
+
+    def test_color_profile(self):
+        self.assertNotIn(
+            'icc_profile', self.osr.read_region((0, 0), 0, (100, 100)).info
         )
 
 

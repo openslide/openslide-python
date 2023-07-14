@@ -33,6 +33,7 @@ rather than in the high-level interface.)
 from ctypes import (
     POINTER,
     byref,
+    c_char,
     c_char_p,
     c_double,
     c_int32,
@@ -333,6 +334,31 @@ def read_region(slide, x, y, level, w, h):
     buf = (w * h * c_uint32)()
     _read_region(slide, buf, x, y, level, w, h)
     return _load_image(buf, (w, h))
+
+
+get_icc_profile_size = _func(
+    'openslide_get_icc_profile_size',
+    c_int64,
+    [_OpenSlide],
+    minimum_version='4.0.0',
+)
+
+_read_icc_profile = _func(
+    'openslide_read_icc_profile',
+    None,
+    [_OpenSlide, POINTER(c_char)],
+    minimum_version='4.0.0',
+)
+
+
+@_wraps_funcs([get_icc_profile_size, _read_icc_profile])
+def read_icc_profile(slide):
+    size = get_icc_profile_size(slide)
+    if size == 0:
+        return None
+    buf = (size * c_char)()
+    _read_icc_profile(slide, buf)
+    return buf.raw
 
 
 get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], _check_string)

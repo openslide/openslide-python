@@ -2,7 +2,7 @@
 # openslide-python - Python bindings for the OpenSlide library
 #
 # Copyright (c) 2010-2014 Carnegie Mellon University
-# Copyright (c) 2021      Benjamin Gilbert
+# Copyright (c) 2021-2023 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -54,6 +54,9 @@ PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 
 class AbstractSlide:
     """The base class of a slide object."""
+
+    def __init__(self):
+        self._profile = None
 
     def __enter__(self):
         return self
@@ -164,6 +167,8 @@ class OpenSlide(AbstractSlide):
         AbstractSlide.__init__(self)
         self._filename = filename
         self._osr = lowlevel.open(str(filename))
+        if lowlevel.read_icc_profile.available:
+            self._profile = lowlevel.read_icc_profile(self._osr)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self._filename!r})'
@@ -233,9 +238,12 @@ class OpenSlide(AbstractSlide):
 
         Unlike in the C interface, the image data returned by this
         function is not premultiplied."""
-        return lowlevel.read_region(
+        region = lowlevel.read_region(
             self._osr, location[0], location[1], level, size[0], size[1]
         )
+        if self._profile is not None:
+            region.info['icc_profile'] = self._profile
+        return region
 
     def set_cache(self, cache):
         """Use the specified cache to store recently decoded slide tiles.
