@@ -88,6 +88,14 @@ class TestImage(_SlideTest, unittest.TestCase):
         self.assertEqual(self.osr.properties, {})
         self.assertEqual(self.osr.associated_images, {})
 
+    def test_color_profile(self):
+        self.assertEqual(
+            len(self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']), 588
+        )
+        self.assertEqual(
+            len(self.osr.get_thumbnail((100, 100)).info['icc_profile']), 588
+        )
+
     def test_read_region(self):
         self.assertEqual(
             self.osr.read_region((-10, -10), 0, (400, 400)).size, (400, 400)
@@ -113,3 +121,13 @@ class TestImage(_SlideTest, unittest.TestCase):
     def test_set_cache(self):
         self.osr.set_cache(OpenSlideCache(64 << 10))
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
+
+
+class TestNoIccImage(_SlideTest, unittest.TestCase):
+    FILENAME = 'boxes-no-icc.png'
+
+    def test_color_profile(self):
+        self.assertNotIn(
+            'icc_profile', self.osr.read_region((0, 0), 0, (100, 100)).info
+        )
+        self.assertNotIn('icc_profile', self.osr.get_thumbnail((100, 100)).info)

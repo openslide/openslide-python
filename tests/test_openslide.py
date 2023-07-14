@@ -130,6 +130,9 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertEqual(
             len(self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']), 588
         )
+        self.assertEqual(
+            len(self.osr.get_thumbnail((100, 100)).info['icc_profile']), 588
+        )
 
     def test_read_region(self):
         self.assertEqual(
@@ -197,6 +200,7 @@ class TestAperioSlide(_SlideTest, unittest.TestCase):
             'icc_profile', self.osr.read_region((0, 0), 0, (100, 100)).info
         )
         self.assertNotIn('icc_profile', self.osr.associated_images['thumbnail'].info)
+        self.assertNotIn('icc_profile', self.osr.get_thumbnail((100, 100)).info)
 
 
 # Requires DICOM support in OpenSlide.  Use associated image ICC support as

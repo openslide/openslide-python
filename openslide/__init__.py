@@ -147,6 +147,8 @@ class AbstractSlide:
         # Image.Resampling added in Pillow 9.1.0
         # Image.LANCZOS removed in Pillow 10
         thumb.thumbnail(size, getattr(Image, 'Resampling', Image).LANCZOS)
+        if self._profile is not None:
+            thumb.info['icc_profile'] = self._profile
         return thumb
 
 
@@ -341,6 +343,7 @@ class ImageSlide(AbstractSlide):
         else:
             self._close = True
             self._image = Image.open(file)
+        self._profile = self._image.info.get('icc_profile')
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self._file_arg!r})'
@@ -430,6 +433,8 @@ class ImageSlide(AbstractSlide):
             crop = self._image.crop(image_topleft + [d + 1 for d in image_bottomright])
             tile_offset = tuple(il - l for il, l in zip(image_topleft, location))
             tile.paste(crop, tile_offset)
+        if self._profile is not None:
+            tile.info['icc_profile'] = self._profile
         return tile
 
     def set_cache(self, cache):
