@@ -24,8 +24,9 @@ This package provides Python bindings for the OpenSlide library.
 """
 
 from collections.abc import Mapping
+from io import BytesIO
 
-from PIL import Image
+from PIL import Image, ImageCms
 
 from openslide import lowlevel
 
@@ -113,6 +114,13 @@ class AbstractSlide:
 
         This is a map: image name -> PIL.Image."""
         raise NotImplementedError
+
+    @property
+    def color_profile(self):
+        """Color profile for the whole-slide image, or None if unavailable."""
+        if self._profile is None:
+            return None
+        return ImageCms.getOpenProfile(BytesIO(self._profile))
 
     def get_best_level_for_downsample(self, downsample):
         """Return the best level for displaying the given downsample."""

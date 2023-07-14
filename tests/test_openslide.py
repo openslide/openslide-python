@@ -127,6 +127,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
         lowlevel.read_icc_profile.available, "requires OpenSlide 4.0.0"
     )
     def test_color_profile(self):
+        self.assertEqual(self.osr.color_profile.profile.device_class, 'mntr')
         self.assertEqual(
             len(self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']), 588
         )
@@ -196,6 +197,7 @@ class TestAperioSlide(_SlideTest, unittest.TestCase):
         )
 
     def test_color_profile(self):
+        self.assertIsNone(self.osr.color_profile)
         self.assertNotIn(
             'icc_profile', self.osr.read_region((0, 0), 0, (100, 100)).info
         )
@@ -212,6 +214,7 @@ class TestDicomSlide(_SlideTest, unittest.TestCase):
     FILENAME = 'boxes_0.dcm'
 
     def test_color_profile(self):
+        self.assertEqual(self.osr.color_profile.profile.device_class, 'mntr')
         main_profile = self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']
         associated_profile = self.osr.associated_images['thumbnail'].info['icc_profile']
         self.assertEqual(len(main_profile), 456)

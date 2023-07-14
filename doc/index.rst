@@ -148,6 +148,12 @@ OpenSlide objects
 
       Unlike in the C interface, these images are not premultiplied.
 
+   .. attribute:: color_profile
+
+      The embedded :ref:`color profile <color-management>` for this slide,
+      as a Pillow :class:`~PIL.ImageCms.ImageCmsProfile`, or :obj:`None` if
+      not available.
+
    .. method:: read_region(location, level, size)
 
       Return an RGBA :class:`Image <PIL.Image.Image>` containing the
@@ -187,6 +193,8 @@ OpenSlide objects
 
       Close the OpenSlide object.
 
+
+.. _color-management:
 
 Color management
 ----------------

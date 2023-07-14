@@ -89,6 +89,7 @@ class TestImage(_SlideTest, unittest.TestCase):
         self.assertEqual(self.osr.associated_images, {})
 
     def test_color_profile(self):
+        self.assertEqual(self.osr.color_profile.profile.device_class, 'mntr')
         self.assertEqual(
             len(self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']), 588
         )
@@ -127,6 +128,7 @@ class TestNoIccImage(_SlideTest, unittest.TestCase):
     FILENAME = 'boxes-no-icc.png'
 
     def test_color_profile(self):
+        self.assertIsNone(self.osr.color_profile)
         self.assertNotIn(
             'icc_profile', self.osr.read_region((0, 0), 0, (100, 100)).info
         )
