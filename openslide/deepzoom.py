@@ -171,6 +171,7 @@ class DeepZoomGenerator:
         # Read tile
         args, z_size = self._get_tile_info(level, address)
         tile = self._osr.read_region(*args)
+        profile = tile.info.get('icc_profile')
 
         # Apply on solid background
         bg = Image.new('RGB', tile.size, self._bg_color)
@@ -181,6 +182,10 @@ class DeepZoomGenerator:
             # Image.Resampling added in Pillow 9.1.0
             # Image.LANCZOS removed in Pillow 10
             tile.thumbnail(z_size, getattr(Image, 'Resampling', Image).LANCZOS)
+
+        # Reference ICC profile
+        if profile is not None:
+            tile.info['icc_profile'] = profile
 
         return tile
 
