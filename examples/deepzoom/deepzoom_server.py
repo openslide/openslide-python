@@ -18,8 +18,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from argparse import ArgumentParser
 from io import BytesIO
-from optparse import OptionParser
 import os
 import re
 from unicodedata import normalize
@@ -146,8 +146,8 @@ def slugify(text):
 
 
 if __name__ == '__main__':
-    parser = OptionParser(usage='Usage: %prog [options] [slide]')
-    parser.add_option(
+    parser = ArgumentParser(usage='%(prog)s [options] [SLIDE]')
+    parser.add_argument(
         '-B',
         '--ignore-bounds',
         dest='DEEPZOOM_LIMIT_BOUNDS',
@@ -155,32 +155,32 @@ if __name__ == '__main__':
         action='store_false',
         help='display entire scan area',
     )
-    parser.add_option(
+    parser.add_argument(
         '-c', '--config', metavar='FILE', dest='config', help='config file'
     )
-    parser.add_option(
+    parser.add_argument(
         '-d',
         '--debug',
         dest='DEBUG',
         action='store_true',
         help='run in debugging mode (insecure)',
     )
-    parser.add_option(
+    parser.add_argument(
         '-e',
         '--overlap',
         metavar='PIXELS',
         dest='DEEPZOOM_OVERLAP',
-        type='int',
+        type=int,
         help='overlap of adjacent tiles [1]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-f',
         '--format',
         metavar='{jpeg|png}',
         dest='DEEPZOOM_FORMAT',
         help='image format for tiles [jpeg]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-l',
         '--listen',
         metavar='ADDRESS',
@@ -188,45 +188,46 @@ if __name__ == '__main__':
         default='127.0.0.1',
         help='address to listen on [127.0.0.1]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-p',
         '--port',
         metavar='PORT',
         dest='port',
-        type='int',
+        type=int,
         default=5000,
         help='port to listen on [5000]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-Q',
         '--quality',
         metavar='QUALITY',
         dest='DEEPZOOM_TILE_QUALITY',
-        type='int',
+        type=int,
         help='JPEG compression quality [75]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-s',
         '--size',
         metavar='PIXELS',
         dest='DEEPZOOM_TILE_SIZE',
-        type='int',
+        type=int,
         help='tile size [254]',
     )
+    parser.add_argument(
+        'DEEPZOOM_SLIDE',
+        metavar='SLIDE',
+        nargs='?',
+        help='slide file',
+    )
 
-    (opts, args) = parser.parse_args()
+    args = parser.parse_args()
     config = {}
-    config_file = opts.config
+    config_file = args.config
     # Set only those settings specified on the command line
-    for k in dir(opts):
-        v = getattr(opts, k)
+    for k in dir(args):
+        v = getattr(args, k)
         if not k.startswith('_') and v is not None:
             config[k] = v
-    # Set slide file if specified
-    try:
-        config['DEEPZOOM_SLIDE'] = args[0]
-    except IndexError:
-        pass
     app = create_app(config, config_file)
 
-    app.run(host=opts.host, port=opts.port, threaded=True)
+    app.run(host=args.host, port=args.port, threaded=True)
