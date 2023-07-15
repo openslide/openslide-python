@@ -3,6 +3,7 @@
 # deepzoom_server - Example web application for serving whole-slide images
 #
 # Copyright (c) 2010-2015 Carnegie Mellon University
+# Copyright (c) 2023      Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -19,11 +20,14 @@
 #
 
 from argparse import ArgumentParser
+import base64
 from io import BytesIO
 import os
 import re
 from unicodedata import normalize
+import zlib
 
+from PIL import ImageCms
 from flask import Flask, abort, make_response, render_template, url_for
 
 if os.name == 'nt':
@@ -41,6 +45,23 @@ from openslide.deepzoom import DeepZoomGenerator
 
 SLIDE_NAME = 'slide'
 
+# Optimized sRGB v2 profile, CC0-1.0 license
+# https://github.com/saucecontrol/Compact-ICC-Profiles/blob/bdd84663/profiles/sRGB-v2-micro.icc
+# ImageCms.createProfile() generates a v4 profile and Firefox has problems
+# with those: https://littlecms.com/blog/2020/09/09/browser-check/
+SRGB_PROFILE_BYTES = zlib.decompress(
+    base64.b64decode(
+        'eNpjYGA8kZOcW8wkwMCQm1dSFOTupBARGaXA/oiBmUGEgZOBj0E2Mbm4wDfYLYQBCIoT'
+        'y4uTS4pyGFDAt2sMjCD6sm5GYl7K3IkMtg4NG2wdSnQa5y1V6mPADzhTUouTgfQHII5P'
+        'LigqYWBg5AGyecpLCkBsCSBbpAjoKCBbB8ROh7AdQOwkCDsErCYkyBnIzgCyE9KR2ElI'
+        'bKhdIMBaCvQsskNKUitKQLSzswEDKAwgop9DwH5jFDuJEMtfwMBg8YmBgbkfIZY0jYFh'
+        'eycDg8QthJgKUB1/KwPDtiPJpUVlUGu0gLiG4QfjHKZS5maWk2x+HEJcEjxJfF8Ez4t8'
+        'k8iS0VNwVlmjmaVXZ/zacrP9NbdwX7OQshjxFNmcttKwut4OnUlmc1Yv79l0e9/MU8ev'
+        'pz4p//jz/38AR4Nk5Q=='
+    )
+)
+SRGB_PROFILE = ImageCms.getOpenProfile(BytesIO(SRGB_PROFILE_BYTES))
+
 
 def create_app(config=None, config_file=None):
     # Create and configure app
@@ -52,6 +73,7 @@ def create_app(config=None, config_file=None):
         DEEPZOOM_OVERLAP=1,
         DEEPZOOM_LIMIT_BOUNDS=True,
         DEEPZOOM_TILE_QUALITY=75,
+        DEEPZOOM_COLOR_MODE='absolute-colorimetric',
     )
     app.config.from_envvar('DEEPZOOM_TILER_SETTINGS', silent=True)
     if config_file is not None:
@@ -71,12 +93,19 @@ def create_app(config=None, config_file=None):
     opts = {v: app.config[k] for k, v in config_map.items()}
     slide = open_slide(slidefile)
     app.slides = {SLIDE_NAME: DeepZoomGenerator(slide, **opts)}
+    app.transforms = {
+        SLIDE_NAME: get_transform(slide, app.config['DEEPZOOM_COLOR_MODE'])
+    }
     app.associated_images = []
     app.slide_properties = slide.properties
     for name, image in slide.associated_images.items():
         app.associated_images.append(name)
         slug = slugify(name)
-        app.slides[slug] = DeepZoomGenerator(ImageSlide(image), **opts)
+        image_slide = ImageSlide(image)
+        app.slides[slug] = DeepZoomGenerator(image_slide, **opts)
+        app.transforms[slug] = get_transform(
+            image_slide, app.config['DEEPZOOM_COLOR_MODE']
+        )
     try:
         mpp_x = slide.properties[openslide.PROPERTY_NAME_MPP_X]
         mpp_y = slide.properties[openslide.PROPERTY_NAME_MPP_Y]
@@ -124,8 +153,14 @@ def create_app(config=None, config_file=None):
         except ValueError:
             # Invalid level or coordinates
             abort(404)
+        app.transforms[slug](tile)
         buf = BytesIO()
-        tile.save(buf, format, quality=app.config['DEEPZOOM_TILE_QUALITY'])
+        tile.save(
+            buf,
+            format,
+            quality=app.config['DEEPZOOM_TILE_QUALITY'],
+            icc_profile=tile.info.get('icc_profile'),
+        )
         resp = make_response(buf.getvalue())
         resp.mimetype = 'image/%s' % format
         return resp
@@ -138,6 +173,43 @@ def slugify(text):
     return re.sub('[^a-z0-9]+', '-', text)
 
 
+def get_transform(image, mode):
+    if image.color_profile is None:
+        return lambda img: None
+    if mode == 'ignore':
+        # drop ICC profile from tiles
+        return lambda img: img.info.pop('icc_profile')
+    elif mode == 'embed':
+        # embed ICC profile in tiles
+        return lambda img: None
+    elif mode == 'absolute-colorimetric':
+        intent = ImageCms.Intent.ABSOLUTE_COLORIMETRIC
+    elif mode == 'relative-colorimetric':
+        intent = ImageCms.Intent.RELATIVE_COLORIMETRIC
+    elif mode == 'perceptual':
+        intent = ImageCms.Intent.PERCEPTUAL
+    elif mode == 'saturation':
+        intent = ImageCms.Intent.SATURATION
+    else:
+        raise ValueError(f'Unknown color mode {mode}')
+    transform = ImageCms.buildTransform(
+        image.color_profile,
+        SRGB_PROFILE,
+        'RGB',
+        'RGB',
+        intent,
+        0,
+    )
+
+    def xfrm(img):
+        ImageCms.applyTransform(img, transform, True)
+        # Some browsers assume we intend the display's color space if we don't
+        # embed the profile.  Pillow's serialization is larger, so use ours.
+        img.info['icc_profile'] = SRGB_PROFILE_BYTES
+
+    return xfrm
+
+
 if __name__ == '__main__':
     parser = ArgumentParser(usage='%(prog)s [options] [SLIDE]')
     parser.add_argument(
@@ -147,6 +219,24 @@ if __name__ == '__main__':
         default=True,
         action='store_false',
         help='display entire scan area',
+    )
+    parser.add_argument(
+        '--color-mode',
+        dest='DEEPZOOM_COLOR_MODE',
+        choices=[
+            'absolute-colorimetric',
+            'perceptual',
+            'relative-colorimetric',
+            'saturation',
+            'embed',
+            'ignore',
+        ],
+        default='absolute-colorimetric',
+        help=(
+            'convert tiles to sRGB using specified rendering intent, or '
+            'embed original ICC profile, or ignore ICC profile (compat) '
+            '[absolute-colorimetric]'
+        ),
     )
     parser.add_argument(
         '-c', '--config', metavar='FILE', dest='config', help='config file'
