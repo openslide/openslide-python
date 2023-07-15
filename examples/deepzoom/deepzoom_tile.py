@@ -21,9 +21,9 @@
 
 """An example program to generate a Deep Zoom directory tree from a slide."""
 
+from argparse import ArgumentParser
 import json
 from multiprocessing import JoinableQueue, Process
-from optparse import OptionParser
 import os
 import re
 import shutil
@@ -275,8 +275,8 @@ class DeepZoomStaticTiler:
 
 
 if __name__ == '__main__':
-    parser = OptionParser(usage='Usage: %prog [options] <slide>')
-    parser.add_option(
+    parser = ArgumentParser(usage='%(prog)s [options] <SLIDE>')
+    parser.add_argument(
         '-B',
         '--ignore-bounds',
         dest='limit_bounds',
@@ -284,16 +284,16 @@ if __name__ == '__main__':
         action='store_false',
         help='display entire scan area',
     )
-    parser.add_option(
+    parser.add_argument(
         '-e',
         '--overlap',
         metavar='PIXELS',
         dest='overlap',
-        type='int',
+        type=int,
         default=1,
         help='overlap of adjacent tiles [1]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-f',
         '--format',
         metavar='{jpeg|png}',
@@ -301,64 +301,65 @@ if __name__ == '__main__':
         default='jpeg',
         help='image format for tiles [jpeg]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-j',
         '--jobs',
         metavar='COUNT',
         dest='workers',
-        type='int',
+        type=int,
         default=4,
         help='number of worker processes to start [4]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-o',
         '--output',
         metavar='NAME',
         dest='basename',
         help='base name of output file',
     )
-    parser.add_option(
+    parser.add_argument(
         '-Q',
         '--quality',
         metavar='QUALITY',
         dest='quality',
-        type='int',
+        type=int,
         default=90,
         help='JPEG compression quality [90]',
     )
-    parser.add_option(
+    parser.add_argument(
         '-r',
         '--viewer',
         dest='with_viewer',
         action='store_true',
         help='generate directory tree with HTML viewer',
     )
-    parser.add_option(
+    parser.add_argument(
         '-s',
         '--size',
         metavar='PIXELS',
         dest='tile_size',
-        type='int',
+        type=int,
         default=254,
         help='tile size [254]',
     )
+    parser.add_argument(
+        'slidepath',
+        metavar='SLIDE',
+        help='slide file',
+    )
 
-    (opts, args) = parser.parse_args()
-    try:
-        slidepath = args[0]
-    except IndexError:
-        parser.error('Missing slide argument')
-    if opts.basename is None:
-        opts.basename = os.path.splitext(os.path.basename(slidepath))[0]
+    args = parser.parse_args()
+    if args.basename is None:
+        args.basename = os.path.splitext(os.path.basename(args.slidepath))[0]
 
     DeepZoomStaticTiler(
-        slidepath,
-        opts.basename,
-        opts.format,
-        opts.tile_size,
-        opts.overlap,
-        opts.limit_bounds,
-        opts.quality,
-        opts.workers,
-        opts.with_viewer,
+        args.slidepath,
+        args.basename,
+        args.format,
+        args.tile_size,
+        args.overlap,
+        args.limit_bounds,
+        args.quality,
+        args.workers,
+        args.with_viewer,
     ).run()
