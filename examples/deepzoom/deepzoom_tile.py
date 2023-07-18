@@ -44,6 +44,8 @@ if os.name == 'nt':
             import openslide
 
             os.environ['PATH'] = _orig_path
+    else:
+        import openslide
 else:
     import openslide
 
