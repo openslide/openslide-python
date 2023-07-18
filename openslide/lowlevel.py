@@ -405,6 +405,33 @@ def read_associated_image(slide, name):
     return _load_image(buf, (w, h))
 
 
+get_associated_image_icc_profile_size = _func(
+    'openslide_get_associated_image_icc_profile_size',
+    c_int64,
+    [_OpenSlide, _utf8_p],
+    minimum_version='4.0.0',
+)
+
+_read_associated_image_icc_profile = _func(
+    'openslide_read_associated_image_icc_profile',
+    None,
+    [_OpenSlide, _utf8_p, POINTER(c_char)],
+    minimum_version='4.0.0',
+)
+
+
+@_wraps_funcs(
+    [get_associated_image_icc_profile_size, _read_associated_image_icc_profile]
+)
+def read_associated_image_icc_profile(slide, name):
+    size = get_associated_image_icc_profile_size(slide, name)
+    if size == 0:
+        return None
+    buf = (size * c_char)()
+    _read_associated_image_icc_profile(slide, name, buf)
+    return buf.raw
+
+
 get_version = _func('openslide_get_version', c_char_p, [], _check_string)
 
 cache_create = _func(

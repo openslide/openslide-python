@@ -222,7 +222,7 @@ class OpenSlide(AbstractSlide):
 
         Unlike in the C interface, the images accessible via this property
         are not premultiplied."""
-        return _AssociatedImageMap(self._osr)
+        return _AssociatedImageMap(self._osr, self._profile)
 
     def get_best_level_for_downsample(self, downsample):
         """Return the best level for displaying the given downsample."""
@@ -288,13 +288,25 @@ class _PropertyMap(_OpenSlideMap):
 
 
 class _AssociatedImageMap(_OpenSlideMap):
+    def __init__(self, osr, profile):
+        _OpenSlideMap.__init__(self, osr)
+        self._profile = profile
+
     def _keys(self):
         return lowlevel.get_associated_image_names(self._osr)
 
     def __getitem__(self, key):
         if key not in self._keys():
             raise KeyError()
-        return lowlevel.read_associated_image(self._osr, key)
+        image = lowlevel.read_associated_image(self._osr, key)
+        if lowlevel.read_associated_image_icc_profile.available:
+            profile = lowlevel.read_associated_image_icc_profile(self._osr, key)
+            if profile == self._profile:
+                # reuse profile copy from main image to save memory
+                profile = self._profile
+            if profile is not None:
+                image.info['icc_profile'] = profile
+        return image
 
 
 class OpenSlideCache:
