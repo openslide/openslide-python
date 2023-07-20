@@ -63,14 +63,11 @@ to a known path.  Then, import ``openslide`` inside a
 
     import os
     if hasattr(os, 'add_dll_directory'):
-        # Python >= 3.8 on Windows
+        # Windows
         with os.add_dll_directory(OPENSLIDE_PATH):
             import openslide
     else:
         import openslide
-
-This won't work with Python 3.7 or earlier; you'll need to add the OpenSlide
-``bin`` directory to your ``PATH`` instead.
 
 .. _install: https://openslide.org/download/#distribution-packages
 .. _Anaconda: https://anaconda.org/

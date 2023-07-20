@@ -63,15 +63,9 @@ def _load_library():
         try:
             return try_load(['libopenslide-1.dll', 'libopenslide-0.dll'])
         except FileNotFoundError:
-            import os
-
-            if hasattr(os, 'add_dll_directory'):
-                # Python >= 3.8
-                admonition = 'Did you call os.add_dll_directory()?'
-            else:
-                admonition = 'Did you add OpenSlide to PATH?'
             raise ModuleNotFoundError(
-                f"Couldn't locate OpenSlide DLL.  {admonition}  "
+                "Couldn't locate OpenSlide DLL.  "
+                "Did you call os.add_dll_directory()?  "
                 "https://openslide.org/api/python/#installing"
             )
     elif platform.system() == 'Darwin':

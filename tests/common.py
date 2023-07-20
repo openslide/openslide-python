@@ -28,17 +28,8 @@ if os.name == 'nt':
     # environment.
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        if hasattr(os, 'add_dll_directory'):
-            # Python >= 3.8
-            with os.add_dll_directory(_dll_path):
-                import openslide
-        else:
-            # Python < 3.8
-            _orig_path = os.environ.get('PATH', '')
-            os.environ['PATH'] = _orig_path + ';' + _dll_path
+        with os.add_dll_directory(_dll_path):
             import openslide  # noqa: F401  module-imported-but-unused
-
-            os.environ['PATH'] = _orig_path
 
 
 def file_path(name):
