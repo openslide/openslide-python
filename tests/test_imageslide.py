@@ -62,12 +62,16 @@ class TestImageWithoutOpening(unittest.TestCase):
         )
 
 
-class TestImage(unittest.TestCase):
+class _SlideTest:
     def setUp(self):
-        self.osr = ImageSlide(file_path('boxes.png'))
+        self.osr = ImageSlide(file_path(self.FILENAME))
 
     def tearDown(self):
         self.osr.close()
+
+
+class TestImage(_SlideTest, unittest.TestCase):
+    FILENAME = 'boxes.png'
 
     def test_repr(self):
         self.assertEqual(repr(self.osr), 'ImageSlide(%r)' % file_path('boxes.png'))
