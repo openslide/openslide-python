@@ -1,5 +1,20 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.3.0, 2023-07-22
+
+* Support new soname in OpenSlide &ge; 4.0.0
+* Drop support for Python 3.7
+* Expose color management profiles where available
+* Notate available OpenSlide functions in low-level API
+* docs: Update OpenSlide 3.5.0 references to 4.0.0
+* docs: Consolidate license information
+* docs: Drop support for building with Sphinx &lt; 1.6
+* examples: Fix startup failure with Flask &ge; 2.3.0
+* examples: Transform to sRGB (with absolute colorimetric intent) by default
+* examples: Update OpenSeadragon to 4.1.0
+* examples: Correctly import `openslide` on Windows if `OPENSLIDE_PATH` not set
+* tests: Fix `pytest` of installed package from source directory
+
 ## Version 1.2.0, 2022-06-17
 
 * Drop support for Python &lt; 3.7
