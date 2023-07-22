@@ -16,6 +16,7 @@ closest to a desired zoom level.
 OpenSlide can read virtual slides in several formats:
 
 * Aperio_ (``.svs``, ``.tif``)
+* DICOM_ (``.dcm``)
 * Hamamatsu_ (``.ndpi``, ``.vms``, ``.vmu``)
 * Leica_ (``.scn``)
 * MIRAX_ (``.mrxs``)
@@ -30,6 +31,7 @@ Public License, version 2.1`_.
 
 .. _OpenSlide: https://openslide.org/
 .. _Aperio: https://openslide.org/formats/aperio/
+.. _DICOM: https://openslide.org/formats/dicom/
 .. _Hamamatsu: https://openslide.org/formats/hamamatsu/
 .. _Leica: https://openslide.org/formats/leica/
 .. _MIRAX: https://openslide.org/formats/mirax/
