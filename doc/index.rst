@@ -346,6 +346,8 @@ Exceptions
    Subclass of :exc:`OpenSlideError`.
 
 
+.. _wrapping-a-pil-image:
+
 Wrapping a Pillow Image
 =======================
 
