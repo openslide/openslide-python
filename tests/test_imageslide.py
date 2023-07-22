@@ -62,12 +62,16 @@ class TestImageWithoutOpening(unittest.TestCase):
         )
 
 
-class TestImage(unittest.TestCase):
+class _SlideTest:
     def setUp(self):
-        self.osr = ImageSlide(file_path('boxes.png'))
+        self.osr = ImageSlide(file_path(self.FILENAME))
 
     def tearDown(self):
         self.osr.close()
+
+
+class TestImage(_SlideTest, unittest.TestCase):
+    FILENAME = 'boxes.png'
 
     def test_repr(self):
         self.assertEqual(repr(self.osr), 'ImageSlide(%r)' % file_path('boxes.png'))
@@ -83,6 +87,15 @@ class TestImage(unittest.TestCase):
 
         self.assertEqual(self.osr.properties, {})
         self.assertEqual(self.osr.associated_images, {})
+
+    def test_color_profile(self):
+        self.assertEqual(self.osr.color_profile.profile.device_class, 'mntr')
+        self.assertEqual(
+            len(self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']), 588
+        )
+        self.assertEqual(
+            len(self.osr.get_thumbnail((100, 100)).info['icc_profile']), 588
+        )
 
     def test_read_region(self):
         self.assertEqual(
@@ -109,3 +122,14 @@ class TestImage(unittest.TestCase):
     def test_set_cache(self):
         self.osr.set_cache(OpenSlideCache(64 << 10))
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
+
+
+class TestNoIccImage(_SlideTest, unittest.TestCase):
+    FILENAME = 'boxes-no-icc.png'
+
+    def test_color_profile(self):
+        self.assertIsNone(self.osr.color_profile)
+        self.assertNotIn(
+            'icc_profile', self.osr.read_region((0, 0), 0, (100, 100)).info
+        )
+        self.assertNotIn('icc_profile', self.osr.get_thumbnail((100, 100)).info)

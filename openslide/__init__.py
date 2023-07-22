@@ -2,7 +2,7 @@
 # openslide-python - Python bindings for the OpenSlide library
 #
 # Copyright (c) 2010-2014 Carnegie Mellon University
-# Copyright (c) 2021      Benjamin Gilbert
+# Copyright (c) 2021-2023 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -24,8 +24,9 @@ This package provides Python bindings for the OpenSlide library.
 """
 
 from collections.abc import Mapping
+from io import BytesIO
 
-from PIL import Image
+from PIL import Image, ImageCms
 
 from openslide import lowlevel
 
@@ -54,6 +55,9 @@ PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 
 class AbstractSlide:
     """The base class of a slide object."""
+
+    def __init__(self):
+        self._profile = None
 
     def __enter__(self):
         return self
@@ -111,6 +115,13 @@ class AbstractSlide:
         This is a map: image name -> PIL.Image."""
         raise NotImplementedError
 
+    @property
+    def color_profile(self):
+        """Color profile for the whole-slide image, or None if unavailable."""
+        if self._profile is None:
+            return None
+        return ImageCms.getOpenProfile(BytesIO(self._profile))
+
     def get_best_level_for_downsample(self, downsample):
         """Return the best level for displaying the given downsample."""
         raise NotImplementedError
@@ -144,6 +155,8 @@ class AbstractSlide:
         # Image.Resampling added in Pillow 9.1.0
         # Image.LANCZOS removed in Pillow 10
         thumb.thumbnail(size, getattr(Image, 'Resampling', Image).LANCZOS)
+        if self._profile is not None:
+            thumb.info['icc_profile'] = self._profile
         return thumb
 
 
@@ -164,6 +177,8 @@ class OpenSlide(AbstractSlide):
         AbstractSlide.__init__(self)
         self._filename = filename
         self._osr = lowlevel.open(str(filename))
+        if lowlevel.read_icc_profile.available:
+            self._profile = lowlevel.read_icc_profile(self._osr)
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self._filename!r})'
@@ -217,7 +232,7 @@ class OpenSlide(AbstractSlide):
 
         Unlike in the C interface, the images accessible via this property
         are not premultiplied."""
-        return _AssociatedImageMap(self._osr)
+        return _AssociatedImageMap(self._osr, self._profile)
 
     def get_best_level_for_downsample(self, downsample):
         """Return the best level for displaying the given downsample."""
@@ -233,9 +248,12 @@ class OpenSlide(AbstractSlide):
 
         Unlike in the C interface, the image data returned by this
         function is not premultiplied."""
-        return lowlevel.read_region(
+        region = lowlevel.read_region(
             self._osr, location[0], location[1], level, size[0], size[1]
         )
+        if self._profile is not None:
+            region.info['icc_profile'] = self._profile
+        return region
 
     def set_cache(self, cache):
         """Use the specified cache to store recently decoded slide tiles.
@@ -280,13 +298,25 @@ class _PropertyMap(_OpenSlideMap):
 
 
 class _AssociatedImageMap(_OpenSlideMap):
+    def __init__(self, osr, profile):
+        _OpenSlideMap.__init__(self, osr)
+        self._profile = profile
+
     def _keys(self):
         return lowlevel.get_associated_image_names(self._osr)
 
     def __getitem__(self, key):
         if key not in self._keys():
             raise KeyError()
-        return lowlevel.read_associated_image(self._osr, key)
+        image = lowlevel.read_associated_image(self._osr, key)
+        if lowlevel.read_associated_image_icc_profile.available:
+            profile = lowlevel.read_associated_image_icc_profile(self._osr, key)
+            if profile == self._profile:
+                # reuse profile copy from main image to save memory
+                profile = self._profile
+            if profile is not None:
+                image.info['icc_profile'] = profile
+        return image
 
 
 class OpenSlideCache:
@@ -321,6 +351,7 @@ class ImageSlide(AbstractSlide):
         else:
             self._close = True
             self._image = Image.open(file)
+        self._profile = self._image.info.get('icc_profile')
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self._file_arg!r})'
@@ -410,6 +441,8 @@ class ImageSlide(AbstractSlide):
             crop = self._image.crop(image_topleft + [d + 1 for d in image_bottomright])
             tile_offset = tuple(il - l for il, l in zip(image_topleft, location))
             tile.paste(crop, tile_offset)
+        if self._profile is not None:
+            tile.info['icc_profile'] = self._profile
         return tile
 
     def set_cache(self, cache):

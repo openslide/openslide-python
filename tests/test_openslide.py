@@ -123,6 +123,18 @@ class TestSlide(_SlideTest, unittest.TestCase):
             repr(self.osr.properties), '<_PropertyMap %r>' % dict(self.osr.properties)
         )
 
+    @unittest.skipUnless(
+        lowlevel.read_icc_profile.available, "requires OpenSlide 4.0.0"
+    )
+    def test_color_profile(self):
+        self.assertEqual(self.osr.color_profile.profile.device_class, 'mntr')
+        self.assertEqual(
+            len(self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']), 588
+        )
+        self.assertEqual(
+            len(self.osr.get_thumbnail((100, 100)).info['icc_profile']), 588
+        )
+
     def test_read_region(self):
         self.assertEqual(
             self.osr.read_region((-10, -10), 1, (400, 400)).size, (400, 400)
@@ -183,6 +195,31 @@ class TestAperioSlide(_SlideTest, unittest.TestCase):
             mangle_repr(self.osr.associated_images),
             '<_AssociatedImageMap %s>' % mangle_repr(dict(self.osr.associated_images)),
         )
+
+    def test_color_profile(self):
+        self.assertIsNone(self.osr.color_profile)
+        self.assertNotIn(
+            'icc_profile', self.osr.read_region((0, 0), 0, (100, 100)).info
+        )
+        self.assertNotIn('icc_profile', self.osr.associated_images['thumbnail'].info)
+        self.assertNotIn('icc_profile', self.osr.get_thumbnail((100, 100)).info)
+
+
+# Requires DICOM support in OpenSlide.  Use associated image ICC support as
+# a proxy.
+@unittest.skipUnless(
+    lowlevel.read_associated_image_icc_profile.available, "requires OpenSlide 4.0.0"
+)
+class TestDicomSlide(_SlideTest, unittest.TestCase):
+    FILENAME = 'boxes_0.dcm'
+
+    def test_color_profile(self):
+        self.assertEqual(self.osr.color_profile.profile.device_class, 'mntr')
+        main_profile = self.osr.read_region((0, 0), 0, (100, 100)).info['icc_profile']
+        associated_profile = self.osr.associated_images['thumbnail'].info['icc_profile']
+        self.assertEqual(len(main_profile), 456)
+        self.assertEqual(main_profile, associated_profile)
+        self.assertIs(main_profile, associated_profile)
 
 
 class TestUnreadableSlide(_SlideTest, unittest.TestCase):

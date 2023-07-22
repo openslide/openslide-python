@@ -33,6 +33,7 @@ rather than in the high-level interface.)
 from ctypes import (
     POINTER,
     byref,
+    c_char,
     c_char_p,
     c_double,
     c_int32,
@@ -335,6 +336,31 @@ def read_region(slide, x, y, level, w, h):
     return _load_image(buf, (w, h))
 
 
+get_icc_profile_size = _func(
+    'openslide_get_icc_profile_size',
+    c_int64,
+    [_OpenSlide],
+    minimum_version='4.0.0',
+)
+
+_read_icc_profile = _func(
+    'openslide_read_icc_profile',
+    None,
+    [_OpenSlide, POINTER(c_char)],
+    minimum_version='4.0.0',
+)
+
+
+@_wraps_funcs([get_icc_profile_size, _read_icc_profile])
+def read_icc_profile(slide):
+    size = get_icc_profile_size(slide)
+    if size == 0:
+        return None
+    buf = (size * c_char)()
+    _read_icc_profile(slide, buf)
+    return buf.raw
+
+
 get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], _check_string)
 
 get_property_names = _func(
@@ -377,6 +403,33 @@ def read_associated_image(slide, name):
     buf = (w * h * c_uint32)()
     _read_associated_image(slide, name, buf)
     return _load_image(buf, (w, h))
+
+
+get_associated_image_icc_profile_size = _func(
+    'openslide_get_associated_image_icc_profile_size',
+    c_int64,
+    [_OpenSlide, _utf8_p],
+    minimum_version='4.0.0',
+)
+
+_read_associated_image_icc_profile = _func(
+    'openslide_read_associated_image_icc_profile',
+    None,
+    [_OpenSlide, _utf8_p, POINTER(c_char)],
+    minimum_version='4.0.0',
+)
+
+
+@_wraps_funcs(
+    [get_associated_image_icc_profile_size, _read_associated_image_icc_profile]
+)
+def read_associated_image_icc_profile(slide, name):
+    size = get_associated_image_icc_profile_size(slide, name)
+    if size == 0:
+        return None
+    buf = (size * c_char)()
+    _read_associated_image_icc_profile(slide, name, buf)
+    return buf.raw
 
 
 get_version = _func('openslide_get_version', c_char_p, [], _check_string)

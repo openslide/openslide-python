@@ -3,7 +3,7 @@
 # deepzoom_tile - Convert whole-slide images to Deep Zoom format
 #
 # Copyright (c) 2010-2015 Carnegie Mellon University
-# Copyright (c) 2022      Benjamin Gilbert
+# Copyright (c) 2022-2023 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -22,6 +22,8 @@
 """An example program to generate a Deep Zoom directory tree from a slide."""
 
 from argparse import ArgumentParser
+import base64
+from io import BytesIO
 import json
 from multiprocessing import JoinableQueue, Process
 import os
@@ -29,6 +31,9 @@ import re
 import shutil
 import sys
 from unicodedata import normalize
+import zlib
+
+from PIL import ImageCms
 
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
@@ -45,11 +50,30 @@ from openslide.deepzoom import DeepZoomGenerator
 
 VIEWER_SLIDE_NAME = 'slide'
 
+# Optimized sRGB v2 profile, CC0-1.0 license
+# https://github.com/saucecontrol/Compact-ICC-Profiles/blob/bdd84663/profiles/sRGB-v2-micro.icc
+# ImageCms.createProfile() generates a v4 profile and Firefox has problems
+# with those: https://littlecms.com/blog/2020/09/09/browser-check/
+SRGB_PROFILE_BYTES = zlib.decompress(
+    base64.b64decode(
+        'eNpjYGA8kZOcW8wkwMCQm1dSFOTupBARGaXA/oiBmUGEgZOBj0E2Mbm4wDfYLYQBCIoT'
+        'y4uTS4pyGFDAt2sMjCD6sm5GYl7K3IkMtg4NG2wdSnQa5y1V6mPADzhTUouTgfQHII5P'
+        'LigqYWBg5AGyecpLCkBsCSBbpAjoKCBbB8ROh7AdQOwkCDsErCYkyBnIzgCyE9KR2ElI'
+        'bKhdIMBaCvQsskNKUitKQLSzswEDKAwgop9DwH5jFDuJEMtfwMBg8YmBgbkfIZY0jYFh'
+        'eycDg8QthJgKUB1/KwPDtiPJpUVlUGu0gLiG4QfjHKZS5maWk2x+HEJcEjxJfF8Ez4t8'
+        'k8iS0VNwVlmjmaVXZ/zacrP9NbdwX7OQshjxFNmcttKwut4OnUlmc1Yv79l0e9/MU8ev'
+        'pz4p//jz/38AR4Nk5Q=='
+    )
+)
+SRGB_PROFILE = ImageCms.getOpenProfile(BytesIO(SRGB_PROFILE_BYTES))
+
 
 class TileWorker(Process):
     """A child process that generates and writes tiles."""
 
-    def __init__(self, queue, slidepath, tile_size, overlap, limit_bounds, quality):
+    def __init__(
+        self, queue, slidepath, tile_size, overlap, limit_bounds, quality, color_mode
+    ):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
         self._queue = queue
@@ -58,12 +82,13 @@ class TileWorker(Process):
         self._overlap = overlap
         self._limit_bounds = limit_bounds
         self._quality = quality
+        self._color_mode = color_mode
         self._slide = None
 
     def run(self):
         self._slide = open_slide(self._slidepath)
         last_associated = None
-        dz = self._get_dz()
+        dz, transform = self._get_dz_and_transform()
         while True:
             data = self._queue.get()
             if data is None:
@@ -71,20 +96,62 @@ class TileWorker(Process):
                 break
             associated, level, address, outfile = data
             if last_associated != associated:
-                dz = self._get_dz(associated)
+                dz, transform = self._get_dz_and_transform(associated)
                 last_associated = associated
             tile = dz.get_tile(level, address)
-            tile.save(outfile, quality=self._quality)
+            transform(tile)
+            tile.save(
+                outfile, quality=self._quality, icc_profile=tile.info.get('icc_profile')
+            )
             self._queue.task_done()
 
-    def _get_dz(self, associated=None):
+    def _get_dz_and_transform(self, associated=None):
         if associated is not None:
             image = ImageSlide(self._slide.associated_images[associated])
         else:
             image = self._slide
-        return DeepZoomGenerator(
+        dz = DeepZoomGenerator(
             image, self._tile_size, self._overlap, limit_bounds=self._limit_bounds
         )
+        return dz, self._get_transform(image)
+
+    def _get_transform(self, image):
+        if image.color_profile is None:
+            return lambda img: None
+        mode = self._color_mode
+        if mode == 'ignore':
+            # drop ICC profile from tiles
+            return lambda img: img.info.pop('icc_profile')
+        elif mode == 'embed':
+            # embed ICC profile in tiles
+            return lambda img: None
+        elif mode == 'absolute-colorimetric':
+            intent = ImageCms.Intent.ABSOLUTE_COLORIMETRIC
+        elif mode == 'relative-colorimetric':
+            intent = ImageCms.Intent.RELATIVE_COLORIMETRIC
+        elif mode == 'perceptual':
+            intent = ImageCms.Intent.PERCEPTUAL
+        elif mode == 'saturation':
+            intent = ImageCms.Intent.SATURATION
+        else:
+            raise ValueError(f'Unknown color mode {mode}')
+        transform = ImageCms.buildTransform(
+            image.color_profile,
+            SRGB_PROFILE,
+            'RGB',
+            'RGB',
+            intent,
+            0,
+        )
+
+        def xfrm(img):
+            ImageCms.applyTransform(img, transform, True)
+            # Some browsers assume we intend the display's color space if we
+            # don't embed the profile.  Pillow's serialization is larger, so
+            # use ours.
+            img.info['icc_profile'] = SRGB_PROFILE_BYTES
+
+        return xfrm
 
 
 class DeepZoomImageTiler:
@@ -150,6 +217,7 @@ class DeepZoomStaticTiler:
         overlap,
         limit_bounds,
         quality,
+        color_mode,
         workers,
         with_viewer,
     ):
@@ -164,11 +232,18 @@ class DeepZoomStaticTiler:
         self._limit_bounds = limit_bounds
         self._queue = JoinableQueue(2 * workers)
         self._workers = workers
+        self._color_mode = color_mode
         self._with_viewer = with_viewer
         self._dzi_data = {}
         for _i in range(workers):
             TileWorker(
-                self._queue, slidepath, tile_size, overlap, limit_bounds, quality
+                self._queue,
+                slidepath,
+                tile_size,
+                overlap,
+                limit_bounds,
+                quality,
+                color_mode,
             ).start()
 
     def run(self):
@@ -278,6 +353,24 @@ if __name__ == '__main__':
         help='display entire scan area',
     )
     parser.add_argument(
+        '--color-mode',
+        dest='color_mode',
+        choices=[
+            'absolute-colorimetric',
+            'perceptual',
+            'relative-colorimetric',
+            'saturation',
+            'embed',
+            'ignore',
+        ],
+        default='absolute-colorimetric',
+        help=(
+            'convert tiles to sRGB using specified rendering intent, or '
+            'embed original ICC profile, or ignore ICC profile (compat) '
+            '[absolute-colorimetric]'
+        ),
+    )
+    parser.add_argument(
         '-e',
         '--overlap',
         metavar='PIXELS',
@@ -353,6 +446,7 @@ if __name__ == '__main__':
         args.overlap,
         args.limit_bounds,
         args.quality,
+        args.color_mode,
         args.workers,
         args.with_viewer,
     ).run()

@@ -21,7 +21,7 @@ import unittest
 
 from common import file_path
 
-from openslide import ImageSlide, OpenSlide
+from openslide import ImageSlide, OpenSlide, lowlevel
 from openslide.deepzoom import DeepZoomGenerator
 
 
@@ -76,6 +76,11 @@ class _BoxesDeepZoomTest:
 
     def test_get_tile(self):
         self.assertEqual(self.dz.get_tile(9, (1, 0)).size, (47, 250))
+
+    def test_tile_color_profile(self):
+        if self.CLASS is OpenSlide and not lowlevel.read_icc_profile.available:
+            self.skipTest("requires OpenSlide 4.0.0")
+        self.assertEqual(len(self.dz.get_tile(9, (1, 0)).info['icc_profile']), 588)
 
     def test_get_tile_bad_level(self):
         self.assertRaises(ValueError, lambda: self.dz.get_tile(-1, (0, 0)))

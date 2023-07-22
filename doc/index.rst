@@ -148,6 +148,12 @@ OpenSlide objects
 
       Unlike in the C interface, these images are not premultiplied.
 
+   .. attribute:: color_profile
+
+      The embedded :ref:`color profile <color-management>` for this slide,
+      as a Pillow :class:`~PIL.ImageCms.ImageCmsProfile`, or :obj:`None` if
+      not available.
+
    .. method:: read_region(location, level, size)
 
       Return an RGBA :class:`Image <PIL.Image.Image>` containing the
@@ -186,6 +192,58 @@ OpenSlide objects
    .. method:: close()
 
       Close the OpenSlide object.
+
+
+.. _color-management:
+
+Color management
+----------------
+
+Every slide region, associated image, thumbnail, and Deep Zoom tile produced
+by OpenSlide Python includes a reference to an ICC color profile whenever a
+profile is available for the underlying pixel data.  Profiles are stored as
+a :class:`bytes` object in
+:attr:`Image.info <PIL.Image.Image.info>`:attr:`['icc_profile']`.  If no
+profile is available, the :attr:`icc_profile` dictionary key is absent.
+
+To include the profile in an image file when saving the image to disk::
+
+    image.save(filename, icc_profile=image.info.get('icc_profile'))
+
+To perform color conversions using the profile, import it into
+:mod:`ImageCms <PIL.ImageCms>`.  For example, to convert an image in-place
+to a synthesized sRGB profile, using absolute colorimetric rendering::
+
+    from io import BytesIO
+    from PIL import ImageCms
+
+    fromProfile = ImageCms.getOpenProfile(BytesIO(image.info['icc_profile']))
+    toProfile = ImageCms.createProfile('sRGB')
+    ImageCms.profileToProfile(
+        image, fromProfile, toProfile,
+        ImageCms.Intent.ABSOLUTE_COLORIMETRIC, 'RGBA', True, 0
+    )
+
+Absolute colorimetric rendering `maximizes the comparability`_ of images
+produced by different scanners.  When converting Deep Zoom tiles, use
+``'RGB'`` instead of ``'RGBA'``.
+
+All pyramid regions in a slide have the same profile, but each associated
+image can have its own profile.  As a convenience, the former is also
+available as :attr:`OpenSlide.color_profile`, already parsed into an
+:class:`~PIL.ImageCms.ImageCmsProfile` object.  You can save processing time
+by building an :class:`~PIL.ImageCms.ImageCmsTransform` for the slide and
+reusing it for multiple slide regions::
+
+    toProfile = ImageCms.createProfile('sRGB')
+    transform = ImageCms.buildTransform(
+        slide.color_profile, toProfile, 'RGBA', 'RGBA',
+        ImageCms.Intent.ABSOLUTE_COLORIMETRIC, 0
+    )
+    # for each region image:
+    ImageCms.applyTransform(image, transform, True)
+
+.. _maximizes the comparability: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4478790/
 
 
 Caching
@@ -286,8 +344,8 @@ Exceptions
    Subclass of :exc:`OpenSlideError`.
 
 
-Wrapping a PIL Image
-====================
+Wrapping a Pillow Image
+=======================
 
 .. class:: ImageSlide(file)
 
