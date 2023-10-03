@@ -21,7 +21,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.12'
     - uses: pre-commit/action@v3.0.0
   tests:
     name: Tests
@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install jinja2 pytest
+        pip install jinja2 pytest setuptools
     - name: Install OpenSlide
       run: |
         case "${{ matrix.os }}" in
@@ -69,7 +69,7 @@ jobs:
         shell: bash
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         python-arch: [x86, x64]
     steps:
     - name: Check out repo
@@ -82,7 +82,7 @@ jobs:
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install flask pytest wheel
+        pip install flask pytest setuptools wheel
         # Current Pillow releases don't have 32-bit wheels
         # https://github.com/python-pillow/Pillow/issues/7251
         pip install Pillow --only-binary=:all:
@@ -133,7 +133,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.12'
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
