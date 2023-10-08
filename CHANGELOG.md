@@ -1,5 +1,11 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.3.1, 2023-10-08
+
+* docs: Document using ICC profile's default intent, not absolute colorimetric
+* examples: Default to ICC profile's default intent, not absolute colorimetric
+* tests: Correctly require pytest &ge; 7.0
+
 ## Version 1.3.0, 2023-07-22
 
 * Support new soname in OpenSlide &ge; 4.0.0
