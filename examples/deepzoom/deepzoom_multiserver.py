@@ -73,7 +73,7 @@ def create_app(config=None, config_file=None):
         DEEPZOOM_OVERLAP=1,
         DEEPZOOM_LIMIT_BOUNDS=True,
         DEEPZOOM_TILE_QUALITY=75,
-        DEEPZOOM_COLOR_MODE='absolute-colorimetric',
+        DEEPZOOM_COLOR_MODE='default',
     )
     app.config.from_envvar('DEEPZOOM_MULTISERVER_SETTINGS', silent=True)
     if config_file is not None:
@@ -212,6 +212,8 @@ class _SlideCache:
         elif mode == 'embed':
             # embed ICC profile in tiles
             return lambda img: None
+        elif mode == 'default':
+            intent = ImageCms.getDefaultIntent(image.color_profile)
         elif mode == 'absolute-colorimetric':
             intent = ImageCms.Intent.ABSOLUTE_COLORIMETRIC
         elif mode == 'relative-colorimetric':
@@ -276,6 +278,7 @@ if __name__ == '__main__':
         '--color-mode',
         dest='DEEPZOOM_COLOR_MODE',
         choices=[
+            'default',
             'absolute-colorimetric',
             'perceptual',
             'relative-colorimetric',
@@ -283,11 +286,11 @@ if __name__ == '__main__':
             'embed',
             'ignore',
         ],
-        default='absolute-colorimetric',
+        default='default',
         help=(
-            'convert tiles to sRGB using specified rendering intent, or '
-            'embed original ICC profile, or ignore ICC profile (compat) '
-            '[absolute-colorimetric]'
+            'convert tiles to sRGB using default rendering intent of ICC '
+            'profile, or specified rendering intent; or embed original '
+            'ICC profile; or ignore ICC profile (compat) [default]'
         ),
     )
     parser.add_argument(

@@ -125,6 +125,8 @@ class TileWorker(Process):
         elif mode == 'embed':
             # embed ICC profile in tiles
             return lambda img: None
+        elif mode == 'default':
+            intent = ImageCms.getDefaultIntent(image.color_profile)
         elif mode == 'absolute-colorimetric':
             intent = ImageCms.Intent.ABSOLUTE_COLORIMETRIC
         elif mode == 'relative-colorimetric':
@@ -356,6 +358,7 @@ if __name__ == '__main__':
         '--color-mode',
         dest='color_mode',
         choices=[
+            'default',
             'absolute-colorimetric',
             'perceptual',
             'relative-colorimetric',
@@ -363,11 +366,11 @@ if __name__ == '__main__':
             'embed',
             'ignore',
         ],
-        default='absolute-colorimetric',
+        default='default',
         help=(
-            'convert tiles to sRGB using specified rendering intent, or '
-            'embed original ICC profile, or ignore ICC profile (compat) '
-            '[absolute-colorimetric]'
+            'convert tiles to sRGB using default rendering intent of ICC '
+            'profile, or specified rendering intent; or embed original '
+            'ICC profile; or ignore ICC profile (compat) [default]'
         ),
     )
     parser.add_argument(
