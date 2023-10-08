@@ -11,6 +11,7 @@
 - [ ] Attach release notes to [GitHub release](https://github.com/openslide/openslide-python/releases/new); upload tarballs and wheels
 - [ ] `cd` into website checkout; `rm -r api/python && unzip /path/to/downloaded/openslide-python-docs.zip && mv openslide-python-docs-* api/python`
 - [ ] Update website: `_data/releases.yaml`, `_includes/news.md`
+- [ ] Update Ubuntu PPA
 - [ ] Send mail to -announce and -users
-- [ ] Update Fedora package
+- [ ] Update Fedora and EPEL packages
 - [ ] Update MacPorts package
