@@ -213,22 +213,21 @@ To include the profile in an image file when saving the image to disk::
     image.save(filename, icc_profile=image.info.get('icc_profile'))
 
 To perform color conversions using the profile, import it into
-:mod:`ImageCms <PIL.ImageCms>`.  For example, to convert an image in-place
-to a synthesized sRGB profile, using absolute colorimetric rendering::
+:mod:`ImageCms <PIL.ImageCms>`.  For example, to synthesize an sRGB profile
+and use it to transform an image for display, with the default rendering
+intent of the image's profile::
 
     from io import BytesIO
     from PIL import ImageCms
 
     fromProfile = ImageCms.getOpenProfile(BytesIO(image.info['icc_profile']))
     toProfile = ImageCms.createProfile('sRGB')
+    intent = ImageCms.getDefaultIntent(fromProfile)
     ImageCms.profileToProfile(
-        image, fromProfile, toProfile,
-        ImageCms.Intent.ABSOLUTE_COLORIMETRIC, 'RGBA', True, 0
+        image, fromProfile, toProfile, intent, 'RGBA', True, 0
     )
 
-Absolute colorimetric rendering `maximizes the comparability`_ of images
-produced by different scanners.  When converting Deep Zoom tiles, use
-``'RGB'`` instead of ``'RGBA'``.
+When converting Deep Zoom tiles, use ``'RGB'`` instead of ``'RGBA'``.
 
 All pyramid regions in a slide have the same profile, but each associated
 image can have its own profile.  As a convenience, the former is also
@@ -238,14 +237,12 @@ by building an :class:`~PIL.ImageCms.ImageCmsTransform` for the slide and
 reusing it for multiple slide regions::
 
     toProfile = ImageCms.createProfile('sRGB')
+    intent = ImageCms.getDefaultIntent(slide.color_profile)
     transform = ImageCms.buildTransform(
-        slide.color_profile, toProfile, 'RGBA', 'RGBA',
-        ImageCms.Intent.ABSOLUTE_COLORIMETRIC, 0
+        slide.color_profile, toProfile, 'RGBA', 'RGBA', intent, 0
     )
     # for each region image:
     ImageCms.applyTransform(image, transform, True)
-
-.. _maximizes the comparability: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4478790/
 
 
 Caching
