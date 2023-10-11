@@ -63,7 +63,7 @@ jobs:
     needs: pre-commit
     runs-on: windows-latest
     env:
-      WINBUILD_RELEASE: 20230414
+      WINBUILD_RELEASE: 20231011
     defaults:
       run:
         shell: bash
