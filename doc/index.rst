@@ -76,7 +76,7 @@ to a known path.  Then, import ``openslide`` inside a
 .. _MacPorts: https://www.macports.org/
 .. _pip: https://pip.pypa.io/en/stable/
 .. _source: https://openslide.org/download/#source
-.. _`Windows binaries`: https://openslide.org/download/#windows-binaries
+.. _`Windows binaries`: https://openslide.org/download/#binaries
 
 
 Basic usage
