@@ -70,30 +70,22 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
-        python-arch: [x86, x64]
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }} ${{ matrix.python-arch }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        architecture: ${{ matrix.python-arch }}
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install flask pytest setuptools wheel
-        # Current Pillow releases don't have 32-bit wheels
-        # https://github.com/python-pillow/Pillow/issues/7251
-        pip install Pillow --only-binary=:all:
+        pip install flask Pillow pytest setuptools wheel
     - name: Install OpenSlide
       run: |
-        case "${{ matrix.python-arch }}" in
-        x86) zipname=openslide-win32-${WINBUILD_RELEASE} ;;
-        x64) zipname=openslide-win64-${WINBUILD_RELEASE} ;;
-        esac
         mkdir -p c:\\openslide
         cd c:\\openslide
+        zipname=openslide-win64-${WINBUILD_RELEASE}
         curl -LO "https://github.com/openslide/openslide-winbuild/releases/download/v${WINBUILD_RELEASE}/${zipname}.zip"
         7z x ${zipname}.zip
         echo "OPENSLIDE_PATH=c:\\openslide\\${zipname}\\bin" >> $GITHUB_ENV
