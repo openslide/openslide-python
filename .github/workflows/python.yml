@@ -32,6 +32,9 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
         include:
+          - os: ubuntu-latest
+            python-version: "3.12"
+            sdist: sdist
           # Python 3.8 is too old to support universal binaries, and
           # setup-python's Python 3.9 and 3.10 won't build them.  Use the
           # last upstream patch releases that ship with installers.
@@ -82,7 +85,10 @@ jobs:
         esac
     - name: Build wheel
       run: |
-        python -m build -w
+        if [ -z "${{ matrix.sdist }}" ]; then
+            wheel_only=-w
+        fi
+        python -m build $wheel_only
         case "${{ matrix.os }}" in
         ubuntu-*)
             mkdir old

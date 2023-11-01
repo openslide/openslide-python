@@ -5,7 +5,6 @@
 - [ ] `git clean -dxf && mkdir dist`
 - [ ] Find the [workflow run](https://github.com/openslide/openslide-python/actions) for the tag; download its docs and wheels artifacts
 - [ ] `unzip /path/to/downloaded/openslide-python-wheels.zip && mv openslide-python-wheels-*/* dist/`
-- [ ] `python setup.py sdist`
 - [ ] `twine upload dist/*`
 - [ ] Recompress tarball with `xz`
 - [ ] Attach release notes to [GitHub release](https://github.com/openslide/openslide-python/releases/new); upload tarballs and wheels
