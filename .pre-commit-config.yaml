@@ -57,7 +57,7 @@ repos:
     hooks:
       - id: rstcheck
         name: Validate reStructuredText syntax
-        additional_dependencies: [sphinx]
+        additional_dependencies: [sphinx, toml]
 
   - repo: meta
     hooks:
