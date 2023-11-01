@@ -63,7 +63,7 @@ jobs:
     needs: pre-commit
     runs-on: windows-latest
     env:
-      WINBUILD_RELEASE: 20231011
+      BIN_RELEASE: 20231011
     defaults:
       run:
         shell: bash
@@ -85,8 +85,8 @@ jobs:
       run: |
         mkdir -p c:\\openslide
         cd c:\\openslide
-        zipname=openslide-win64-${WINBUILD_RELEASE}
-        curl -LO "https://github.com/openslide/openslide-winbuild/releases/download/v${WINBUILD_RELEASE}/${zipname}.zip"
+        zipname=openslide-win64-${BIN_RELEASE}
+        curl -LO "https://github.com/openslide/openslide-bin/releases/download/v${BIN_RELEASE}/${zipname}.zip"
         7z x ${zipname}.zip
         echo "OPENSLIDE_PATH=c:\\openslide\\${zipname}\\bin" >> $GITHUB_ENV
     - name: Build wheel
