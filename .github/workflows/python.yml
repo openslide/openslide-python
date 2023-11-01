@@ -86,7 +86,7 @@ jobs:
         mkdir -p c:\\openslide
         cd c:\\openslide
         zipname=openslide-win64-${BIN_RELEASE}
-        curl -LO "https://github.com/openslide/openslide-bin/releases/download/v${BIN_RELEASE}/${zipname}.zip"
+        curl -LfO "https://github.com/openslide/openslide-bin/releases/download/v${BIN_RELEASE}/${zipname}.zip"
         7z x ${zipname}.zip
         echo "OPENSLIDE_PATH=c:\\openslide\\${zipname}\\bin" >> $GITHUB_ENV
     - name: Build wheel
