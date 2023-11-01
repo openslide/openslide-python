@@ -31,17 +31,45 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+        include:
+          # Python 3.8 is too old to support universal binaries, and
+          # setup-python's Python 3.9 and 3.10 won't build them.  Use the
+          # last upstream patch releases that ship with installers.
+          # https://github.com/actions/setup-python/issues/439#issuecomment-1247646682
+          - os: macos-latest
+            python-version: "3.9"
+            upstream-python: 3.9.13
+          - os: macos-latest
+            python-version: "3.10"
+            upstream-python: 3.10.11
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
+      if: matrix.upstream-python == null
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python-version }} (macOS fallback)
+      if: matrix.upstream-python != null
+      run: |
+        pkgdir="${{ runner.temp }}/python"
+        mkdir -p "$pkgdir/bin"
+        pkg="$pkgdir/python.pkg"
+        curl -Lfo "$pkg" \
+            "https://www.python.org/ftp/python/${{ matrix.upstream-python }}/python-${{ matrix.upstream-python }}-macos11.pkg"
+        sudo installer -pkg "$pkg" -target /
+        for bin in python pip; do
+            ln -s /usr/local/bin/${bin}3 $pkgdir/bin/${bin}
+        done
+        export PATH="$pkgdir/bin:$PATH"
+        echo "PATH=$PATH" >> $GITHUB_ENV
+        python -V
+        pip -V
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install build jinja2 pytest
+        pip install auditwheel build jinja2 pytest setuptools
     - name: Install OpenSlide
       run: |
         case "${{ matrix.os }}" in
@@ -53,13 +81,36 @@ jobs:
           ;;
         esac
     - name: Build wheel
-      run: python -m build -w
+      run: |
+        python -m build -w
+        case "${{ matrix.os }}" in
+        ubuntu-*)
+            mkdir old
+            mv dist/*.whl old/
+            auditwheel repair --only-plat -w dist old/*whl
+            ;;
+        macos-*)
+            if [ "${{ matrix.python-version }}" != 3.8 -a ! -e dist/*universal2* ]; then
+                echo "Wheel is not universal:"
+                ls dist
+                exit 1
+            fi
+        esac
+        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
+        mkdir -p "artifacts/${basename}"
+        mv dist/* "artifacts/${basename}"
+        echo "basename=${basename}" >> $GITHUB_ENV
     - name: Install
-      run: pip install dist/*.whl
+      run: pip install artifacts/${basename}/*.whl
     - name: Run tests
       run: pytest -v
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
+    - name: Archive wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.basename }}
+        path: artifacts
   windows:
     name: Windows
     needs: pre-commit
