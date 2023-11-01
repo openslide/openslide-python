@@ -1,0 +1,45 @@
+[project]
+name = "openslide-python"
+maintainers = [
+    {name = "OpenSlide project", email = "openslide-users@lists.andrew.cmu.edu"}
+]
+description = "Python interface to OpenSlide"
+readme = "README.md"
+license = {text = "GNU Lesser General Public License, version 2.1"}
+keywords = ["OpenSlide", "whole-slide image", "virtual slide", "library"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+requires-python = ">= 3.8"
+dependencies = ["Pillow"]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://openslide.org/"
+Documentation = "https://openslide.org/api/python/"
+Repository = "https://github.com/openslide/openslide-python"
+
+[tool.setuptools]
+packages = ["openslide"]
+
+[tool.setuptools.dynamic]
+version = {attr = "openslide._version.__version__"}
+
+[build-system]
+requires = ["setuptools >= 61.0.0"]
+build-backend = "setuptools.build_meta"
