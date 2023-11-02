@@ -31,17 +31,48 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.12"
+            sdist: sdist
+          # Python 3.8 is too old to support universal binaries, and
+          # setup-python's Python 3.9 and 3.10 won't build them.  Use the
+          # last upstream patch releases that ship with installers.
+          # https://github.com/actions/setup-python/issues/439#issuecomment-1247646682
+          - os: macos-latest
+            python-version: "3.9"
+            upstream-python: 3.9.13
+          - os: macos-latest
+            python-version: "3.10"
+            upstream-python: 3.10.11
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
+      if: matrix.upstream-python == null
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python-version }} (macOS fallback)
+      if: matrix.upstream-python != null
+      run: |
+        pkgdir="${{ runner.temp }}/python"
+        mkdir -p "$pkgdir/bin"
+        pkg="$pkgdir/python.pkg"
+        curl -Lfo "$pkg" \
+            "https://www.python.org/ftp/python/${{ matrix.upstream-python }}/python-${{ matrix.upstream-python }}-macos11.pkg"
+        sudo installer -pkg "$pkg" -target /
+        for bin in python pip; do
+            ln -s /usr/local/bin/${bin}3 $pkgdir/bin/${bin}
+        done
+        export PATH="$pkgdir/bin:$PATH"
+        echo "PATH=$PATH" >> $GITHUB_ENV
+        python -V
+        pip -V
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install jinja2 pytest setuptools
+        pip install auditwheel build jinja2 pytest setuptools
     - name: Install OpenSlide
       run: |
         case "${{ matrix.os }}" in
@@ -52,12 +83,40 @@ jobs:
           brew install openslide
           ;;
         esac
+    - name: Build wheel
+      run: |
+        if [ -z "${{ matrix.sdist }}" ]; then
+            wheel_only=-w
+        fi
+        python -m build $wheel_only
+        case "${{ matrix.os }}" in
+        ubuntu-*)
+            mkdir old
+            mv dist/*.whl old/
+            auditwheel repair --only-plat -w dist old/*whl
+            ;;
+        macos-*)
+            if [ "${{ matrix.python-version }}" != 3.8 -a ! -e dist/*universal2* ]; then
+                echo "Wheel is not universal:"
+                ls dist
+                exit 1
+            fi
+        esac
+        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
+        mkdir -p "artifacts/${basename}"
+        mv dist/* "artifacts/${basename}"
+        echo "basename=${basename}" >> $GITHUB_ENV
     - name: Install
-      run: pip install .
+      run: pip install artifacts/${basename}/*.whl
     - name: Run tests
       run: pytest -v
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
+    - name: Archive wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.basename }}
+        path: artifacts
   windows:
     name: Windows
     needs: pre-commit
@@ -80,24 +139,24 @@ jobs:
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
-        pip install flask Pillow pytest setuptools wheel
+        pip install build flask pytest
     - name: Install OpenSlide
       run: |
         mkdir -p c:\\openslide
         cd c:\\openslide
         zipname=openslide-win64-${BIN_RELEASE}
-        curl -LO "https://github.com/openslide/openslide-bin/releases/download/v${BIN_RELEASE}/${zipname}.zip"
+        curl -LfO "https://github.com/openslide/openslide-bin/releases/download/v${BIN_RELEASE}/${zipname}.zip"
         7z x ${zipname}.zip
         echo "OPENSLIDE_PATH=c:\\openslide\\${zipname}\\bin" >> $GITHUB_ENV
     - name: Build wheel
       run: |
-        python setup.py bdist_wheel
+        python -m build -w
         basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
         mkdir -p "artifacts/${basename}"
         mv dist/*.whl "artifacts/${basename}"
         echo "basename=${basename}" >> $GITHUB_ENV
     - name: Install
-      run: pip install -e .
+      run: pip install artifacts/${basename}/*.whl
     - name: Run tests
       # Reads OPENSLIDE_PATH
       run: pytest -v
