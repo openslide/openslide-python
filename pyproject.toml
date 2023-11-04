@@ -40,6 +40,12 @@ packages = ["openslide"]
 [tool.setuptools.dynamic]
 version = {attr = "openslide._version.__version__"}
 
+[tool.setuptools.package-data]
+"*" = ["*.md"]
+doc = ["*.py", "*.rst"]
+example = ["*.html", "*.js", "*.png", "*.py"]
+tests = ["*.dcm", "*.png", "*.py", "*.svs", "*.tiff"]
+
 [tool.black]
 skip-string-normalization = true
 target-version = ["py38", "py39", "py310", "py311", "py312"]
