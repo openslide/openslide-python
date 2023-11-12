@@ -106,6 +106,9 @@ jobs:
         mkdir -p "artifacts/${basename}"
         mv dist/* "artifacts/${basename}"
         echo "basename=${basename}" >> $GITHUB_ENV
+        # save version-specific wheels and oldest abi3 wheel
+        python -c 'import sys
+        if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
       run: pip install artifacts/${basename}/*.whl
     - name: Run tests
@@ -113,6 +116,7 @@ jobs:
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
     - name: Archive wheel
+      if: env.archive_wheel
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.basename }}
@@ -155,6 +159,9 @@ jobs:
         mkdir -p "artifacts/${basename}"
         mv dist/*.whl "artifacts/${basename}"
         echo "basename=${basename}" >> $GITHUB_ENV
+        # save version-specific wheels and oldest abi3 wheel
+        python -c 'import sys
+        if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
       run: pip install artifacts/${basename}/*.whl
     - name: Run tests
@@ -170,6 +177,7 @@ jobs:
       # Reads OPENSLIDE_PATH
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
     - name: Archive wheel
+      if: env.archive_wheel
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.basename }}

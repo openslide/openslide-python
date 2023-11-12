@@ -89,7 +89,7 @@ _convert_argb2rgba(PyObject *self, PyObject *args)
     argb2rgba(view.buf, view.len / 4);
     Py_END_ALLOW_THREADS
 
-    Py_INCREF(Py_None);
+    Py_IncRef(Py_None);
     ret = Py_None;
 
 DONE:
@@ -114,5 +114,5 @@ static struct PyModuleDef convertmodule = {
 PyMODINIT_FUNC
 PyInit__convert(void)
 {
-    return PyModule_Create(&convertmodule);
+    return PyModule_Create2(&convertmodule, PYTHON_API_VERSION);
 }
