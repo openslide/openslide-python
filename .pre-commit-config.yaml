@@ -7,18 +7,19 @@ repos:
     hooks:
       - id: check-added-large-files
       - id: check-merge-conflict
+      - id: check-vcs-permalinks
       - id: check-yaml
       - id: end-of-file-fixer
-        exclude: '^\.github/.*\.md$'
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
       - id: trailing-whitespace
-        exclude: '^\.github/.*\.md$'
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.0
     hooks:
       - id: pyupgrade
         name: Modernize python code
-        args: ["--py37-plus"]
+        args: ["--py38-plus"]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
