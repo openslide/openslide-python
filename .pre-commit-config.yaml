@@ -32,8 +32,6 @@ repos:
     hooks:
       - id: black
         name: Format python code with black
-        language_version: python3
-        args: ["--skip-string-normalization"]
 
   - repo: https://github.com/asottile/blacken-docs
     rev: 1.16.0
