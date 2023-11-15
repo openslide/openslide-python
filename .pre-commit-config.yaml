@@ -7,6 +7,7 @@ repos:
     hooks:
       - id: check-added-large-files
       - id: check-merge-conflict
+      - id: check-toml
       - id: check-vcs-permalinks
       - id: check-yaml
       - id: end-of-file-fixer
