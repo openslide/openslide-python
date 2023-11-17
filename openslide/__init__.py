@@ -23,6 +23,7 @@
 This package provides Python bindings for the OpenSlide library.
 """
 
+from abc import ABCMeta, abstractmethod
 from collections.abc import Mapping
 from io import BytesIO
 import os
@@ -54,7 +55,7 @@ PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 
 
-class AbstractSlide:
+class AbstractSlide(metaclass=ABCMeta):
     """The base class of a slide object."""
 
     def __init__(self):
@@ -68,22 +69,26 @@ class AbstractSlide:
         return False
 
     @classmethod
+    @abstractmethod
     def detect_format(cls, filename):
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
         raise NotImplementedError
 
+    @abstractmethod
     def close(self):
         """Close the slide."""
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def level_count(self):
         """The number of levels in the image."""
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def level_dimensions(self):
         """A list of (width, height) tuples, one for each level of the image.
 
@@ -96,6 +101,7 @@ class AbstractSlide:
         return self.level_dimensions[0]
 
     @property
+    @abstractmethod
     def level_downsamples(self):
         """A list of downsampling factors for each level of the image.
 
@@ -103,6 +109,7 @@ class AbstractSlide:
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def properties(self):
         """Metadata about the image.
 
@@ -110,6 +117,7 @@ class AbstractSlide:
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def associated_images(self):
         """Images associated with this whole-slide image.
 
@@ -123,10 +131,12 @@ class AbstractSlide:
             return None
         return ImageCms.getOpenProfile(BytesIO(self._profile))
 
+    @abstractmethod
     def get_best_level_for_downsample(self, downsample):
         """Return the best level for displaying the given downsample."""
         raise NotImplementedError
 
+    @abstractmethod
     def read_region(self, location, level, size):
         """Return a PIL.Image containing the contents of the region.
 
@@ -136,6 +146,7 @@ class AbstractSlide:
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
+    @abstractmethod
     def set_cache(self, cache):
         """Use the specified cache to store recently decoded slide tiles.
 
@@ -285,6 +296,7 @@ class _OpenSlideMap(Mapping):
     def __iter__(self):
         return iter(self._keys())
 
+    @abstractmethod
     def _keys(self):
         # Private method; always returns list.
         raise NotImplementedError()
