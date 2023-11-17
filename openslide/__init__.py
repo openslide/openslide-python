@@ -25,6 +25,7 @@ This package provides Python bindings for the OpenSlide library.
 
 from collections.abc import Mapping
 from io import BytesIO
+import os
 
 from PIL import Image, ImageCms
 
@@ -176,7 +177,10 @@ class OpenSlide(AbstractSlide):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
         self._filename = filename
-        self._osr = lowlevel.open(str(filename))
+        try:
+            self._osr = lowlevel.open(os.fspath(filename))
+        except TypeError:
+            raise OpenSlideUnsupportedFormatError
         if lowlevel.read_icc_profile.available:
             self._profile = lowlevel.read_icc_profile(self._osr)
 
@@ -188,7 +192,7 @@ class OpenSlide(AbstractSlide):
         """Return a string describing the format vendor of the specified file.
 
         If the file format is not recognized, return None."""
-        return lowlevel.detect_vendor(str(filename))
+        return lowlevel.detect_vendor(os.fspath(filename))
 
     def close(self):
         """Close the OpenSlide object."""
@@ -350,7 +354,7 @@ class ImageSlide(AbstractSlide):
             self._image = file
         else:
             self._close = True
-            self._image = Image.open(file)
+            self._image = Image.open(os.fspath(file))
         self._profile = self._image.info.get('icc_profile')
 
     def __repr__(self):
@@ -362,7 +366,7 @@ class ImageSlide(AbstractSlide):
 
         If the file format is not recognized, return None."""
         try:
-            with Image.open(filename) as img:
+            with Image.open(os.fspath(filename)) as img:
                 return img.format
         except OSError:
             return None
