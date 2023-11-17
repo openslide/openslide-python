@@ -25,6 +25,7 @@ This package provides Python bindings for the OpenSlide library.
 
 from __future__ import annotations
 
+from abc import ABCMeta, abstractmethod
 from io import BytesIO
 from types import TracebackType
 from typing import Iterator, Literal, Mapping, TypeVar
@@ -62,7 +63,7 @@ PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 _T = TypeVar('_T')
 
 
-class AbstractSlide:
+class AbstractSlide(metaclass=ABCMeta):
     """The base class of a slide object."""
 
     def __init__(self) -> None:
@@ -81,22 +82,26 @@ class AbstractSlide:
         return False
 
     @classmethod
+    @abstractmethod
     def detect_format(cls, filename: lowlevel.Filename) -> str | None:
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
         raise NotImplementedError
 
+    @abstractmethod
     def close(self) -> None:
         """Close the slide."""
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def level_count(self) -> int:
         """The number of levels in the image."""
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def level_dimensions(self) -> tuple[tuple[int, int], ...]:
         """A tuple of (width, height) tuples, one for each level of the image.
 
@@ -109,6 +114,7 @@ class AbstractSlide:
         return self.level_dimensions[0]
 
     @property
+    @abstractmethod
     def level_downsamples(self) -> tuple[float, ...]:
         """A tuple of downsampling factors for each level of the image.
 
@@ -116,6 +122,7 @@ class AbstractSlide:
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def properties(self) -> Mapping[str, str]:
         """Metadata about the image.
 
@@ -123,6 +130,7 @@ class AbstractSlide:
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def associated_images(self) -> Mapping[str, Image.Image]:
         """Images associated with this whole-slide image.
 
@@ -136,10 +144,12 @@ class AbstractSlide:
             return None
         return ImageCms.getOpenProfile(BytesIO(self._profile))
 
+    @abstractmethod
     def get_best_level_for_downsample(self, downsample: float) -> int:
         """Return the best level for displaying the given downsample."""
         raise NotImplementedError
 
+    @abstractmethod
     def read_region(
         self, location: tuple[int, int], level: int, size: tuple[int, int]
     ) -> Image.Image:
@@ -151,6 +161,7 @@ class AbstractSlide:
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
+    @abstractmethod
     def set_cache(self, cache: OpenSlideCache) -> None:
         """Use the specified cache to store recently decoded slide tiles.
 
@@ -299,6 +310,7 @@ class _OpenSlideMap(Mapping[str, _T]):
     def __iter__(self) -> Iterator[str]:
         return iter(self._keys())
 
+    @abstractmethod
     def _keys(self) -> list[str]:
         # Private method; always returns list.
         raise NotImplementedError()
