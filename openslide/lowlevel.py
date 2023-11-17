@@ -59,34 +59,36 @@ def _load_library():
             except OSError:
                 if name == names[-1]:
                     raise
+        raise FileNotFoundError
 
-    if platform.system() == 'Windows':
-        try:
+    library_name = "library"
+    err_hint = "Is OpenSlide installed correctly?"
+    try:
+        if platform.system() == 'Windows':
+            library_name = "DLL"
+            err_hint = "Did you call os.add_dll_directory()?"
             return try_load(['libopenslide-1.dll', 'libopenslide-0.dll'])
-        except FileNotFoundError:
-            raise ModuleNotFoundError(
-                "Couldn't locate OpenSlide DLL.  "
-                "Did you call os.add_dll_directory()?  "
-                "https://openslide.org/api/python/#installing"
-            )
-    elif platform.system() == 'Darwin':
-        try:
-            return try_load(['libopenslide.1.dylib', 'libopenslide.0.dylib'])
-        except OSError:
-            # MacPorts doesn't add itself to the dyld search path, but
-            # does add itself to the find_library() search path
-            # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
-            import ctypes.util
+        elif platform.system() == 'Darwin':
+            library_name = "dylib"
+            try:
+                return try_load(['libopenslide.1.dylib', 'libopenslide.0.dylib'])
+            except OSError:
+                # MacPorts doesn't add itself to the dyld search path, but
+                # does add itself to the find_library() search path
+                # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
+                import ctypes.util
 
-            lib = ctypes.util.find_library('openslide')
-            if lib is None:
-                raise ModuleNotFoundError(
-                    "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
-                    "correctly?  https://openslide.org/api/python/#installing"
-                )
-            return cdll.LoadLibrary(lib)
-    else:
-        return try_load(['libopenslide.so.1', 'libopenslide.so.0'])
+                lib = ctypes.util.find_library('openslide')
+                if lib is None:
+                    raise FileNotFoundError
+                return cdll.LoadLibrary(lib)
+        else:
+            return try_load(['libopenslide.so.1', 'libopenslide.so.0'])
+    except FileNotFoundError:
+        raise ModuleNotFoundError(
+            f"Couldn't locate OpenSlide {library_name}.  {err_hint}  "
+            "https://openslide.org/api/python/#installing"
+        )
 
 
 _lib = _load_library()
