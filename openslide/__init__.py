@@ -370,7 +370,8 @@ class ImageSlide(AbstractSlide):
     def close(self):
         """Close the slide object."""
         if self._close:
-            self._image.close()
+            if self._image is not None:
+                self._image.close()
             self._close = False
         self._image = None
 
@@ -380,11 +381,17 @@ class ImageSlide(AbstractSlide):
         return 1
 
     @property
+    def _image_size(self):
+        if self._image is None:
+            raise AttributeError("Cannot read from an already closed slide")
+        return self._image.size
+
+    @property
     def level_dimensions(self):
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
-        return (self._image.size,)
+        return (self._image_size,)
 
     @property
     def level_downsamples(self):
@@ -422,15 +429,17 @@ class ImageSlide(AbstractSlide):
             raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:
             raise OpenSlideError(f"Size {size} must be non-negative")
+        if self._image is None:
+            raise AttributeError("Cannot read from an already closed slide")
         # Any corner of the requested region may be outside the bounds of
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.
         image_topleft = [
-            max(0, min(l, limit - 1)) for l, limit in zip(location, self._image.size)
+            max(0, min(l, limit - 1)) for l, limit in zip(location, self._image_size)
         ]
         image_bottomright = [
             max(0, min(l + s - 1, limit - 1))
-            for l, s, limit in zip(location, size, self._image.size)
+            for l, s, limit in zip(location, size, self._image_size)
         ]
         tile = Image.new("RGBA", size, (0,) * 4)
         if not [
