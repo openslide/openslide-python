@@ -87,7 +87,7 @@ jobs:
           brew install openslide
           ;;
         esac
-    - name: Build wheel
+    - name: Build dist
       run: |
         if [ -z "${{ matrix.sdist }}" ]; then
             wheel_only=-w
@@ -106,7 +106,7 @@ jobs:
                 exit 1
             fi
         esac
-        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
+        basename=openslide-python-dist-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
         mkdir -p "artifacts/${basename}"
         mv dist/* "artifacts/${basename}"
         echo "basename=${basename}" >> $GITHUB_ENV
@@ -119,7 +119,7 @@ jobs:
       run: pytest -v
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
-    - name: Archive wheel
+    - name: Archive dist
       if: env.archive_wheel
       uses: actions/upload-artifact@v3
       with:
@@ -160,7 +160,7 @@ jobs:
     - name: Build wheel
       run: |
         python -m build -w
-        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
+        basename=openslide-python-dist-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
         mkdir -p "artifacts/${basename}"
         mv dist/*.whl "artifacts/${basename}"
         echo "basename=${basename}" >> $GITHUB_ENV
