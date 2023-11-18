@@ -17,12 +17,25 @@ jobs:
   pre-commit:
     name: Rerun pre-commit checks
     runs-on: ubuntu-latest
+    outputs:
+      dist-base: ${{ steps.paths.outputs.dist }}
+      docs-base: ${{ steps.paths.outputs.docs }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
+    - name: Check out repo
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-    - uses: pre-commit/action@v3.0.0
+    - name: Run pre-commit hooks
+      uses: pre-commit/action@v3.0.0
+    - name: Define artifact paths
+      id: paths
+      run: |
+        suffix="$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)"
+        echo "dist=openslide-python-dist-$suffix" >> $GITHUB_OUTPUT
+        echo "docs=openslide-python-docs-$suffix" >> $GITHUB_OUTPUT
+
   tests:
     name: Tests
     needs: pre-commit
@@ -83,7 +96,7 @@ jobs:
           brew install openslide
           ;;
         esac
-    - name: Build wheel
+    - name: Build dist
       run: |
         if [ -z "${{ matrix.sdist }}" ]; then
             wheel_only=-w
@@ -102,25 +115,27 @@ jobs:
                 exit 1
             fi
         esac
-        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
-        mkdir -p "artifacts/${basename}"
-        mv dist/* "artifacts/${basename}"
-        echo "basename=${basename}" >> $GITHUB_ENV
+        mkdir -p "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
+        mv dist/* "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
         # save version-specific wheels and oldest abi3 wheel
         python -c 'import sys
         if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
-      run: pip install artifacts/${basename}/*.whl
+      run: pip install artifacts/${{ needs.pre-commit.outputs.dist-base }}/*.whl
     - name: Run tests
       run: pytest -v
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
-    - name: Archive wheel
-      if: env.archive_wheel
+    - name: Remove wheel from upload
+      if: matrix.sdist && ! env.archive_wheel
+      run: rm artifacts/${{ needs.pre-commit.outputs.dist-base }}/*.whl
+    - name: Archive dist
+      if: matrix.sdist || env.archive_wheel
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.basename }}
+        name: ${{ needs.pre-commit.outputs.dist-base }}
         path: artifacts
+
   windows:
     name: Windows
     needs: pre-commit
@@ -155,15 +170,13 @@ jobs:
     - name: Build wheel
       run: |
         python -m build -w
-        basename=openslide-python-wheels-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
-        mkdir -p "artifacts/${basename}"
-        mv dist/*.whl "artifacts/${basename}"
-        echo "basename=${basename}" >> $GITHUB_ENV
+        mkdir -p "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
+        mv dist/*.whl "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
         # save version-specific wheels and oldest abi3 wheel
         python -c 'import sys
         if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
-      run: pip install artifacts/${basename}/*.whl
+      run: pip install artifacts/${{ needs.pre-commit.outputs.dist-base }}/*.whl
     - name: Run tests
       # Reads OPENSLIDE_PATH
       run: pytest -v
@@ -180,8 +193,9 @@ jobs:
       if: env.archive_wheel
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.basename }}
+        name: ${{ needs.pre-commit.outputs.dist-base }}
         path: artifacts
+
   docs:
     name: Docs
     needs: pre-commit
@@ -198,12 +212,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install sphinx
     - name: Build
-      run: |
-        basename=openslide-python-docs-$GITHUB_RUN_NUMBER-$(echo $GITHUB_SHA | cut -c-10)
-        sphinx-build -d doctrees doc artifact/${basename}
-        echo "basename=${basename}" >> $GITHUB_ENV
+      run: sphinx-build -d doctrees doc artifact/${{ needs.pre-commit.outputs.docs-base }}
     - name: Archive
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.basename }}
+        name: ${{ needs.pre-commit.outputs.docs-base }}
         path: artifact
