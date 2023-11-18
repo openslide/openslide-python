@@ -4,18 +4,18 @@
 
 * docs: Document using ICC profile's default intent, not absolute colorimetric
 * examples: Default to ICC profile's default intent, not absolute colorimetric
-* tests: Correctly require pytest &ge; 7.0
+* tests: Correctly require pytest ≥ 7.0
 
 ## Version 1.3.0, 2023-07-22
 
-* Support new soname in OpenSlide &ge; 4.0.0
+* Support new soname in OpenSlide ≥ 4.0.0
 * Drop support for Python 3.7
 * Expose color management profiles where available
 * Notate available OpenSlide functions in low-level API
 * docs: Update OpenSlide 3.5.0 references to 4.0.0
 * docs: Consolidate license information
-* docs: Drop support for building with Sphinx &lt; 1.6
-* examples: Fix startup failure with Flask &ge; 2.3.0
+* docs: Drop support for building with Sphinx \< 1.6
+* examples: Fix startup failure with Flask ≥ 2.3.0
 * examples: Transform to sRGB (with absolute colorimetric intent) by default
 * examples: Update OpenSeadragon to 4.1.0
 * examples: Correctly import `openslide` on Windows if `OPENSLIDE_PATH` not set
@@ -23,7 +23,7 @@
 
 ## Version 1.2.0, 2022-06-17
 
-* Drop support for Python &lt; 3.7
+* Drop support for Python \< 3.7
 * Support cache customization with OpenSlide 3.5.0
 * Improve pixel read performance
 * Clarify exception raised on Windows or macOS when OpenSlide can't be found
@@ -39,7 +39,7 @@
 
 ## Version 1.1.2, 2020-09-13
 
-* Fix install with setuptools &ge; 46
+* Fix install with setuptools ≥ 46
 * Fix `ImportError` with Python 3.9
 * Fix docs build with Sphinx 2.x
 * Remove `--without-performance` install option
@@ -48,11 +48,11 @@
 
 * Change default Deep Zoom tile size to 254 pixels
 * Fix image reading with Pillow 3.x when installed `--without-performance`
-* Fix reading &ge; 2<sup>29</sup> pixels per call `--without-performance`
+* Fix reading ≥ 2<sup>29</sup> pixels per call `--without-performance`
 * Fix some `unclosed file` ResourceWarnings on Python 3
 * Improve object reprs
 * Add test suite
-* examples: Drop support for Internet Explorer &lt; 9
+* examples: Drop support for Internet Explorer \< 9
 
 ## Version 1.1.0, 2015-04-20
 
