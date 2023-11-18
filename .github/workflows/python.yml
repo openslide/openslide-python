@@ -26,6 +26,7 @@ jobs:
         python-version: '3.12'
     - name: Run pre-commit hooks
       uses: pre-commit/action@v3.0.0
+
   tests:
     name: Tests
     needs: pre-commit
@@ -124,6 +125,7 @@ jobs:
       with:
         name: ${{ env.basename }}
         path: artifacts
+
   windows:
     name: Windows
     needs: pre-commit
@@ -185,6 +187,7 @@ jobs:
       with:
         name: ${{ env.basename }}
         path: artifacts
+
   docs:
     name: Docs
     needs: pre-commit
