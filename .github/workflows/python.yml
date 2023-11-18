@@ -222,16 +222,24 @@ jobs:
   release:
     name: Release
     if: github.ref_type == 'tag'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/openslide-python
     needs: [pre-commit, tests, windows]
     runs-on: ubuntu-latest
     concurrency: release-${{ github.ref }}
     permissions:
       contents: write
+      id-token: write
     steps:
     - name: Download artifacts
       uses: actions/download-artifact@v3
       with:
         name: ${{ needs.pre-commit.outputs.dist-base }}
+    - name: Release to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: ${{ needs.pre-commit.outputs.dist-base }}
     - name: Release to GitHub
       env:
         GITHUB_TOKEN: ${{ github.token }}
