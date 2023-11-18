@@ -119,8 +119,11 @@ jobs:
       run: pytest -v
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
+    - name: Remove wheel from upload
+      if: matrix.sdist && ! env.archive_wheel
+      run: rm artifacts/$basename/*.whl
     - name: Archive dist
-      if: env.archive_wheel
+      if: matrix.sdist || env.archive_wheel
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.basename }}
