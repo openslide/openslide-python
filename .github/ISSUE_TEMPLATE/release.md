@@ -3,7 +3,7 @@
 - [ ] Update `CHANGELOG.md` and version in `openslide/_version.py`
 - [ ] Create and push signed tag
 - [ ] `git clean -dxf && mkdir dist`
-- [ ] Find the [workflow run](https://github.com/openslide/openslide-python/actions) for the tag; download its dist and docs artifacts
+- [ ] Find the [workflow run](https://github.com/openslide/openslide-python/actions/workflows/python.yml) for the tag; download its dist and docs artifacts
 - [ ] `unzip /path/to/downloaded/openslide-python-dist.zip && mv openslide-python-dist-*/* dist/`
 - [ ] `twine upload dist/*`
 - [ ] Recompress tarball with `xz`
