@@ -2,12 +2,11 @@
 
 - [ ] Update `CHANGELOG.md` and version in `openslide/_version.py`
 - [ ] Create and push signed tag
-- [ ] `git clean -dxf && mkdir dist`
-- [ ] Find the [workflow run](https://github.com/openslide/openslide-python/actions/workflows/python.yml) for the tag; download its dist and docs artifacts
-- [ ] `unzip /path/to/downloaded/openslide-python-dist.zip && mv openslide-python-dist-*/* dist/`
-- [ ] `twine upload dist/*`
-- [ ] Recompress tarball with `xz`
-- [ ] Attach release notes to [GitHub release](https://github.com/openslide/openslide-python/releases/new); upload tarballs and wheels
+- [ ] Find the [workflow run](https://github.com/openslide/openslide-python/actions/workflows/python.yml) for the tag
+  - [ ] Once the build finishes, approve deployment to PyPI
+  - [ ] Download the docs artifact
+- [ ] Verify that the workflow created a [PyPI release](https://pypi.org/p/openslide-python) with a description, source tarball, and wheels
+- [ ] Verify that the workflow created a [GitHub release](https://github.com/openslide/openslide-python/releases) with release notes, a source tarball, and wheels
 - [ ] `cd` into website checkout; `rm -r api/python && unzip /path/to/downloaded/openslide-python-docs.zip && mv openslide-python-docs-* api/python`
 - [ ] Update website: `_data/releases.yaml`, `_includes/news.md`
 - [ ] Update Ubuntu PPA
