@@ -43,6 +43,7 @@ from ctypes import (
     c_void_p,
     cdll,
 )
+from ctypes.util import find_library
 from itertools import count
 import platform
 
@@ -55,7 +56,7 @@ def _load_library():
     def try_load(names):
         for name in names:
             try:
-                return cdll.LoadLibrary(name)
+                return cdll.LoadLibrary(find_library(name))
             except OSError:
                 if name == names[-1]:
                     raise
