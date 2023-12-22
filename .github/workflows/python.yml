@@ -240,6 +240,7 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         packages-dir: ${{ needs.pre-commit.outputs.dist-base }}
+        repository-url: ${{ vars.PYPI_URL }}
     - name: Release to GitHub
       env:
         GITHUB_TOKEN: ${{ github.token }}
