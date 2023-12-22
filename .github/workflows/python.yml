@@ -90,9 +90,11 @@ jobs:
       run: |
         case "${{ matrix.os }}" in
         ubuntu-latest)
+          echo OS_TAG=linux >> $GITHUB_ENV
           sudo apt-get install libopenslide0
           ;;
         macos-latest)
+          echo OS_TAG=macos >> $GITHUB_ENV
           brew install openslide
           ;;
         esac
@@ -115,26 +117,35 @@ jobs:
                 exit 1
             fi
         esac
-        mkdir -p "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
-        mv dist/* "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
+        if [ -z "$wheel_only" ]; then
+            mkdir -p "artifacts/src/${{ needs.pre-commit.outputs.dist-base }}"
+            mv dist/*.tar.gz "artifacts/src/${{ needs.pre-commit.outputs.dist-base }}"
+        fi
+        mkdir -p "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
+        mv dist/* "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         # save version-specific wheels and oldest abi3 wheel
         python -c 'import sys
         if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
-      run: pip install artifacts/${{ needs.pre-commit.outputs.dist-base }}/*.whl
+      run: pip install artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}/*.whl
     - name: Run tests
       run: pytest -v
     - name: Tile slide
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
-    - name: Remove wheel from upload
-      if: matrix.sdist && ! env.archive_wheel
-      run: rm artifacts/${{ needs.pre-commit.outputs.dist-base }}/*.whl
-    - name: Archive dist
-      if: matrix.sdist || env.archive_wheel
-      uses: actions/upload-artifact@v3
+    - name: Archive sdist
+      if: matrix.sdist
+      uses: actions/upload-artifact@v4
       with:
-        name: ${{ needs.pre-commit.outputs.dist-base }}
-        path: artifacts
+        name: ${{ needs.pre-commit.outputs.dist-base }}-source
+        path: artifacts/src
+        compression-level: 0
+    - name: Archive wheel
+      if: env.archive_wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ needs.pre-commit.outputs.dist-base }}-${{ env.OS_TAG }}-${{ matrix.python-version }}
+        path: artifacts/whl
+        compression-level: 0
 
   windows:
     name: Windows
@@ -170,13 +181,13 @@ jobs:
     - name: Build wheel
       run: |
         python -m build -w
-        mkdir -p "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
-        mv dist/*.whl "artifacts/${{ needs.pre-commit.outputs.dist-base }}"
+        mkdir -p "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
+        mv dist/*.whl "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         # save version-specific wheels and oldest abi3 wheel
         python -c 'import sys
         if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
-      run: pip install artifacts/${{ needs.pre-commit.outputs.dist-base }}/*.whl
+      run: pip install artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}/*.whl
     - name: Run tests
       # Reads OPENSLIDE_PATH
       run: pytest -v
@@ -191,10 +202,11 @@ jobs:
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
     - name: Archive wheel
       if: env.archive_wheel
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: ${{ needs.pre-commit.outputs.dist-base }}
-        path: artifacts
+        name: ${{ needs.pre-commit.outputs.dist-base }}-windows-${{ matrix.python-version }}
+        path: artifacts/whl
+        compression-level: 0
 
   docs:
     name: Docs
@@ -214,7 +226,7 @@ jobs:
     - name: Build
       run: sphinx-build -d doctrees doc artifact/${{ needs.pre-commit.outputs.docs-base }}
     - name: Archive
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ needs.pre-commit.outputs.docs-base }}
         path: artifact
@@ -233,9 +245,10 @@ jobs:
       id-token: write
     steps:
     - name: Download artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: ${{ needs.pre-commit.outputs.dist-base }}
+        pattern: "${{ needs.pre-commit.outputs.dist-base }}-*"
+        merge-multiple: true
     - name: Release to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
