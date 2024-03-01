@@ -64,3 +64,18 @@ repos:
     hooks:
       - id: check-hooks-apply
       - id: check-useless-excludes
+
+  - repo: local
+    hooks:
+      - id: annotations
+        name: Require "from __future__ import annotations"
+        language: pygrep
+        types: [python]
+        # exclude config-like files
+        exclude: "^(setup\\.py|doc/conf\\.py|openslide/_version\\.py)$"
+        # Allow files with import statement, or of less than two characters.
+        # One-character files are allowed because that's the best we can do
+        # with paired negative lookbehind and lookahead assertions.  ^ and $
+        # don't work because --multiline causes them to match at newlines.
+        entry: "(?<!.)(?!.)|\nfrom __future__ import annotations"
+        args: [--multiline, --negate]

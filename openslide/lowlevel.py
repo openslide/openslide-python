@@ -30,6 +30,8 @@ returned by OpenSlide into a non-premultiplied PIL.Image happens here
 rather than in the high-level interface.)
 """
 
+from __future__ import annotations
+
 from ctypes import (
     POINTER,
     byref,

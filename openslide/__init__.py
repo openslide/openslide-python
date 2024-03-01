@@ -23,6 +23,8 @@
 This package provides Python bindings for the OpenSlide library.
 """
 
+from __future__ import annotations
+
 from collections.abc import Mapping
 from io import BytesIO
 

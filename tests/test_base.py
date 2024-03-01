@@ -17,6 +17,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import annotations
+
 import ctypes
 import unittest
 
@@ -35,13 +37,17 @@ class TestLibrary(unittest.TestCase):
     def test_lowlevel_available(self):
         '''Ensure all exported functions have an 'available' attribute.'''
         for name in dir(lowlevel):
+            attr = getattr(lowlevel, name)
             # ignore classes and unexported functions
             if name.startswith('_') or name[0].isupper():
+                continue
+            # ignore __future__ imports
+            if getattr(attr, '__module__', None) == '__future__':
                 continue
             # ignore random imports
             if hasattr(ctypes, name) or name in ('count', 'platform'):
                 continue
             self.assertTrue(
-                hasattr(getattr(lowlevel, name), 'available'),
+                hasattr(attr, 'available'),
                 f'"{name}" missing "available" attribute',
             )
