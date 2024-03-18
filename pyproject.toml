@@ -32,6 +32,7 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://openslide.org/"
 Documentation = "https://openslide.org/api/python/"
+"Release notes" = "https://github.com/openslide/openslide-python/blob/main/CHANGELOG.md"
 Repository = "https://github.com/openslide/openslide-python"
 
 [tool.setuptools]
