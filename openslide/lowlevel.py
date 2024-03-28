@@ -60,6 +60,13 @@ def _load_library():
                 if name == names[-1]:
                     raise
 
+    try:
+        import openslide_bin
+
+        return openslide_bin.libopenslide1
+    except (AttributeError, ModuleNotFoundError):
+        pass
+
     if platform.system() == 'Windows':
         try:
             return try_load(['libopenslide-1.dll', 'libopenslide-0.dll'])
