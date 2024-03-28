@@ -178,7 +178,7 @@ jobs:
             --json tagName --exclude-drafts --exclude-pre-releases | \
             jq -r .[0].tagName | \
             tr -d v)
-        zipname="openslide-win64-${release}"
+        zipname="openslide-bin-${release}-windows-x64"
         gh release download -R openslide/openslide-bin "v${release}" \
             --pattern "${zipname}.zip"
         7z x ${zipname}.zip
