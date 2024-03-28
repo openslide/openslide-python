@@ -22,6 +22,7 @@ OpenSlide can read virtual slides in several formats:
 * [Sakura][] (`.svslide`)
 * [Trestle][] (`.tif`)
 * [Ventana][] (`.bif`, `.tif`)
+* [Zeiss][] (`.czi`)
 * [Generic tiled TIFF][] (`.tif`)
 
 [OpenSlide]: https://openslide.org/
@@ -34,6 +35,7 @@ OpenSlide can read virtual slides in several formats:
 [Sakura]: https://openslide.org/formats/sakura/
 [Trestle]: https://openslide.org/formats/trestle/
 [Ventana]: https://openslide.org/formats/ventana/
+[Zeiss]: https://openslide.org/formats/zeiss/
 [Generic tiled TIFF]: https://openslide.org/formats/generic-tiff/
 
 
