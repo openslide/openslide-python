@@ -24,6 +24,7 @@ OpenSlide can read virtual slides in several formats:
 * Sakura_ (``.svslide``)
 * Trestle_ (``.tif``)
 * Ventana_ (``.bif``, ``.tif``)
+* Zeiss_ (``.czi``)
 * `Generic tiled TIFF`_ (``.tif``)
 
 OpenSlide Python is released under the terms of the `GNU Lesser General
@@ -39,6 +40,7 @@ Public License, version 2.1`_.
 .. _Sakura: https://openslide.org/formats/sakura/
 .. _Trestle: https://openslide.org/formats/trestle/
 .. _Ventana: https://openslide.org/formats/ventana/
+.. _Zeiss: https://openslide.org/formats/zeiss/
 .. _`Generic tiled TIFF`: https://openslide.org/formats/generic-tiff/
 .. _`GNU Lesser General Public License, version 2.1`: https://openslide.org/license/
 
