@@ -23,8 +23,10 @@
 This package provides Python bindings for the OpenSlide library.
 """
 
+from abc import ABCMeta, abstractmethod
 from collections.abc import Mapping
 from io import BytesIO
+import os
 
 from PIL import Image, ImageCms
 
@@ -53,7 +55,7 @@ PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 
 
-class AbstractSlide:
+class AbstractSlide(metaclass=ABCMeta):
     """The base class of a slide object."""
 
     def __init__(self):
@@ -67,22 +69,26 @@ class AbstractSlide:
         return False
 
     @classmethod
+    @abstractmethod
     def detect_format(cls, filename):
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
         raise NotImplementedError
 
+    @abstractmethod
     def close(self):
         """Close the slide."""
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def level_count(self):
         """The number of levels in the image."""
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def level_dimensions(self):
         """A list of (width, height) tuples, one for each level of the image.
 
@@ -95,6 +101,7 @@ class AbstractSlide:
         return self.level_dimensions[0]
 
     @property
+    @abstractmethod
     def level_downsamples(self):
         """A list of downsampling factors for each level of the image.
 
@@ -102,6 +109,7 @@ class AbstractSlide:
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def properties(self):
         """Metadata about the image.
 
@@ -109,6 +117,7 @@ class AbstractSlide:
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def associated_images(self):
         """Images associated with this whole-slide image.
 
@@ -122,10 +131,12 @@ class AbstractSlide:
             return None
         return ImageCms.getOpenProfile(BytesIO(self._profile))
 
+    @abstractmethod
     def get_best_level_for_downsample(self, downsample):
         """Return the best level for displaying the given downsample."""
         raise NotImplementedError
 
+    @abstractmethod
     def read_region(self, location, level, size):
         """Return a PIL.Image containing the contents of the region.
 
@@ -135,6 +146,7 @@ class AbstractSlide:
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
+    @abstractmethod
     def set_cache(self, cache):
         """Use the specified cache to store recently decoded slide tiles.
 
@@ -176,7 +188,10 @@ class OpenSlide(AbstractSlide):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
         self._filename = filename
-        self._osr = lowlevel.open(str(filename))
+        try:
+            self._osr = lowlevel.open(os.fspath(filename))
+        except TypeError:
+            raise OpenSlideUnsupportedFormatError
         if lowlevel.read_icc_profile.available:
             self._profile = lowlevel.read_icc_profile(self._osr)
 
@@ -188,7 +203,7 @@ class OpenSlide(AbstractSlide):
         """Return a string describing the format vendor of the specified file.
 
         If the file format is not recognized, return None."""
-        return lowlevel.detect_vendor(str(filename))
+        return lowlevel.detect_vendor(os.fspath(filename))
 
     def close(self):
         """Close the OpenSlide object."""
@@ -281,6 +296,7 @@ class _OpenSlideMap(Mapping):
     def __iter__(self):
         return iter(self._keys())
 
+    @abstractmethod
     def _keys(self):
         # Private method; always returns list.
         raise NotImplementedError()
@@ -350,7 +366,7 @@ class ImageSlide(AbstractSlide):
             self._image = file
         else:
             self._close = True
-            self._image = Image.open(file)
+            self._image = Image.open(os.fspath(file))
         self._profile = self._image.info.get('icc_profile')
 
     def __repr__(self):
@@ -362,7 +378,7 @@ class ImageSlide(AbstractSlide):
 
         If the file format is not recognized, return None."""
         try:
-            with Image.open(filename) as img:
+            with Image.open(os.fspath(filename)) as img:
                 return img.format
         except OSError:
             return None
@@ -370,7 +386,8 @@ class ImageSlide(AbstractSlide):
     def close(self):
         """Close the slide object."""
         if self._close:
-            self._image.close()
+            if self._image is not None:
+                self._image.close()
             self._close = False
         self._image = None
 
@@ -380,11 +397,17 @@ class ImageSlide(AbstractSlide):
         return 1
 
     @property
+    def _image_size(self):
+        if self._image is None:
+            raise AttributeError("Cannot read from an already closed slide")
+        return self._image.size
+
+    @property
     def level_dimensions(self):
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
-        return (self._image.size,)
+        return (self._image_size,)
 
     @property
     def level_downsamples(self):
@@ -422,15 +445,17 @@ class ImageSlide(AbstractSlide):
             raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:
             raise OpenSlideError(f"Size {size} must be non-negative")
+        if self._image is None:
+            raise AttributeError("Cannot read from an already closed slide")
         # Any corner of the requested region may be outside the bounds of
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.
         image_topleft = [
-            max(0, min(l, limit - 1)) for l, limit in zip(location, self._image.size)
+            max(0, min(l, limit - 1)) for l, limit in zip(location, self._image_size)
         ]
         image_bottomright = [
             max(0, min(l + s - 1, limit - 1))
-            for l, s, limit in zip(location, size, self._image.size)
+            for l, s, limit in zip(location, size, self._image_size)
         ]
         tile = Image.new("RGBA", size, (0,) * 4)
         if not [
