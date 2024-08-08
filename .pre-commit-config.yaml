@@ -3,7 +3,7 @@ exclude: '^(COPYING\.LESSER|examples/deepzoom/static/.*\.js)$'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-merge-conflict
@@ -16,26 +16,26 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
+    rev: v3.17.0
     hooks:
       - id: pyupgrade
         name: Modernize python code
         args: ["--py38-plus"]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         name: Reorder python imports with isort
 
   - repo: https://github.com/psf/black
-    rev: 23.10.1
+    rev: 24.8.0
     hooks:
       - id: black
         name: Format python code with black
 
   - repo: https://github.com/asottile/blacken-docs
-    rev: 1.16.0
+    rev: 1.18.0
     hooks:
       - id: blacken-docs
         name: Format python code in documentation
@@ -47,14 +47,14 @@ repos:
         additional_dependencies: [flake8-bugbear, Flake8-pyproject]
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         name: Lint python code with flake8
         additional_dependencies: [flake8-bugbear, Flake8-pyproject]
 
   - repo: https://github.com/rstcheck/rstcheck
-    rev: v6.2.0
+    rev: v6.2.4
     hooks:
       - id: rstcheck
         name: Validate reStructuredText syntax
