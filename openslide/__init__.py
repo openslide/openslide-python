@@ -145,7 +145,7 @@ class AbstractSlide:
         """Return a PIL.Image containing an RGB thumbnail of the image.
 
         size:     the maximum size of the thumbnail."""
-        downsample = max(*(dim / thumb for dim, thumb in zip(self.dimensions, size)))
+        downsample = max(dim / thumb for dim, thumb in zip(self.dimensions, size))
         level = self.get_best_level_for_downsample(downsample)
         tile = self.read_region((0, 0), level, self.level_dimensions[level])
         # Apply on solid background
