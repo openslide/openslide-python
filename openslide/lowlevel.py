@@ -65,8 +65,8 @@ def _load_library():
             return try_load(['libopenslide-1.dll', 'libopenslide-0.dll'])
         except FileNotFoundError:
             raise ModuleNotFoundError(
-                "Couldn't locate OpenSlide DLL.  "
-                "Did you call os.add_dll_directory()?  "
+                "Couldn't locate OpenSlide DLL. "
+                "Did you call os.add_dll_directory()? "
                 "https://openslide.org/api/python/#installing"
             )
     elif platform.system() == 'Darwin':
@@ -81,8 +81,9 @@ def _load_library():
             lib = ctypes.util.find_library('openslide')
             if lib is None:
                 raise ModuleNotFoundError(
-                    "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
-                    "correctly?  https://openslide.org/api/python/#installing"
+                    "Couldn't locate OpenSlide dylib. "
+                    "Is OpenSlide installed correctly? "
+                    "https://openslide.org/api/python/#installing"
                 )
             return cdll.LoadLibrary(lib)
     else:
