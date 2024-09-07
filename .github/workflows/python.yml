@@ -44,9 +44,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13-dev"]
+        openslide: [system, wheel]
         include:
           - os: ubuntu-latest
             python-version: "3.12"
+            openslide: system
             sdist: sdist
           # Python 3.8 is too old to support universal binaries, and
           # setup-python's Python 3.9 and 3.10 won't build them.  Use the
@@ -86,7 +88,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install auditwheel build jinja2 pytest
-    - name: Install OpenSlide
+    - name: Install OpenSlide (system)
+      if: matrix.openslide == 'system'
       run: |
         case "${{ matrix.os }}" in
         ubuntu-latest)
@@ -99,6 +102,9 @@ jobs:
           brew install openslide
           ;;
         esac
+    - name: Install OpenSlide (wheel)
+      if: matrix.openslide == 'wheel'
+      run: pip install openslide-bin
     - name: Build dist
       run: |
         if [ -z "${{ matrix.sdist }}" ]; then
@@ -124,9 +130,10 @@ jobs:
         fi
         mkdir -p "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         mv dist/* "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
-        # save version-specific wheels and oldest abi3 wheel
+        # from system builds, save version-specific wheels and oldest abi3 wheel
         python -c 'import sys
-        if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
+        if sys.version_info < (3, 12) and "${{ matrix.openslide }}" == "system":
+            print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
       run: pip install artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}/*.whl
     - name: Run tests
@@ -158,6 +165,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13-dev"]
+        openslide: [zip, wheel]
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
@@ -169,7 +177,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install build flask pytest
-    - name: Install OpenSlide
+    - name: Install OpenSlide (zip)
+      if: matrix.openslide == 'zip'
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
@@ -184,14 +193,18 @@ jobs:
             --pattern "${zipname}.zip"
         7z x ${zipname}.zip
         echo "OPENSLIDE_PATH=c:\\openslide\\${zipname}\\bin" >> $GITHUB_ENV
+    - name: Install OpenSlide (wheel)
+      if: matrix.openslide == 'wheel'
+      run: pip install openslide-bin
     - name: Build wheel
       run: |
         python -m build -w
         mkdir -p "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         mv dist/*.whl "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
-        # save version-specific wheels and oldest abi3 wheel
+        # from zip builds, save version-specific wheels and oldest abi3 wheel
         python -c 'import sys
-        if sys.version_info < (3, 12): print("archive_wheel=1")' >> $GITHUB_ENV
+        if sys.version_info < (3, 12) and "${{ matrix.openslide }}" == "zip":
+            print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
       run: pip install artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}/*.whl
     - name: Run tests
