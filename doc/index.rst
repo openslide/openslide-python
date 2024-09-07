@@ -49,17 +49,20 @@ Installing
 ==========
 
 OpenSlide Python requires OpenSlide_, which must be installed separately.
+If you intend to use OpenSlide only with Python, the easiest way to get it
+is to install the openslide-bin_ Python package with
+``pip install openslide-bin``.
 
-On Linux and macOS, the easiest way to get both components is to install_
-with a package manager that packages both, such as Anaconda_, DNF or Apt on
-Linux systems, or MacPorts_ on macOS systems.  You can also install
+On Linux and macOS, you can also install_ both OpenSlide and OpenSlide
+Python with a package manager that packages both, such as Anaconda_, DNF or
+Apt on Linux systems, or MacPorts_ on macOS systems.  Or, you can install
 OpenSlide Python with pip_ after installing OpenSlide with a package manager
 or from source_.  Except for pip, do not mix OpenSlide and OpenSlide Python
 from different package managers (for example, OpenSlide from MacPorts and
 OpenSlide Python from Anaconda), since you'll get library conflicts.
 
-On Windows, download the OpenSlide `Windows binaries`_ and extract them
-to a known path.  Then, import ``openslide`` inside a
+On Windows, you can also download the OpenSlide `Windows binaries`_ and
+extract them to a known path.  Then, import ``openslide`` inside a
 ``with os.add_dll_directory()`` statement::
 
     # The path can also be read from a config file, etc.
@@ -73,6 +76,7 @@ to a known path.  Then, import ``openslide`` inside a
     else:
         import openslide
 
+.. _openslide-bin: https://pypi.org/project/openslide-bin/
 .. _install: https://openslide.org/download/#distribution-packages
 .. _Anaconda: https://anaconda.org/
 .. _MacPorts: https://www.macports.org/

@@ -52,6 +52,13 @@ from . import _convert
 
 
 def _load_library():
+    try:
+        import openslide_bin
+
+        return openslide_bin.libopenslide1
+    except (AttributeError, ModuleNotFoundError):
+        pass
+
     def try_load(names):
         for name in names:
             try:
@@ -65,8 +72,10 @@ def _load_library():
             return try_load(['libopenslide-1.dll', 'libopenslide-0.dll'])
         except FileNotFoundError:
             raise ModuleNotFoundError(
-                "Couldn't locate OpenSlide DLL.  "
-                "Did you call os.add_dll_directory()?  "
+                "Couldn't locate OpenSlide DLL. "
+                "Try `pip install openslide-bin`, "
+                "or if you're using an OpenSlide binary package, "
+                "ensure you've called os.add_dll_directory(). "
                 "https://openslide.org/api/python/#installing"
             )
     elif platform.system() == 'Darwin':
@@ -81,12 +90,20 @@ def _load_library():
             lib = ctypes.util.find_library('openslide')
             if lib is None:
                 raise ModuleNotFoundError(
-                    "Couldn't locate OpenSlide dylib.  Is OpenSlide installed "
-                    "correctly?  https://openslide.org/api/python/#installing"
+                    "Couldn't locate OpenSlide dylib. "
+                    "Try `pip install openslide-bin`. "
+                    "https://openslide.org/api/python/#installing"
                 )
             return cdll.LoadLibrary(lib)
     else:
-        return try_load(['libopenslide.so.1', 'libopenslide.so.0'])
+        try:
+            return try_load(['libopenslide.so.1', 'libopenslide.so.0'])
+        except OSError:
+            raise ModuleNotFoundError(
+                "Couldn't locate OpenSlide shared library. "
+                "Try `pip install openslide-bin`. "
+                "https://openslide.org/api/python/#installing"
+            )
 
 
 _lib = _load_library()

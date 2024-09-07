@@ -48,9 +48,15 @@ OpenSlide can read virtual slides in several formats:
 
 ## Installation
 
-OpenSlide Python requires [OpenSlide].  For instructions on installing both
-components so OpenSlide Python can find OpenSlide, see the package
-[documentation][installing].
+OpenSlide Python requires [OpenSlide].  Install both components from PyPI
+with:
+
+```console
+pip install openslide-python openslide-bin
+```
+
+Or, see the [OpenSlide Python documentation][installing] for instructions on
+installing so OpenSlide Python can find OpenSlide.
 
 [installing]: https://openslide.org/api/python/#installing
 
