@@ -23,6 +23,8 @@
 # deployed to the website.
 # Rename Sphinx output paths to drop the underscore.
 
+from __future__ import annotations
+
 import os
 
 from sphinx.util import logging

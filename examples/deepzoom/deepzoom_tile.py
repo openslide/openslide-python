@@ -21,6 +21,8 @@
 
 """An example program to generate a Deep Zoom directory tree from a slide."""
 
+from __future__ import annotations
+
 from argparse import ArgumentParser
 import base64
 from io import BytesIO

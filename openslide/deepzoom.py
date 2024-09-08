@@ -23,6 +23,8 @@ This module provides functionality for generating Deep Zoom images from
 OpenSlide objects.
 """
 
+from __future__ import annotations
+
 from io import BytesIO
 import math
 from xml.etree.ElementTree import Element, ElementTree, SubElement
