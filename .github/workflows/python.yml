@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-aarch64, macos-latest]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13-dev"]
         openslide: [system, wheel]
         include:
@@ -94,6 +94,10 @@ jobs:
         case "${{ matrix.os }}" in
         ubuntu-latest)
           echo OS_ARCH_TAG=linux-x86_64 >> $GITHUB_ENV
+          sudo apt-get install libopenslide0
+          ;;
+        ubuntu-24.04-aarch64)
+          echo OS_ARCH_TAG=linux-aarch64 >> $GITHUB_ENV
           sudo apt-get install libopenslide0
           ;;
         macos-latest)
