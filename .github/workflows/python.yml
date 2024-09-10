@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-aarch64, macos-latest]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13-dev"]
         openslide: [system, wheel]
         include:
@@ -93,11 +93,15 @@ jobs:
       run: |
         case "${{ matrix.os }}" in
         ubuntu-latest)
-          echo OS_TAG=linux >> $GITHUB_ENV
+          echo OS_ARCH_TAG=linux-x86_64 >> $GITHUB_ENV
+          sudo apt-get install libopenslide0
+          ;;
+        ubuntu-24.04-aarch64)
+          echo OS_ARCH_TAG=linux-aarch64 >> $GITHUB_ENV
           sudo apt-get install libopenslide0
           ;;
         macos-latest)
-          echo OS_TAG=macos >> $GITHUB_ENV
+          echo OS_ARCH_TAG=macos-arm64-x86_64 >> $GITHUB_ENV
           echo DYLD_LIBRARY_PATH=/opt/homebrew/lib >> $GITHUB_ENV
           brew install openslide
           ;;
@@ -151,7 +155,7 @@ jobs:
       if: env.archive_wheel
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ needs.pre-commit.outputs.dist-base }}-${{ env.OS_TAG }}-${{ matrix.python-version }}
+        name: ${{ needs.pre-commit.outputs.dist-base }}-${{ env.OS_ARCH_TAG }}-${{ matrix.python-version }}
         path: artifacts/whl
         compression-level: 0
 
@@ -223,7 +227,7 @@ jobs:
       if: env.archive_wheel
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ needs.pre-commit.outputs.dist-base }}-windows-${{ matrix.python-version }}
+        name: ${{ needs.pre-commit.outputs.dist-base }}-windows-x64-${{ matrix.python-version }}
         path: artifacts/whl
         compression-level: 0
 
