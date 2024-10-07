@@ -60,6 +60,8 @@ PROPERTY_NAME_BOUNDS_Y = 'openslide.bounds-y'
 PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 
+_T = TypeVar('_T')
+
 
 class _OpenSlideCacheWrapper(Protocol):
     _openslide_cache: lowlevel._OpenSlideCache
@@ -71,7 +73,7 @@ class AbstractSlide:
     def __init__(self) -> None:
         self._profile: bytes | None = None
 
-    def __enter__(self) -> AbstractSlide:
+    def __enter__(self: _T) -> _T:
         return self
 
     def __exit__(
