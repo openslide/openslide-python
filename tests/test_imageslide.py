@@ -80,15 +80,17 @@ class TestImageWithoutOpening(unittest.TestCase):
         self.assertRaises(ValueError, lambda: osr.level_dimensions)
 
 
-class _SlideTest:
-    def setUp(self):
-        self.osr = ImageSlide(file_path(self.FILENAME))
+class _Abstract:
+    # nested class to prevent the test runner from finding it
+    class SlideTest(unittest.TestCase):
+        def setUp(self):
+            self.osr = ImageSlide(file_path(self.FILENAME))
 
-    def tearDown(self):
-        self.osr.close()
+        def tearDown(self):
+            self.osr.close()
 
 
-class TestImage(_SlideTest, unittest.TestCase):
+class TestImage(_Abstract.SlideTest):
     FILENAME = 'boxes.png'
 
     def test_repr(self):
@@ -142,7 +144,7 @@ class TestImage(_SlideTest, unittest.TestCase):
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
 
 
-class TestNoIccImage(_SlideTest, unittest.TestCase):
+class TestNoIccImage(_Abstract.SlideTest):
     FILENAME = 'boxes-no-icc.png'
 
     def test_color_profile(self):

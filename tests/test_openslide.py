@@ -98,15 +98,17 @@ class TestSlideWithoutOpening(unittest.TestCase):
         self.assertRaises(ArgumentError, lambda: osr.level_count)
 
 
-class _SlideTest:
-    def setUp(self):
-        self.osr = OpenSlide(file_path(self.FILENAME))
+class _Abstract:
+    # nested class to prevent the test runner from finding it
+    class SlideTest(unittest.TestCase):
+        def setUp(self):
+            self.osr = OpenSlide(file_path(self.FILENAME))
 
-    def tearDown(self):
-        self.osr.close()
+        def tearDown(self):
+            self.osr.close()
 
 
-class TestSlide(_SlideTest, unittest.TestCase):
+class TestSlide(_Abstract.SlideTest):
     FILENAME = 'boxes.tiff'
 
     def test_repr(self):
@@ -186,7 +188,7 @@ class TestSlide(_SlideTest, unittest.TestCase):
         self.assertRaises(TypeError, lambda: self.osr.set_cache(3))
 
 
-class TestAperioSlide(_SlideTest, unittest.TestCase):
+class TestAperioSlide(_Abstract.SlideTest):
     FILENAME = 'small.svs'
 
     def test_associated_images(self):
@@ -220,7 +222,7 @@ class TestAperioSlide(_SlideTest, unittest.TestCase):
 @unittest.skipUnless(
     lowlevel.read_associated_image_icc_profile.available, "requires OpenSlide 4.0.0"
 )
-class TestDicomSlide(_SlideTest, unittest.TestCase):
+class TestDicomSlide(_Abstract.SlideTest):
     FILENAME = 'boxes_0.dcm'
 
     def test_color_profile(self):
@@ -232,7 +234,7 @@ class TestDicomSlide(_SlideTest, unittest.TestCase):
         self.assertIs(main_profile, associated_profile)
 
 
-class TestUnreadableSlide(_SlideTest, unittest.TestCase):
+class TestUnreadableSlide(_Abstract.SlideTest):
     FILENAME = 'unreadable.svs'
 
     def test_read_bad_region(self):
