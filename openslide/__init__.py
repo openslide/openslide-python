@@ -86,7 +86,7 @@ class AbstractSlide:
         return False
 
     @classmethod
-    def detect_format(cls, filename: Path | str) -> str | None:
+    def detect_format(cls, filename: str | Path) -> str | None:
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
@@ -193,7 +193,7 @@ class OpenSlide(AbstractSlide):
     operations on the OpenSlide object, other than close(), will fail.
     """
 
-    def __init__(self, filename: Path | str | bytes) -> None:
+    def __init__(self, filename: str | Path) -> None:
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
         self._filename = filename
@@ -205,7 +205,7 @@ class OpenSlide(AbstractSlide):
         return f'{self.__class__.__name__}({self._filename!r})'
 
     @classmethod
-    def detect_format(cls, filename: Path | str) -> str | None:
+    def detect_format(cls, filename: str | Path) -> str | None:
         """Return a string describing the format vendor of the specified file.
 
         If the file format is not recognized, return None."""
@@ -365,7 +365,7 @@ class OpenSlideCache:
 class ImageSlide(AbstractSlide):
     """A wrapper for a PIL.Image that provides the OpenSlide interface."""
 
-    def __init__(self, file: str | bytes | Path | Image.Image):
+    def __init__(self, file: str | Path | Image.Image):
         """Open an image file.
 
         file can be a filename or a PIL.Image."""
@@ -383,7 +383,7 @@ class ImageSlide(AbstractSlide):
         return f'{self.__class__.__name__}({self._file_arg!r})'
 
     @classmethod
-    def detect_format(cls, filename: str | bytes | Path) -> str | None:
+    def detect_format(cls, filename: str | Path) -> str | None:
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
@@ -492,7 +492,7 @@ class ImageSlide(AbstractSlide):
         pass
 
 
-def open_slide(filename: str | bytes | Path) -> AbstractSlide:
+def open_slide(filename: str | Path) -> AbstractSlide:
     """Open a whole-slide or regular image.
 
     Return an OpenSlide object for whole-slide images and an ImageSlide
