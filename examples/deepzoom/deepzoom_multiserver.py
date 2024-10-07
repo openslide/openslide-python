@@ -24,18 +24,24 @@ from __future__ import annotations
 from argparse import ArgumentParser
 import base64
 from collections import OrderedDict
+from collections.abc import Callable
 from io import BytesIO
 import os
 from threading import Lock
+from typing import TYPE_CHECKING, Any, Literal
 import zlib
 
-from PIL import ImageCms
-from flask import Flask, abort, make_response, render_template, url_for
+from PIL import Image, ImageCms
+from flask import Flask, Response, abort, make_response, render_template, url_for
+
+if TYPE_CHECKING:
+    # Python 3.10+
+    from typing import TypeAlias
 
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined]
             import openslide
     else:
         import openslide
@@ -62,10 +68,36 @@ SRGB_PROFILE_BYTES = zlib.decompress(
 )
 SRGB_PROFILE = ImageCms.getOpenProfile(BytesIO(SRGB_PROFILE_BYTES))
 
+if TYPE_CHECKING:
+    ColorMode: TypeAlias = Literal[
+        'default',
+        'absolute-colorimetric',
+        'perceptual',
+        'relative-colorimetric',
+        'saturation',
+        'embed',
+        'ignore',
+    ]
+    Transform: TypeAlias = Callable[[Image.Image], None]
 
-def create_app(config=None, config_file=None):
+
+class DeepZoomMultiServer(Flask):
+    basedir: str
+    cache: _SlideCache
+
+
+class AnnotatedDeepZoomGenerator(DeepZoomGenerator):
+    filename: str
+    mpp: float
+    transform: Transform
+
+
+def create_app(
+    config: dict[str, Any] | None = None,
+    config_file: str | None = None,
+) -> Flask:
     # Create and configure app
-    app = Flask(__name__)
+    app = DeepZoomMultiServer(__name__)
     app.config.from_mapping(
         SLIDE_DIR='.',
         SLIDE_CACHE_SIZE=10,
@@ -99,7 +131,7 @@ def create_app(config=None, config_file=None):
     )
 
     # Helper functions
-    def get_slide(path):
+    def get_slide(path: str) -> AnnotatedDeepZoomGenerator:
         path = os.path.abspath(os.path.join(app.basedir, path))
         if not path.startswith(app.basedir + os.path.sep):
             # Directory traversal
@@ -115,11 +147,11 @@ def create_app(config=None, config_file=None):
 
     # Set up routes
     @app.route('/')
-    def index():
+    def index() -> str:
         return render_template('files.html', root_dir=_Directory(app.basedir))
 
     @app.route('/<path:path>')
-    def slide(path):
+    def slide(path: str) -> str:
         slide = get_slide(path)
         slide_url = url_for('dzi', path=path)
         return render_template(
@@ -130,7 +162,7 @@ def create_app(config=None, config_file=None):
         )
 
     @app.route('/<path:path>.dzi')
-    def dzi(path):
+    def dzi(path: str) -> Response:
         slide = get_slide(path)
         format = app.config['DEEPZOOM_FORMAT']
         resp = make_response(slide.get_dzi(format))
@@ -138,7 +170,7 @@ def create_app(config=None, config_file=None):
         return resp
 
     @app.route('/<path:path>_files/<int:level>/<int:col>_<int:row>.<format>')
-    def tile(path, level, col, row, format):
+    def tile(path: str, level: int, col: int, row: int, format: str) -> Response:
         slide = get_slide(path)
         format = format.lower()
         if format != 'jpeg' and format != 'png':
@@ -165,19 +197,27 @@ def create_app(config=None, config_file=None):
 
 
 class _SlideCache:
-    def __init__(self, cache_size, tile_cache_mb, dz_opts, color_mode):
+    def __init__(
+        self,
+        cache_size: int,
+        tile_cache_mb: int,
+        dz_opts: dict[str, Any],
+        color_mode: ColorMode,
+    ):
         self.cache_size = cache_size
         self.dz_opts = dz_opts
         self.color_mode = color_mode
         self._lock = Lock()
-        self._cache = OrderedDict()
+        self._cache: OrderedDict[str, AnnotatedDeepZoomGenerator] = OrderedDict()
         # Share a single tile cache among all slide handles, if supported
         try:
-            self._tile_cache = OpenSlideCache(tile_cache_mb * 1024 * 1024)
+            self._tile_cache: OpenSlideCache | None = OpenSlideCache(
+                tile_cache_mb * 1024 * 1024
+            )
         except OpenSlideVersionError:
             self._tile_cache = None
 
-    def get(self, path):
+    def get(self, path: str) -> AnnotatedDeepZoomGenerator:
         with self._lock:
             if path in self._cache:
                 # Move to end of LRU
@@ -188,7 +228,7 @@ class _SlideCache:
         osr = OpenSlide(path)
         if self._tile_cache is not None:
             osr.set_cache(self._tile_cache)
-        slide = DeepZoomGenerator(osr, **self.dz_opts)
+        slide = AnnotatedDeepZoomGenerator(osr, **self.dz_opts)
         try:
             mpp_x = osr.properties[openslide.PROPERTY_NAME_MPP_X]
             mpp_y = osr.properties[openslide.PROPERTY_NAME_MPP_Y]
@@ -204,7 +244,7 @@ class _SlideCache:
                 self._cache[path] = slide
         return slide
 
-    def _get_transform(self, image):
+    def _get_transform(self, image: OpenSlide) -> Transform:
         if image.color_profile is None:
             return lambda img: None
         mode = self.color_mode
@@ -215,7 +255,7 @@ class _SlideCache:
             # embed ICC profile in tiles
             return lambda img: None
         elif mode == 'default':
-            intent = ImageCms.getDefaultIntent(image.color_profile)
+            intent = ImageCms.Intent(ImageCms.getDefaultIntent(image.color_profile))
         elif mode == 'absolute-colorimetric':
             intent = ImageCms.Intent.ABSOLUTE_COLORIMETRIC
         elif mode == 'relative-colorimetric':
@@ -232,10 +272,10 @@ class _SlideCache:
             'RGB',
             'RGB',
             intent,
-            0,
+            ImageCms.Flags(0),
         )
 
-        def xfrm(img):
+        def xfrm(img: Image.Image) -> None:
             ImageCms.applyTransform(img, transform, True)
             # Some browsers assume we intend the display's color space if we
             # don't embed the profile.  Pillow's serialization is larger, so
@@ -246,9 +286,9 @@ class _SlideCache:
 
 
 class _Directory:
-    def __init__(self, basedir, relpath=''):
+    def __init__(self, basedir: str, relpath: str = ''):
         self.name = os.path.basename(relpath)
-        self.children = []
+        self.children: list[_Directory | _SlideFile] = []
         for name in sorted(os.listdir(os.path.join(basedir, relpath))):
             cur_relpath = os.path.join(relpath, name)
             cur_path = os.path.join(basedir, cur_relpath)
@@ -261,7 +301,7 @@ class _Directory:
 
 
 class _SlideFile:
-    def __init__(self, relpath):
+    def __init__(self, relpath: str):
         self.name = os.path.basename(relpath)
         self.url_path = relpath
 
