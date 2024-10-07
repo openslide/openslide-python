@@ -265,6 +265,18 @@ def _check_name_list(result, func, args):
     return names
 
 
+class _FunctionUnavailable:
+    '''Standin for a missing optional function.  Fails when called.'''
+
+    def __init__(self, minimum_version):
+        self._minimum_version = minimum_version
+        # allow checking for availability without calling the function
+        self.available = False
+
+    def __call__(self, *_args):
+        raise OpenSlideVersionError(self._minimum_version)
+
+
 # resolve and return an OpenSlide function with the specified properties
 def _func(name, restype, argtypes, errcheck=_check_error, minimum_version=None):
     try:
@@ -272,15 +284,8 @@ def _func(name, restype, argtypes, errcheck=_check_error, minimum_version=None):
     except AttributeError:
         if minimum_version is None:
             raise
-
-        # optional function doesn't exist; fail at runtime
-        def function_unavailable(*_args):
-            raise OpenSlideVersionError(minimum_version)
-
-        # allow checking for availability without calling the function
-        function_unavailable.available = False
-
-        return function_unavailable
+        else:
+            return _FunctionUnavailable(minimum_version)
     func.argtypes = argtypes
     func.restype = restype
     if errcheck is not None:
