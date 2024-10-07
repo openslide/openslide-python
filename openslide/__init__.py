@@ -28,7 +28,7 @@ from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
-from typing import Iterator, Literal, Mapping, Protocol, TypeVar
+from typing import Iterator, Literal, Mapping, TypeVar
 
 from PIL import Image, ImageCms
 
@@ -61,10 +61,6 @@ PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 
 _T = TypeVar('_T')
-
-
-class _OpenSlideCacheWrapper(Protocol):
-    _openslide_cache: lowlevel._OpenSlideCache
 
 
 class AbstractSlide:
@@ -156,7 +152,7 @@ class AbstractSlide:
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
-    def set_cache(self, cache: _OpenSlideCacheWrapper) -> None:
+    def set_cache(self, cache: OpenSlideCache) -> None:
         """Use the specified cache to store recently decoded slide tiles.
 
         cache: an OpenSlideCache object."""
@@ -278,7 +274,7 @@ class OpenSlide(AbstractSlide):
             region.info['icc_profile'] = self._profile
         return region
 
-    def set_cache(self, cache: _OpenSlideCacheWrapper) -> None:
+    def set_cache(self, cache: OpenSlideCache) -> None:
         """Use the specified cache to store recently decoded slide tiles.
 
         By default, the object has a private cache with a default size.
@@ -480,7 +476,7 @@ class ImageSlide(AbstractSlide):
             tile.info['icc_profile'] = self._profile
         return tile
 
-    def set_cache(self, cache: _OpenSlideCacheWrapper) -> None:
+    def set_cache(self, cache: OpenSlideCache) -> None:
         """Use the specified cache to store recently decoded slide tiles.
 
         ImageSlide does not support caching, so this method does nothing.
