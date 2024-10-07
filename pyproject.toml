@@ -60,8 +60,6 @@ force_sort_within_sections = true
 [tool.mypy]
 python_version = "3.10"
 strict = true
-# temporary, while we bootstrap type checking
-follow_imports = "silent"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
