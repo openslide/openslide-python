@@ -33,7 +33,9 @@ rather than in the high-level interface.)
 from __future__ import annotations
 
 from ctypes import (
+    CDLL,
     POINTER,
+    _Pointer,
     byref,
     c_char,
     c_char_p,
@@ -47,13 +49,20 @@ from ctypes import (
 )
 from itertools import count
 import platform
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, cast
 
 from PIL import Image
 
 from . import _convert
 
+if TYPE_CHECKING:
+    # Python 3.10+ for ParamSpec
+    from typing import ParamSpec, TypeAlias
 
-def _load_library():
+    from _convert import _Buffer
+
+
+def _load_library() -> CDLL:
     try:
         import openslide_bin
 
@@ -61,13 +70,15 @@ def _load_library():
     except (AttributeError, ModuleNotFoundError):
         pass
 
-    def try_load(names):
+    def try_load(names: list[str]) -> CDLL:
         for name in names:
             try:
                 return cdll.LoadLibrary(name)
             except OSError:
                 if name == names[-1]:
                     raise
+        else:
+            raise ValueError('No library names specified')
 
     if platform.system() == 'Windows':
         try:
@@ -124,7 +135,7 @@ class OpenSlideVersionError(OpenSlideError):
     Import this from openslide rather than from openslide.lowlevel.
     """
 
-    def __init__(self, minimum_version):
+    def __init__(self, minimum_version: str):
         super().__init__(f'OpenSlide >= {minimum_version} required')
         self.minimum_version = minimum_version
 
@@ -139,22 +150,22 @@ class OpenSlideUnsupportedFormatError(OpenSlideError):
 class _OpenSlide:
     """Wrapper class to make sure we correctly pass an OpenSlide handle."""
 
-    def __init__(self, ptr):
+    def __init__(self, ptr: c_void_p):
         self._as_parameter_ = ptr
         self._valid = True
         # Retain a reference to close() to avoid GC problems during
         # interpreter shutdown
         self._close = close
 
-    def __del__(self):
+    def __del__(self) -> None:
         if self._valid:
             self._close(self)
 
-    def invalidate(self):
+    def invalidate(self) -> None:
         self._valid = False
 
     @classmethod
-    def from_param(cls, obj):
+    def from_param(cls, obj: _OpenSlide) -> _OpenSlide:
         if obj.__class__ != cls:
             raise ValueError("Not an OpenSlide reference")
         if not obj._as_parameter_:
@@ -167,17 +178,17 @@ class _OpenSlide:
 class _OpenSlideCache:
     """Wrapper class to make sure we correctly pass an OpenSlide cache."""
 
-    def __init__(self, ptr):
+    def __init__(self, ptr: c_void_p):
         self._as_parameter_ = ptr
         # Retain a reference to cache_release() to avoid GC problems during
         # interpreter shutdown
         self._cache_release = cache_release
 
-    def __del__(self):
+    def __del__(self) -> None:
         self._cache_release(self)
 
     @classmethod
-    def from_param(cls, obj):
+    def from_param(cls, obj: _OpenSlideCache) -> _OpenSlideCache:
         if obj.__class__ != cls:
             raise ValueError("Not an OpenSlide cache reference")
         if not obj._as_parameter_:
@@ -189,7 +200,7 @@ class _utf8_p:
     """Wrapper class to convert string arguments to bytes."""
 
     @classmethod
-    def from_param(cls, obj):
+    def from_param(cls, obj: str | bytes) -> bytes:
         if isinstance(obj, bytes):
             return obj
         elif isinstance(obj, str):
@@ -202,7 +213,7 @@ class _size_t:
     """Wrapper class to convert size_t arguments to c_size_t."""
 
     @classmethod
-    def from_param(cls, obj):
+    def from_param(cls, obj: int) -> c_size_t:
         if not isinstance(obj, int):
             raise TypeError('Incorrect type')
         if obj < 0:
@@ -210,14 +221,14 @@ class _size_t:
         return c_size_t(obj)
 
 
-def _load_image(buf, size):
+def _load_image(buf: _Buffer, size: tuple[int, int]) -> Image.Image:
     '''buf must be a mutable buffer.'''
     _convert.argb2rgba(buf)
     return Image.frombuffer('RGBA', size, buf, 'raw', 'RGBA', 0, 1)
 
 
 # check for errors opening an image file and wrap the resulting handle
-def _check_open(result, _func, _args):
+def _check_open(result: int | None, _func: Any, _args: Any) -> _OpenSlide:
     if result is None:
         raise OpenSlideUnsupportedFormatError("Unsupported or missing image file")
     slide = _OpenSlide(c_void_p(result))
@@ -228,17 +239,17 @@ def _check_open(result, _func, _args):
 
 
 # prevent further operations on slide handle after it is closed
-def _check_close(_result, _func, args):
+def _check_close(_result: Any, _func: Any, args: tuple[_OpenSlide]) -> None:
     args[0].invalidate()
 
 
 # wrap the handle returned when creating a cache
-def _check_cache_create(result, _func, _args):
+def _check_cache_create(result: int, _func: Any, _args: Any) -> _OpenSlideCache:
     return _OpenSlideCache(c_void_p(result))
 
 
 # Convert returned byte array, if present, into a string
-def _check_string(result, func, _args):
+def _check_string(result: Any, func: _CTypesFunc[..., Any], _args: Any) -> Any:
     if func.restype is c_char_p and result is not None:
         return result.decode('UTF-8', 'replace')
     else:
@@ -246,7 +257,8 @@ def _check_string(result, func, _args):
 
 
 # check if the library got into an error state after each library call
-def _check_error(result, func, args):
+def _check_error(result: Any, func: Any, args: tuple[Any, ...]) -> Any:
+    assert isinstance(args[0], _OpenSlide)
     err = get_error(args[0])
     if err is not None:
         raise OpenSlideError(err)
@@ -254,7 +266,7 @@ def _check_error(result, func, args):
 
 
 # Convert returned NULL-terminated char** into a list of strings
-def _check_name_list(result, func, args):
+def _check_name_list(result: _Pointer[c_char_p], func: Any, args: Any) -> list[str]:
     _check_error(result, func, args)
     names = []
     for i in count():
@@ -268,19 +280,45 @@ def _check_name_list(result, func, args):
 class _FunctionUnavailable:
     '''Standin for a missing optional function.  Fails when called.'''
 
-    def __init__(self, minimum_version):
+    def __init__(self, minimum_version: str):
         self._minimum_version = minimum_version
         # allow checking for availability without calling the function
         self.available = False
 
-    def __call__(self, *_args):
+    def __call__(self, *_args: Any) -> Any:
         raise OpenSlideVersionError(self._minimum_version)
 
 
+# gate runtime code that requires ParamSpec, Python 3.10+
+if TYPE_CHECKING:
+    _P = ParamSpec('_P')
+    _T = TypeVar('_T', covariant=True)
+
+    class _Func(Protocol[_P, _T]):
+        available: bool
+
+        def __call__(self, *args: _P.args) -> _T: ...
+
+    class _CTypesFunc(_Func[_P, _T]):
+        restype: type | None
+        argtypes: list[type]
+        errcheck: _ErrCheck
+
+    _ErrCheck: TypeAlias = (
+        Callable[[Any, _CTypesFunc[..., Any], tuple[Any, ...]], Any] | None
+    )
+
+
 # resolve and return an OpenSlide function with the specified properties
-def _func(name, restype, argtypes, errcheck=_check_error, minimum_version=None):
+def _func(
+    name: str,
+    restype: type | None,
+    argtypes: list[type],
+    errcheck: _ErrCheck = _check_error,
+    minimum_version: str | None = None,
+) -> _Func[_P, _T]:
     try:
-        func = getattr(_lib, name)
+        func: _CTypesFunc[_P, _T] = getattr(_lib, name)
     except AttributeError:
         if minimum_version is None:
             raise
@@ -294,8 +332,15 @@ def _func(name, restype, argtypes, errcheck=_check_error, minimum_version=None):
     return func
 
 
-def _wraps_funcs(wrapped):
-    def decorator(f):
+def _wraps_funcs(
+    wrapped: list[_Func[..., Any]]
+) -> Callable[[Callable[_P, _T]], _Func[_P, _T]]:
+    def decorator(fn: Callable[_P, _T]) -> _Func[_P, _T]:
+        if TYPE_CHECKING:
+            # requires ParamSpec, Python 3.10+
+            f = cast(_Func[_P, _T], fn)
+        else:
+            f = fn
         f.available = True
         for w in wrapped:
             f.available = f.available and w.available
@@ -305,17 +350,27 @@ def _wraps_funcs(wrapped):
 
 
 try:
-    detect_vendor = _func('openslide_detect_vendor', c_char_p, [_utf8_p], _check_string)
+    detect_vendor: _Func[[str], str] = _func(
+        'openslide_detect_vendor', c_char_p, [_utf8_p], _check_string
+    )
 except AttributeError:
     raise OpenSlideVersionError('3.4.0')
 
-open = _func('openslide_open', c_void_p, [_utf8_p], _check_open)
+open: _Func[[str], _OpenSlide] = _func(
+    'openslide_open', c_void_p, [_utf8_p], _check_open
+)
 
-close = _func('openslide_close', None, [_OpenSlide], _check_close)
+close: _Func[[_OpenSlide], None] = _func(
+    'openslide_close', None, [_OpenSlide], _check_close
+)
 
-get_level_count = _func('openslide_get_level_count', c_int32, [_OpenSlide])
+get_level_count: _Func[[_OpenSlide], int] = _func(
+    'openslide_get_level_count', c_int32, [_OpenSlide]
+)
 
-_get_level_dimensions = _func(
+_get_level_dimensions: _Func[
+    [_OpenSlide, int, _Pointer[c_int64], _Pointer[c_int64]], None
+] = _func(
     'openslide_get_level_dimensions',
     None,
     [_OpenSlide, c_int32, POINTER(c_int64), POINTER(c_int64)],
@@ -323,29 +378,33 @@ _get_level_dimensions = _func(
 
 
 @_wraps_funcs([_get_level_dimensions])
-def get_level_dimensions(slide, level):
+def get_level_dimensions(slide: _OpenSlide, level: int) -> tuple[int, int]:
     w, h = c_int64(), c_int64()
     _get_level_dimensions(slide, level, byref(w), byref(h))
     return w.value, h.value
 
 
-get_level_downsample = _func(
+get_level_downsample: _Func[[_OpenSlide, int], float] = _func(
     'openslide_get_level_downsample', c_double, [_OpenSlide, c_int32]
 )
 
-get_best_level_for_downsample = _func(
+get_best_level_for_downsample: _Func[[_OpenSlide, float], int] = _func(
     'openslide_get_best_level_for_downsample', c_int32, [_OpenSlide, c_double]
 )
 
-_read_region = _func(
-    'openslide_read_region',
-    None,
-    [_OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64, c_int64],
+_read_region: _Func[[_OpenSlide, _Pointer[c_uint32], int, int, int, int, int], None] = (
+    _func(
+        'openslide_read_region',
+        None,
+        [_OpenSlide, POINTER(c_uint32), c_int64, c_int64, c_int32, c_int64, c_int64],
+    )
 )
 
 
 @_wraps_funcs([_read_region])
-def read_region(slide, x, y, level, w, h):
+def read_region(
+    slide: _OpenSlide, x: int, y: int, level: int, w: int, h: int
+) -> Image.Image:
     if w < 0 or h < 0:
         # OpenSlide would catch this, but not before we tried to allocate
         # a negative-size buffer
@@ -360,14 +419,14 @@ def read_region(slide, x, y, level, w, h):
     return _load_image(buf, (w, h))
 
 
-get_icc_profile_size = _func(
+get_icc_profile_size: _Func[[_OpenSlide], int] = _func(
     'openslide_get_icc_profile_size',
     c_int64,
     [_OpenSlide],
     minimum_version='4.0.0',
 )
 
-_read_icc_profile = _func(
+_read_icc_profile: _Func[[_OpenSlide, _Pointer[c_char]], None] = _func(
     'openslide_read_icc_profile',
     None,
     [_OpenSlide, POINTER(c_char)],
@@ -376,7 +435,7 @@ _read_icc_profile = _func(
 
 
 @_wraps_funcs([get_icc_profile_size, _read_icc_profile])
-def read_icc_profile(slide):
+def read_icc_profile(slide: _OpenSlide) -> bytes | None:
     size = get_icc_profile_size(slide)
     if size == 0:
         return None
@@ -385,24 +444,28 @@ def read_icc_profile(slide):
     return buf.raw
 
 
-get_error = _func('openslide_get_error', c_char_p, [_OpenSlide], _check_string)
+get_error: _Func[[_OpenSlide], str] = _func(
+    'openslide_get_error', c_char_p, [_OpenSlide], _check_string
+)
 
-get_property_names = _func(
+get_property_names: _Func[[_OpenSlide], list[str]] = _func(
     'openslide_get_property_names', POINTER(c_char_p), [_OpenSlide], _check_name_list
 )
 
-get_property_value = _func(
+get_property_value: _Func[[_OpenSlide, str], str] = _func(
     'openslide_get_property_value', c_char_p, [_OpenSlide, _utf8_p]
 )
 
-get_associated_image_names = _func(
+get_associated_image_names: _Func[[_OpenSlide], list[str]] = _func(
     'openslide_get_associated_image_names',
     POINTER(c_char_p),
     [_OpenSlide],
     _check_name_list,
 )
 
-_get_associated_image_dimensions = _func(
+_get_associated_image_dimensions: _Func[
+    [_OpenSlide, str, _Pointer[c_int64], _Pointer[c_int64]], None
+] = _func(
     'openslide_get_associated_image_dimensions',
     None,
     [_OpenSlide, _utf8_p, POINTER(c_int64), POINTER(c_int64)],
@@ -410,44 +473,46 @@ _get_associated_image_dimensions = _func(
 
 
 @_wraps_funcs([_get_associated_image_dimensions])
-def get_associated_image_dimensions(slide, name):
+def get_associated_image_dimensions(slide: _OpenSlide, name: str) -> tuple[int, int]:
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
     return w.value, h.value
 
 
-_read_associated_image = _func(
+_read_associated_image: _Func[[_OpenSlide, str, _Pointer[c_uint32]], None] = _func(
     'openslide_read_associated_image', None, [_OpenSlide, _utf8_p, POINTER(c_uint32)]
 )
 
 
 @_wraps_funcs([get_associated_image_dimensions, _read_associated_image])
-def read_associated_image(slide, name):
+def read_associated_image(slide: _OpenSlide, name: str) -> Image.Image:
     w, h = get_associated_image_dimensions(slide, name)
     buf = (w * h * c_uint32)()
     _read_associated_image(slide, name, buf)
     return _load_image(buf, (w, h))
 
 
-get_associated_image_icc_profile_size = _func(
+get_associated_image_icc_profile_size: _Func[[_OpenSlide, str], int] = _func(
     'openslide_get_associated_image_icc_profile_size',
     c_int64,
     [_OpenSlide, _utf8_p],
     minimum_version='4.0.0',
 )
 
-_read_associated_image_icc_profile = _func(
-    'openslide_read_associated_image_icc_profile',
-    None,
-    [_OpenSlide, _utf8_p, POINTER(c_char)],
-    minimum_version='4.0.0',
+_read_associated_image_icc_profile: _Func[[_OpenSlide, str, _Pointer[c_char]], None] = (
+    _func(
+        'openslide_read_associated_image_icc_profile',
+        None,
+        [_OpenSlide, _utf8_p, POINTER(c_char)],
+        minimum_version='4.0.0',
+    )
 )
 
 
 @_wraps_funcs(
     [get_associated_image_icc_profile_size, _read_associated_image_icc_profile]
 )
-def read_associated_image_icc_profile(slide, name):
+def read_associated_image_icc_profile(slide: _OpenSlide, name: str) -> bytes | None:
     size = get_associated_image_icc_profile_size(slide, name)
     if size == 0:
         return None
@@ -456,9 +521,11 @@ def read_associated_image_icc_profile(slide, name):
     return buf.raw
 
 
-get_version = _func('openslide_get_version', c_char_p, [], _check_string)
+get_version: _Func[[], str] = _func(
+    'openslide_get_version', c_char_p, [], _check_string
+)
 
-cache_create = _func(
+cache_create: _Func[[int], _OpenSlideCache] = _func(
     'openslide_cache_create',
     c_void_p,
     [_size_t],
@@ -466,7 +533,7 @@ cache_create = _func(
     minimum_version='4.0.0',
 )
 
-set_cache = _func(
+set_cache: _Func[[_OpenSlide, _OpenSlideCache], None] = _func(
     'openslide_set_cache',
     None,
     [_OpenSlide, _OpenSlideCache],
@@ -474,6 +541,6 @@ set_cache = _func(
     minimum_version='4.0.0',
 )
 
-cache_release = _func(
+cache_release: _Func[[_OpenSlideCache], None] = _func(
     'openslide_cache_release', None, [_OpenSlideCache], None, minimum_version='4.0.0'
 )
