@@ -30,9 +30,9 @@ if os.name == 'nt':
     # environment.
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined]
             import openslide  # noqa: F401  module-imported-but-unused
 
 
-def file_path(name):
+def file_path(name: str) -> Path:
     return Path(__file__).parent / 'fixtures' / name

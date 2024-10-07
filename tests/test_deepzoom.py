@@ -30,24 +30,26 @@ from openslide.deepzoom import DeepZoomGenerator
 class _Abstract:
     # nested class to prevent the test runner from finding it
     class BoxesDeepZoomTest(unittest.TestCase):
-        def setUp(self):
+        CLASS: type | None = None
+        FILENAME: str | None = None
+
+        def setUp(self) -> None:
+            assert self.CLASS is not None
+            assert self.FILENAME is not None
             self.osr = self.CLASS(file_path(self.FILENAME))
             self.dz = DeepZoomGenerator(self.osr, 254, 1)
 
-        def tearDown(self):
+        def tearDown(self) -> None:
             self.osr.close()
 
-        def test_repr(self):
+        def test_repr(self) -> None:
             self.assertEqual(
                 repr(self.dz),
-                (
-                    'DeepZoomGenerator(%r, tile_size=254, overlap=1, '
-                    + 'limit_bounds=False)'
-                )
+                'DeepZoomGenerator(%r, tile_size=254, overlap=1, limit_bounds=False)'
                 % self.osr,
             )
 
-        def test_metadata(self):
+        def test_metadata(self) -> None:
             self.assertEqual(self.dz.level_count, 10)
             self.assertEqual(self.dz.tile_count, 11)
             self.assertEqual(
@@ -81,31 +83,31 @@ class _Abstract:
                 ),
             )
 
-        def test_get_tile(self):
+        def test_get_tile(self) -> None:
             self.assertEqual(self.dz.get_tile(9, (1, 0)).size, (47, 250))
 
-        def test_tile_color_profile(self):
+        def test_tile_color_profile(self) -> None:
             if self.CLASS is OpenSlide and not lowlevel.read_icc_profile.available:
                 self.skipTest("requires OpenSlide 4.0.0")
             self.assertEqual(len(self.dz.get_tile(9, (1, 0)).info['icc_profile']), 588)
 
-        def test_get_tile_bad_level(self):
+        def test_get_tile_bad_level(self) -> None:
             self.assertRaises(ValueError, lambda: self.dz.get_tile(-1, (0, 0)))
             self.assertRaises(ValueError, lambda: self.dz.get_tile(10, (0, 0)))
 
-        def test_get_tile_bad_address(self):
+        def test_get_tile_bad_address(self) -> None:
             self.assertRaises(ValueError, lambda: self.dz.get_tile(0, (-1, 0)))
             self.assertRaises(ValueError, lambda: self.dz.get_tile(0, (1, 0)))
 
-        def test_get_tile_coordinates(self):
+        def test_get_tile_coordinates(self) -> None:
             self.assertEqual(
                 self.dz.get_tile_coordinates(9, (1, 0)), ((253, 0), 0, (47, 250))
             )
 
-        def test_get_tile_dimensions(self):
+        def test_get_tile_dimensions(self) -> None:
             self.assertEqual(self.dz.get_tile_dimensions(9, (1, 0)), (47, 250))
 
-        def test_get_dzi(self):
+        def test_get_dzi(self) -> None:
             self.assertTrue(
                 'http://schemas.microsoft.com/deepzoom/2008' in self.dz.get_dzi('jpeg')
             )
