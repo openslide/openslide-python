@@ -239,14 +239,14 @@ class OpenSlide(AbstractSlide):
         )
 
     @property
-    def properties(self) -> _OpenSlideMap[str]:
+    def properties(self) -> Mapping[str, str]:
         """Metadata about the image.
 
         This is a map: property name -> property value."""
         return _PropertyMap(self._osr)
 
     @property
-    def associated_images(self) -> _OpenSlideMap[Image.Image]:
+    def associated_images(self) -> Mapping[str, Image.Image]:
         """Images associated with this whole-slide image.
 
         This is a map: image name -> PIL.Image.
@@ -291,10 +291,7 @@ class OpenSlide(AbstractSlide):
         lowlevel.set_cache(self._osr, llcache)
 
 
-MapValue = TypeVar('MapValue', str, Image.Image)
-
-
-class _OpenSlideMap(Mapping[str, MapValue]):
+class _OpenSlideMap(Mapping[str, _T]):
     def __init__(self, osr: lowlevel._OpenSlide):
         self._osr = osr
 
@@ -423,14 +420,14 @@ class ImageSlide(AbstractSlide):
         return (1.0,)
 
     @property
-    def properties(self) -> dict[str, str]:
+    def properties(self) -> Mapping[str, str]:
         """Metadata about the image.
 
         This is a map: property name -> property value."""
         return {}
 
     @property
-    def associated_images(self) -> dict[str, Image.Image]:
+    def associated_images(self) -> Mapping[str, Image.Image]:
         """Images associated with this whole-slide image.
 
         This is a map: image name -> PIL.Image."""
