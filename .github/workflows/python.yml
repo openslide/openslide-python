@@ -26,7 +26,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
     - name: Run pre-commit hooks
       uses: pre-commit/action@v3.0.1
     - name: Define artifact paths
@@ -43,11 +43,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-aarch64, macos-latest]
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13-dev"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
         openslide: [system, wheel]
         include:
           - os: ubuntu-latest
-            python-version: "3.12"
+            python-version: "3.13"
             openslide: system
             sdist: sdist
           # Python 3.8 is too old to support universal binaries, and
@@ -168,7 +168,7 @@ jobs:
         shell: bash
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13-dev"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
         openslide: [zip, wheel]
     steps:
     - name: Check out repo
@@ -241,7 +241,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
     - name: Install Python tools
       run: |
         python -m pip install --upgrade pip
