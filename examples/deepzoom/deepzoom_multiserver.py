@@ -3,7 +3,7 @@
 # deepzoom_multiserver - Example web application for viewing multiple slides
 #
 # Copyright (c) 2010-2015 Carnegie Mellon University
-# Copyright (c) 2021-2023 Benjamin Gilbert
+# Copyright (c) 2021-2024 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -27,6 +27,7 @@ from collections import OrderedDict
 from collections.abc import Callable
 from io import BytesIO
 import os
+from pathlib import Path, PurePath
 from threading import Lock
 from typing import TYPE_CHECKING, Any, Literal
 import zlib
@@ -82,7 +83,7 @@ if TYPE_CHECKING:
 
 
 class DeepZoomMultiServer(Flask):
-    basedir: str
+    basedir: Path
     cache: _SlideCache
 
 
@@ -94,7 +95,7 @@ class AnnotatedDeepZoomGenerator(DeepZoomGenerator):
 
 def create_app(
     config: dict[str, Any] | None = None,
-    config_file: str | None = None,
+    config_file: Path | None = None,
 ) -> Flask:
     # Create and configure app
     app = DeepZoomMultiServer(__name__)
@@ -116,7 +117,7 @@ def create_app(
         app.config.from_mapping(config)
 
     # Set up cache
-    app.basedir = os.path.abspath(app.config['SLIDE_DIR'])
+    app.basedir = Path(app.config['SLIDE_DIR']).resolve(strict=True)
     config_map = {
         'DEEPZOOM_TILE_SIZE': 'tile_size',
         'DEEPZOOM_OVERLAP': 'overlap',
@@ -131,16 +132,18 @@ def create_app(
     )
 
     # Helper functions
-    def get_slide(path: str) -> AnnotatedDeepZoomGenerator:
-        path = os.path.abspath(os.path.join(app.basedir, path))
-        if not path.startswith(app.basedir + os.path.sep):
-            # Directory traversal
+    def get_slide(user_path: PurePath) -> AnnotatedDeepZoomGenerator:
+        try:
+            path = (app.basedir / user_path).resolve(strict=True)
+        except OSError:
+            # Does not exist
             abort(404)
-        if not os.path.exists(path):
+        if path.parts[: len(app.basedir.parts)] != app.basedir.parts:
+            # Directory traversal
             abort(404)
         try:
             slide = app.cache.get(path)
-            slide.filename = os.path.basename(path)
+            slide.filename = path.name
             return slide
         except OpenSlideError:
             abort(404)
@@ -152,7 +155,7 @@ def create_app(
 
     @app.route('/<path:path>')
     def slide(path: str) -> str:
-        slide = get_slide(path)
+        slide = get_slide(PurePath(path))
         slide_url = url_for('dzi', path=path)
         return render_template(
             'slide-fullpage.html',
@@ -163,7 +166,7 @@ def create_app(
 
     @app.route('/<path:path>.dzi')
     def dzi(path: str) -> Response:
-        slide = get_slide(path)
+        slide = get_slide(PurePath(path))
         format = app.config['DEEPZOOM_FORMAT']
         resp = make_response(slide.get_dzi(format))
         resp.mimetype = 'application/xml'
@@ -171,7 +174,7 @@ def create_app(
 
     @app.route('/<path:path>_files/<int:level>/<int:col>_<int:row>.<format>')
     def tile(path: str, level: int, col: int, row: int, format: str) -> Response:
-        slide = get_slide(path)
+        slide = get_slide(PurePath(path))
         format = format.lower()
         if format != 'jpeg' and format != 'png':
             # Not supported by Deep Zoom
@@ -208,7 +211,7 @@ class _SlideCache:
         self.dz_opts = dz_opts
         self.color_mode = color_mode
         self._lock = Lock()
-        self._cache: OrderedDict[str, AnnotatedDeepZoomGenerator] = OrderedDict()
+        self._cache: OrderedDict[Path, AnnotatedDeepZoomGenerator] = OrderedDict()
         # Share a single tile cache among all slide handles, if supported
         try:
             self._tile_cache: OpenSlideCache | None = OpenSlideCache(
@@ -217,7 +220,7 @@ class _SlideCache:
         except OpenSlideVersionError:
             self._tile_cache = None
 
-    def get(self, path: str) -> AnnotatedDeepZoomGenerator:
+    def get(self, path: Path) -> AnnotatedDeepZoomGenerator:
         with self._lock:
             if path in self._cache:
                 # Move to end of LRU
@@ -286,13 +289,14 @@ class _SlideCache:
 
 
 class _Directory:
-    def __init__(self, basedir: str, relpath: str = ''):
-        self.name = os.path.basename(relpath)
+    _DEFAULT_RELPATH = PurePath('.')
+
+    def __init__(self, basedir: Path, relpath: PurePath = _DEFAULT_RELPATH):
+        self.name = relpath.name
         self.children: list[_Directory | _SlideFile] = []
-        for name in sorted(os.listdir(os.path.join(basedir, relpath))):
-            cur_relpath = os.path.join(relpath, name)
-            cur_path = os.path.join(basedir, cur_relpath)
-            if os.path.isdir(cur_path):
+        for cur_path in sorted((basedir / relpath).iterdir()):
+            cur_relpath = relpath / cur_path.name
+            if cur_path.is_dir():
                 cur_dir = _Directory(basedir, cur_relpath)
                 if cur_dir.children:
                     self.children.append(cur_dir)
@@ -301,9 +305,9 @@ class _Directory:
 
 
 class _SlideFile:
-    def __init__(self, relpath: str):
-        self.name = os.path.basename(relpath)
-        self.url_path = relpath
+    def __init__(self, relpath: PurePath):
+        self.name = relpath.name
+        self.url_path = relpath.as_posix()
 
 
 if __name__ == '__main__':
@@ -336,7 +340,7 @@ if __name__ == '__main__':
         ),
     )
     parser.add_argument(
-        '-c', '--config', metavar='FILE', dest='config', help='config file'
+        '-c', '--config', metavar='FILE', type=Path, dest='config', help='config file'
     )
     parser.add_argument(
         '-d',
@@ -396,6 +400,7 @@ if __name__ == '__main__':
     parser.add_argument(
         'SLIDE_DIR',
         metavar='SLIDE-DIRECTORY',
+        type=Path,
         nargs='?',
         help='slide directory',
     )

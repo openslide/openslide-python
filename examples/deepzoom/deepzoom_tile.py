@@ -3,7 +3,7 @@
 # deepzoom_tile - Convert whole-slide images to Deep Zoom format
 #
 # Copyright (c) 2010-2015 Carnegie Mellon University
-# Copyright (c) 2022-2023 Benjamin Gilbert
+# Copyright (c) 2022-2024 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -31,6 +31,7 @@ import json
 from multiprocessing import JoinableQueue, Process
 import multiprocessing.queues
 import os
+from pathlib import Path
 import re
 import shutil
 import sys
@@ -87,7 +88,7 @@ if TYPE_CHECKING:
         'ignore',
     ]
     TileQueue: TypeAlias = multiprocessing.queues.JoinableQueue[
-        tuple[str | None, int, tuple[int, int], str] | None
+        tuple[str | None, int, tuple[int, int], Path] | None
     ]
     Transform: TypeAlias = Callable[[Image.Image], None]
 
@@ -98,7 +99,7 @@ class TileWorker(Process):
     def __init__(
         self,
         queue: TileQueue,
-        slidepath: str,
+        slidepath: Path,
         tile_size: int,
         overlap: int,
         limit_bounds: bool,
@@ -196,7 +197,7 @@ class DeepZoomImageTiler:
     def __init__(
         self,
         dz: DeepZoomGenerator,
-        basename: str,
+        basename: Path,
         format: str,
         associated: str | None,
         queue: TileQueue,
@@ -214,16 +215,15 @@ class DeepZoomImageTiler:
 
     def _write_tiles(self) -> None:
         for level in range(self._dz.level_count):
-            tiledir = os.path.join("%s_files" % self._basename, str(level))
-            if not os.path.exists(tiledir):
-                os.makedirs(tiledir)
+            tiledir = self._basename.with_name(self._basename.name + '_files') / str(
+                level
+            )
+            tiledir.mkdir(parents=True, exist_ok=True)
             cols, rows = self._dz.level_tiles[level]
             for row in range(rows):
                 for col in range(cols):
-                    tilename = os.path.join(
-                        tiledir, '%d_%d.%s' % (col, row, self._format)
-                    )
-                    if not os.path.exists(tilename):
+                    tilename = tiledir / f'{col}_{row}.{self._format}'
+                    if not tilename.exists():
                         self._queue.put((self._associated, level, (col, row), tilename))
                     self._tile_done()
 
@@ -241,7 +241,7 @@ class DeepZoomImageTiler:
                 print(file=sys.stderr)
 
     def _write_dzi(self) -> None:
-        with open('%s.dzi' % self._basename, 'w') as fh:
+        with self._basename.with_name(self._basename.name + '.dzi').open('w') as fh:
             fh.write(self.get_dzi())
 
     def get_dzi(self) -> str:
@@ -253,8 +253,8 @@ class DeepZoomStaticTiler:
 
     def __init__(
         self,
-        slidepath: str,
-        basename: str,
+        slidepath: Path,
+        basename: Path,
         format: str,
         tile_size: int,
         overlap: int,
@@ -303,12 +303,12 @@ class DeepZoomStaticTiler:
         if associated is None:
             image = self._slide
             if self._with_viewer:
-                basename = os.path.join(self._basename, VIEWER_SLIDE_NAME)
+                basename = self._basename / VIEWER_SLIDE_NAME
             else:
                 basename = self._basename
         else:
             image = ImageSlide(self._slide.associated_images[associated])
-            basename = os.path.join(self._basename, self._slugify(associated))
+            basename = self._basename / self._slugify(associated)
         dz = DeepZoomGenerator(
             image, self._tile_size, self._overlap, limit_bounds=self._limit_bounds
         )
@@ -335,9 +335,7 @@ class DeepZoomStaticTiler:
             # We're not running from a module (e.g. "python deepzoom_tile.py")
             # so PackageLoader('__main__') doesn't work in jinja2 3.x.
             # Load templates directly from the filesystem.
-            loader = jinja2.FileSystemLoader(
-                os.path.join(os.path.dirname(__file__), 'templates')
-            )
+            loader = jinja2.FileSystemLoader(Path(__file__).parent / 'templates')
         env = jinja2.Environment(loader=loader, autoescape=True)
         template = env.get_template('slide-multipane.html')
         associated_urls = {n: self._url_for(n) for n in self._slide.associated_images}
@@ -357,22 +355,20 @@ class DeepZoomStaticTiler:
             properties=self._slide.properties,
             dzi_data=json.dumps(self._dzi_data),
         )
-        with open(os.path.join(self._basename, 'index.html'), 'w') as fh:
+        with open(self._basename / 'index.html', 'w') as fh:
             fh.write(data)
 
     def _write_static(self) -> None:
-        basesrc = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
-        basedst = os.path.join(self._basename, 'static')
+        basesrc = Path(__file__).absolute().parent / 'static'
+        basedst = self._basename / 'static'
         self._copydir(basesrc, basedst)
-        self._copydir(os.path.join(basesrc, 'images'), os.path.join(basedst, 'images'))
+        self._copydir(basesrc / 'images', basedst / 'images')
 
-    def _copydir(self, src: str, dest: str) -> None:
-        if not os.path.exists(dest):
-            os.makedirs(dest)
-        for name in os.listdir(src):
-            srcpath = os.path.join(src, name)
-            if os.path.isfile(srcpath):
-                shutil.copy(srcpath, os.path.join(dest, name))
+    def _copydir(self, src: Path, dest: Path) -> None:
+        dest.mkdir(parents=True, exist_ok=True)
+        for srcpath in src.iterdir():
+            if srcpath.is_file():
+                shutil.copy(srcpath, dest / srcpath.name)
 
     @classmethod
     def _slugify(cls, text: str) -> str:
@@ -444,6 +440,7 @@ if __name__ == '__main__':
         '-o',
         '--output',
         metavar='NAME',
+        type=Path,
         dest='basename',
         help='base name of output file',
     )
@@ -475,12 +472,13 @@ if __name__ == '__main__':
     parser.add_argument(
         'slidepath',
         metavar='SLIDE',
+        type=Path,
         help='slide file',
     )
 
     args = parser.parse_args()
     if args.basename is None:
-        args.basename = os.path.splitext(os.path.basename(args.slidepath))[0]
+        args.basename = Path(args.slidepath.stem)
 
     DeepZoomStaticTiler(
         args.slidepath,
