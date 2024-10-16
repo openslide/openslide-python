@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import os
 
+from sphinx.application import Sphinx
 from sphinx.util import logging
 from sphinx.util.console import bold
 
@@ -41,7 +42,7 @@ FILES = {
 REWRITE_EXTENSIONS = {'.html', '.js'}
 
 
-def remove_path_underscores(app, exception):
+def remove_path_underscores(app: Sphinx, exception: Exception | None) -> None:
     if exception:
         return
     # Get logger
@@ -82,5 +83,5 @@ def remove_path_underscores(app, exception):
     logger.info('done')
 
 
-def setup(app):
+def setup(app: Sphinx) -> None:
     app.connect('build-finished', remove_path_underscores)

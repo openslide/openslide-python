@@ -59,7 +59,6 @@ repos:
       - id: mypy
         name: Check Python types
         additional_dependencies: [flask, openslide-bin, pillow, types-setuptools]
-        exclude: "^doc/.*$"
 
   - repo: https://github.com/rstcheck/rstcheck
     rev: v6.2.4
