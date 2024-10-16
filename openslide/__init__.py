@@ -69,7 +69,7 @@ class AbstractSlide:
     """The base class of a slide object."""
 
     def __init__(self) -> None:
-        self._profile = None
+        self._profile: bytes | None = None
 
     def __enter__(self) -> AbstractSlide:
         return self
@@ -387,7 +387,9 @@ class ImageSlide(AbstractSlide):
         If the file format is not recognized, return None."""
         try:
             with Image.open(filename) as img:
-                return img.format
+                # img currently resolves as Any
+                # https://github.com/python-pillow/Pillow/pull/8362
+                return img.format  # type: ignore[no-any-return]
         except OSError:
             return None
 
