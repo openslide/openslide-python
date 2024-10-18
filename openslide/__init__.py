@@ -32,13 +32,17 @@ from PIL import Image, ImageCms
 
 from openslide import lowlevel
 
-# For the benefit of library users
-from openslide._version import __version__  # noqa: F401  module-imported-but-unused
-from openslide.lowlevel import (  # noqa: F401  module-imported-but-unused
-    OpenSlideError,
-    OpenSlideUnsupportedFormatError,
-    OpenSlideVersionError,
+# Re-exports for the benefit of library users
+from openslide._version import (  # noqa: F401  module-imported-but-unused
+    __version__ as __version__,
 )
+from openslide.lowlevel import (
+    OpenSlideUnsupportedFormatError as OpenSlideUnsupportedFormatError,
+)
+from openslide.lowlevel import (  # noqa: F401  module-imported-but-unused
+    OpenSlideVersionError as OpenSlideVersionError,
+)
+from openslide.lowlevel import OpenSlideError as OpenSlideError
 
 __library_version__ = lowlevel.get_version()
 
