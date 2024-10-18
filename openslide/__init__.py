@@ -366,7 +366,7 @@ class ImageSlide(AbstractSlide):
         self._file_arg = file
         if isinstance(file, Image.Image):
             self._close = False
-            self._image = file
+            self._image: Image.Image | None = file
         else:
             self._close = True
             self._image = Image.open(file)
@@ -391,10 +391,10 @@ class ImageSlide(AbstractSlide):
     def close(self) -> None:
         """Close the slide object."""
         if self._close:
+            assert self._image is not None
             self._image.close()
             self._close = False
-        # is it necessary to set to None?
-        self._image = None  # type: ignore
+        self._image = None
 
     @property
     def level_count(self) -> Literal[1]:
@@ -406,6 +406,8 @@ class ImageSlide(AbstractSlide):
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
+        if self._image is None:
+            raise ValueError('Passing closed slide object')
         return (self._image.size,)
 
     @property
@@ -442,6 +444,8 @@ class ImageSlide(AbstractSlide):
                   reference frame.
         level:    the level number.
         size:     (width, height) tuple giving the region size."""
+        if self._image is None:
+            raise ValueError('Passing closed slide object')
         if level != 0:
             raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:

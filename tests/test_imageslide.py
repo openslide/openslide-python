@@ -49,8 +49,9 @@ class TestImageWithoutOpening(unittest.TestCase):
             osr = ImageSlide(img)
             osr.close()
             self.assertRaises(
-                AttributeError, lambda: osr.read_region((0, 0), 0, (100, 100))
+                ValueError, lambda: osr.read_region((0, 0), 0, (100, 100))
             )
+            self.assertRaises(ValueError, lambda: osr.level_dimensions)
             # If an Image is passed to the constructor, ImageSlide.close()
             # shouldn't close it
             self.assertEqual(img.getpixel((0, 0)), 3)
@@ -59,9 +60,8 @@ class TestImageWithoutOpening(unittest.TestCase):
         osr = ImageSlide(file_path('boxes.png'))
         with osr:
             pass
-        self.assertRaises(
-            AttributeError, lambda: osr.read_region((0, 0), 0, (100, 100))
-        )
+        self.assertRaises(ValueError, lambda: osr.read_region((0, 0), 0, (100, 100)))
+        self.assertRaises(ValueError, lambda: osr.level_dimensions)
 
 
 class _SlideTest:
