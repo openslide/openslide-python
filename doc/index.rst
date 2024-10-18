@@ -126,27 +126,36 @@ OpenSlide objects
       The number of levels in the slide.  Levels are numbered from ``0``
       (highest resolution) to ``level_count - 1`` (lowest resolution).
 
+      :type: int
+
    .. attribute:: dimensions
 
       A ``(width, height)`` tuple for level 0 of the slide.
+
+      :type: tuple[int, int]
 
    .. attribute:: level_dimensions
 
       A tuple of ``(width, height)`` tuples, one for each level of the slide.
       ``level_dimensions[k]`` are the dimensions of level ``k``.
 
+      :type: tuple[tuple[int, int], ...]
+
    .. attribute:: level_downsamples
 
       A tuple of downsample factors for each level of the slide.
       ``level_downsamples[k]`` is the downsample factor of level ``k``.
 
+      :type: tuple[float, ...]
+
    .. attribute:: properties
 
       Metadata about the slide, in the form of a
       :class:`~collections.abc.Mapping` from OpenSlide property name to
-      property value.  Property values are always strings.  OpenSlide
-      provides some :ref:`standard-properties`, plus
-      additional properties that vary by slide format.
+      property value.  OpenSlide provides some :ref:`standard-properties`,
+      plus additional properties that vary by slide format.
+
+      :type: ~collections.abc.Mapping[str, str]
 
    .. attribute:: associated_images
 
@@ -156,11 +165,14 @@ OpenSlide objects
 
       Unlike in the C interface, these images are not premultiplied.
 
+      :type: ~collections.abc.Mapping[str, ~PIL.Image.Image]
+
    .. attribute:: color_profile
 
       The embedded :ref:`color profile <color-management>` for this slide,
-      as a Pillow :class:`~PIL.ImageCms.ImageCmsProfile`, or :obj:`None` if
-      not available.
+      or :obj:`None` if not available.
+
+      :type: ~PIL.ImageCms.ImageCmsProfile | None
 
    .. method:: read_region(location, level, size)
 
@@ -403,19 +415,27 @@ Deep Zoom or a similar format.
 
       The number of Deep Zoom levels in the image.
 
+      :type: int
+
    .. attribute:: tile_count
 
       The total number of Deep Zoom tiles in the image.
+
+      :type: int
 
    .. attribute:: level_tiles
 
       A tuple of ``(tiles_x, tiles_y)`` tuples for each Deep Zoom level.
       ``level_tiles[k]`` are the tile counts of level ``k``.
 
+      :type: tuple[tuple[int, int], ...]
+
    .. attribute:: level_dimensions
 
       A tuple of ``(pixels_x, pixels_y)`` tuples for each Deep Zoom level.
       ``level_dimensions[k]`` are the dimensions of level ``k``.
+
+      :type: tuple[tuple[int, int], ...]
 
    .. method:: get_dzi(format)
 
