@@ -366,6 +366,10 @@ Exceptions
 Wrapping a Pillow Image
 =======================
 
+.. class:: AbstractSlide
+
+   The abstract base class of :class:`OpenSlide` and :class:`ImageSlide`.
+
 .. class:: ImageSlide(file: str | bytes | ~os.PathLike[typing.Any] | ~PIL.Image.Image)
 
    A wrapper around an :class:`Image <PIL.Image.Image>` object that
@@ -400,8 +404,9 @@ Deep Zoom or a similar format.
 .. class:: DeepZoomGenerator(osr: AbstractSlide, tile_size: int = 254, overlap: int = 1, limit_bounds: bool = False)
 
    A Deep Zoom generator that wraps an
-   :class:`OpenSlide <openslide.OpenSlide>` or
-   :class:`ImageSlide <openslide.ImageSlide>` object.
+   :class:`OpenSlide <openslide.OpenSlide>` object,
+   :class:`ImageSlide <openslide.ImageSlide>` object, or user-provided
+   instance of :class:`~openslide.AbstractSlide`.
 
    :param osr: the slide object
    :param tile_size: the width and height of a single tile.  For best viewer
