@@ -492,7 +492,7 @@ class ImageSlide(AbstractSlide):
         pass
 
 
-def open_slide(filename: str | Path) -> AbstractSlide:
+def open_slide(filename: str | Path) -> OpenSlide | ImageSlide:
     """Open a whole-slide or regular image.
 
     Return an OpenSlide object for whole-slide images and an ImageSlide
