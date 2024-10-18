@@ -132,12 +132,12 @@ OpenSlide objects
 
    .. attribute:: level_dimensions
 
-      A list of ``(width, height)`` tuples, one for each level of the slide.
+      A tuple of ``(width, height)`` tuples, one for each level of the slide.
       ``level_dimensions[k]`` are the dimensions of level ``k``.
 
    .. attribute:: level_downsamples
 
-      A list of downsample factors for each level of the slide.
+      A tuple of downsample factors for each level of the slide.
       ``level_downsamples[k]`` is the downsample factor of level ``k``.
 
    .. attribute:: properties
@@ -409,12 +409,12 @@ Deep Zoom or a similar format.
 
    .. attribute:: level_tiles
 
-      A list of ``(tiles_x, tiles_y)`` tuples for each Deep Zoom level.
+      A tuple of ``(tiles_x, tiles_y)`` tuples for each Deep Zoom level.
       ``level_tiles[k]`` are the tile counts of level ``k``.
 
    .. attribute:: level_dimensions
 
-      A list of ``(pixels_x, pixels_y)`` tuples for each Deep Zoom level.
+      A tuple of ``(pixels_x, pixels_y)`` tuples for each Deep Zoom level.
       ``level_dimensions[k]`` are the dimensions of level ``k``.
 
    .. method:: get_dzi(format)

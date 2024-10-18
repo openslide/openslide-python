@@ -98,7 +98,7 @@ class AbstractSlide:
 
     @property
     def level_dimensions(self) -> tuple[tuple[int, int], ...]:
-        """A list of (width, height) tuples, one for each level of the image.
+        """A tuple of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
         raise NotImplementedError
@@ -110,7 +110,7 @@ class AbstractSlide:
 
     @property
     def level_downsamples(self) -> tuple[float, ...]:
-        """A list of downsampling factors for each level of the image.
+        """A tuple of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
         raise NotImplementedError
@@ -217,7 +217,7 @@ class OpenSlide(AbstractSlide):
 
     @property
     def level_dimensions(self) -> tuple[tuple[int, int], ...]:
-        """A list of (width, height) tuples, one for each level of the image.
+        """A tuple of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
         return tuple(
@@ -226,7 +226,7 @@ class OpenSlide(AbstractSlide):
 
     @property
     def level_downsamples(self) -> tuple[float, ...]:
-        """A list of downsampling factors for each level of the image.
+        """A tuple of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
         return tuple(
@@ -402,7 +402,7 @@ class ImageSlide(AbstractSlide):
 
     @property
     def level_dimensions(self) -> tuple[tuple[int, int]]:
-        """A list of (width, height) tuples, one for each level of the image.
+        """A tuple of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
         if self._image is None:
@@ -411,7 +411,7 @@ class ImageSlide(AbstractSlide):
 
     @property
     def level_downsamples(self) -> tuple[float]:
-        """A list of downsampling factors for each level of the image.
+        """A tuple of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
         return (1.0,)
