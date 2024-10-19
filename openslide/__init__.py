@@ -402,7 +402,7 @@ class ImageSlide(AbstractSlide):
         return 1
 
     @property
-    def level_dimensions(self) -> tuple[tuple[int, int], ...]:
+    def level_dimensions(self) -> tuple[tuple[int, int]]:
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
@@ -411,7 +411,7 @@ class ImageSlide(AbstractSlide):
         return (self._image.size,)
 
     @property
-    def level_downsamples(self) -> tuple[float, ...]:
+    def level_downsamples(self) -> tuple[float]:
         """A list of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
