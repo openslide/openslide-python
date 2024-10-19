@@ -219,48 +219,31 @@ class DeepZoomGenerator:
         )
 
         # Get final size of the tile
-        z_size = (
-            min(
-                self._z_t_downsample,
-                self._z_dimensions[dz_level][0] - self._z_t_downsample * t_location[0],
+        z_size = tuple(
+            min(self._z_t_downsample, z_lim - self._z_t_downsample * t) + z_tl + z_br
+            for t, z_lim, z_tl, z_br in zip(
+                t_location, self._z_dimensions[dz_level], z_overlap_tl, z_overlap_br
             )
-            + z_overlap_tl[0]
-            + z_overlap_br[0],
-            min(
-                self._z_t_downsample,
-                self._z_dimensions[dz_level][1] - self._z_t_downsample * t_location[1],
-            )
-            + z_overlap_tl[1]
-            + z_overlap_br[1],
         )
 
         # Obtain the region coordinates
-        z_location = (self._z_from_t(t_location[0]), self._z_from_t(t_location[1]))
-        l_location = (
-            self._l_from_z(dz_level, z_location[0] - z_overlap_tl[0]),
-            self._l_from_z(dz_level, z_location[1] - z_overlap_tl[1]),
-        )
+        z_location = [self._z_from_t(t) for t in t_location]
+        l_location = [
+            self._l_from_z(dz_level, z - z_tl)
+            for z, z_tl in zip(z_location, z_overlap_tl)
+        ]
         # Round location down and size up, and add offset of active area
-        l0_location = (
-            int(self._l0_from_l(slide_level, l_location[0]) + self._l0_offset[0]),
-            int(self._l0_from_l(slide_level, l_location[1]) + self._l0_offset[1]),
+        l0_location = tuple(
+            int(self._l0_from_l(slide_level, l) + l0_off)
+            for l, l0_off in zip(l_location, self._l0_offset)
         )
-        l_size = (
-            int(
-                min(
-                    math.ceil(self._l_from_z(dz_level, z_size[0])),
-                    self._l_dimensions[slide_level][0] - math.ceil(l_location[0]),
-                )
-            ),
-            int(
-                min(
-                    math.ceil(self._l_from_z(dz_level, z_size[1])),
-                    self._l_dimensions[slide_level][1] - math.ceil(l_location[1]),
-                )
-            ),
+        l_size = tuple(
+            int(min(math.ceil(self._l_from_z(dz_level, dz)), l_lim - math.ceil(l)))
+            for l, dz, l_lim in zip(l_location, z_size, self._l_dimensions[slide_level])
         )
 
         # Return read_region() parameters plus tile size for final scaling
+        assert len(l0_location) == 2 and len(l_size) == 2 and len(z_size) == 2
         return ((l0_location, slide_level, l_size), z_size)
 
     def _l0_from_l(self, slide_level: int, l: float) -> float:
