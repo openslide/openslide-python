@@ -27,11 +27,16 @@ from __future__ import annotations
 
 from io import BytesIO
 import math
+from typing import TYPE_CHECKING
 from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 from PIL import Image
 
 import openslide
+
+if TYPE_CHECKING:
+    # Python 3.10+
+    from typing import TypeGuard
 
 
 class DeepZoomGenerator:
@@ -104,7 +109,8 @@ class DeepZoomGenerator:
         while z_size[0] > 1 or z_size[1] > 1:
             z_size = tuple(max(1, int(math.ceil(z / 2))) for z in z_size)
             z_dimensions.append(z_size)
-        self._z_dimensions = tuple(reversed(z_dimensions))
+        # Narrow the type, for self.level_dimensions
+        self._z_dimensions = self._pairs_from_n_tuples(tuple(reversed(z_dimensions)))
 
         # Tile
         def tiles(z_lim: int) -> int:
@@ -161,7 +167,7 @@ class DeepZoomGenerator:
         return self._t_dimensions
 
     @property
-    def level_dimensions(self) -> tuple[tuple[int, ...], ...]:
+    def level_dimensions(self) -> tuple[tuple[int, int], ...]:
         """A list of (pixels_x, pixels_y) tuples for each Deep Zoom level."""
         return self._z_dimensions
 
@@ -254,6 +260,18 @@ class DeepZoomGenerator:
 
     def _z_from_t(self, t: int) -> int:
         return self._z_t_downsample * t
+
+    @staticmethod
+    def _pairs_from_n_tuples(
+        tuples: tuple[tuple[int, ...], ...]
+    ) -> tuple[tuple[int, int], ...]:
+        def all_pairs(
+            tuples: tuple[tuple[int, ...], ...]
+        ) -> TypeGuard[tuple[tuple[int, int], ...]]:
+            return all(len(t) == 2 for t in tuples)
+
+        assert all_pairs(tuples)
+        return tuples
 
     def get_tile_coordinates(
         self, level: int, address: tuple[int, int]
