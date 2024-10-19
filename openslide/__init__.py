@@ -189,7 +189,7 @@ class OpenSlide(AbstractSlide):
     operations on the OpenSlide object, other than close(), will fail.
     """
 
-    def __init__(self, filename: str | Path) -> None:
+    def __init__(self, filename: str | Path):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
         self._filename = filename
