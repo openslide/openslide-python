@@ -25,8 +25,10 @@ This package provides Python bindings for the OpenSlide library.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from io import BytesIO
+from pathlib import Path
+from types import TracebackType
+from typing import Iterator, Literal, Mapping, TypeVar
 
 from PIL import Image, ImageCms
 
@@ -58,81 +60,90 @@ PROPERTY_NAME_BOUNDS_Y = 'openslide.bounds-y'
 PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 
+_T = TypeVar('_T')
+
 
 class AbstractSlide:
     """The base class of a slide object."""
 
-    def __init__(self):
-        self._profile = None
+    def __init__(self) -> None:
+        self._profile: bytes | None = None
 
-    def __enter__(self):
+    def __enter__(self: _T) -> _T:
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> Literal[False]:
         self.close()
         return False
 
     @classmethod
-    def detect_format(cls, filename):
+    def detect_format(cls, filename: str | Path) -> str | None:
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
         raise NotImplementedError
 
-    def close(self):
+    def close(self) -> None:
         """Close the slide."""
         raise NotImplementedError
 
     @property
-    def level_count(self):
+    def level_count(self) -> int:
         """The number of levels in the image."""
         raise NotImplementedError
 
     @property
-    def level_dimensions(self):
+    def level_dimensions(self) -> tuple[tuple[int, int], ...]:
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
         raise NotImplementedError
 
     @property
-    def dimensions(self):
+    def dimensions(self) -> tuple[int, int]:
         """A (width, height) tuple for level 0 of the image."""
         return self.level_dimensions[0]
 
     @property
-    def level_downsamples(self):
+    def level_downsamples(self) -> tuple[float, ...]:
         """A list of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
         raise NotImplementedError
 
     @property
-    def properties(self):
+    def properties(self) -> Mapping[str, str]:
         """Metadata about the image.
 
         This is a map: property name -> property value."""
         raise NotImplementedError
 
     @property
-    def associated_images(self):
+    def associated_images(self) -> Mapping[str, Image.Image]:
         """Images associated with this whole-slide image.
 
         This is a map: image name -> PIL.Image."""
         raise NotImplementedError
 
     @property
-    def color_profile(self):
+    def color_profile(self) -> ImageCms.ImageCmsProfile | None:
         """Color profile for the whole-slide image, or None if unavailable."""
         if self._profile is None:
             return None
         return ImageCms.getOpenProfile(BytesIO(self._profile))
 
-    def get_best_level_for_downsample(self, downsample):
+    def get_best_level_for_downsample(self, downsample: float) -> int:
         """Return the best level for displaying the given downsample."""
         raise NotImplementedError
 
-    def read_region(self, location, level, size):
+    def read_region(
+        self, location: tuple[int, int], level: int, size: tuple[int, int]
+    ) -> Image.Image:
         """Return a PIL.Image containing the contents of the region.
 
         location: (x, y) tuple giving the top left pixel in the level 0
@@ -141,13 +152,13 @@ class AbstractSlide:
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
-    def set_cache(self, cache):
+    def set_cache(self, cache: OpenSlideCache) -> None:
         """Use the specified cache to store recently decoded slide tiles.
 
         cache: an OpenSlideCache object."""
         raise NotImplementedError
 
-    def get_thumbnail(self, size):
+    def get_thumbnail(self, size: tuple[int, int]) -> Image.Image:
         """Return a PIL.Image containing an RGB thumbnail of the image.
 
         size:     the maximum size of the thumbnail."""
@@ -178,7 +189,7 @@ class OpenSlide(AbstractSlide):
     operations on the OpenSlide object, other than close(), will fail.
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename: str | Path):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
         self._filename = filename
@@ -186,27 +197,27 @@ class OpenSlide(AbstractSlide):
         if lowlevel.read_icc_profile.available:
             self._profile = lowlevel.read_icc_profile(self._osr)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._filename!r})'
 
     @classmethod
-    def detect_format(cls, filename):
+    def detect_format(cls, filename: str | Path) -> str | None:
         """Return a string describing the format vendor of the specified file.
 
         If the file format is not recognized, return None."""
         return lowlevel.detect_vendor(str(filename))
 
-    def close(self):
+    def close(self) -> None:
         """Close the OpenSlide object."""
         lowlevel.close(self._osr)
 
     @property
-    def level_count(self):
+    def level_count(self) -> int:
         """The number of levels in the image."""
         return lowlevel.get_level_count(self._osr)
 
     @property
-    def level_dimensions(self):
+    def level_dimensions(self) -> tuple[tuple[int, int], ...]:
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
@@ -215,7 +226,7 @@ class OpenSlide(AbstractSlide):
         )
 
     @property
-    def level_downsamples(self):
+    def level_downsamples(self) -> tuple[float, ...]:
         """A list of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
@@ -224,14 +235,14 @@ class OpenSlide(AbstractSlide):
         )
 
     @property
-    def properties(self):
+    def properties(self) -> Mapping[str, str]:
         """Metadata about the image.
 
         This is a map: property name -> property value."""
         return _PropertyMap(self._osr)
 
     @property
-    def associated_images(self):
+    def associated_images(self) -> Mapping[str, Image.Image]:
         """Images associated with this whole-slide image.
 
         This is a map: image name -> PIL.Image.
@@ -240,11 +251,13 @@ class OpenSlide(AbstractSlide):
         are not premultiplied."""
         return _AssociatedImageMap(self._osr, self._profile)
 
-    def get_best_level_for_downsample(self, downsample):
+    def get_best_level_for_downsample(self, downsample: float) -> int:
         """Return the best level for displaying the given downsample."""
         return lowlevel.get_best_level_for_downsample(self._osr, downsample)
 
-    def read_region(self, location, level, size):
+    def read_region(
+        self, location: tuple[int, int], level: int, size: tuple[int, int]
+    ) -> Image.Image:
         """Return a PIL.Image containing the contents of the region.
 
         location: (x, y) tuple giving the top left pixel in the level 0
@@ -261,7 +274,7 @@ class OpenSlide(AbstractSlide):
             region.info['icc_profile'] = self._profile
         return region
 
-    def set_cache(self, cache):
+    def set_cache(self, cache: OpenSlideCache) -> None:
         """Use the specified cache to store recently decoded slide tiles.
 
         By default, the object has a private cache with a default size.
@@ -274,44 +287,44 @@ class OpenSlide(AbstractSlide):
         lowlevel.set_cache(self._osr, llcache)
 
 
-class _OpenSlideMap(Mapping):
-    def __init__(self, osr):
+class _OpenSlideMap(Mapping[str, _T]):
+    def __init__(self, osr: lowlevel._OpenSlide):
         self._osr = osr
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {dict(self)!r}>'
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._keys())
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self._keys())
 
-    def _keys(self):
+    def _keys(self) -> list[str]:
         # Private method; always returns list.
         raise NotImplementedError()
 
 
-class _PropertyMap(_OpenSlideMap):
-    def _keys(self):
+class _PropertyMap(_OpenSlideMap[str]):
+    def _keys(self) -> list[str]:
         return lowlevel.get_property_names(self._osr)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> str:
         v = lowlevel.get_property_value(self._osr, key)
         if v is None:
             raise KeyError()
         return v
 
 
-class _AssociatedImageMap(_OpenSlideMap):
-    def __init__(self, osr, profile):
+class _AssociatedImageMap(_OpenSlideMap[Image.Image]):
+    def __init__(self, osr: lowlevel._OpenSlide, profile: bytes | None):
         _OpenSlideMap.__init__(self, osr)
         self._profile = profile
 
-    def _keys(self):
+    def _keys(self) -> list[str]:
         return lowlevel.get_associated_image_names(self._osr)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Image.Image:
         if key not in self._keys():
             raise KeyError()
         image = lowlevel.read_associated_image(self._osr, key)
@@ -333,19 +346,19 @@ class OpenSlideCache:
     each OpenSlide object has its own cache with a default size.
     """
 
-    def __init__(self, capacity):
+    def __init__(self, capacity: int):
         """Create a tile cache with the specified capacity in bytes."""
         self._capacity = capacity
         self._openslide_cache = lowlevel.cache_create(capacity)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._capacity!r})'
 
 
 class ImageSlide(AbstractSlide):
     """A wrapper for a PIL.Image that provides the OpenSlide interface."""
 
-    def __init__(self, file):
+    def __init__(self, file: str | Path | Image.Image):
         """Open an image file.
 
         file can be a filename or a PIL.Image."""
@@ -353,77 +366,86 @@ class ImageSlide(AbstractSlide):
         self._file_arg = file
         if isinstance(file, Image.Image):
             self._close = False
-            self._image = file
+            self._image: Image.Image | None = file
         else:
             self._close = True
             self._image = Image.open(file)
         self._profile = self._image.info.get('icc_profile')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._file_arg!r})'
 
     @classmethod
-    def detect_format(cls, filename):
+    def detect_format(cls, filename: str | Path) -> str | None:
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
         try:
             with Image.open(filename) as img:
-                return img.format
+                # img currently resolves as Any
+                # https://github.com/python-pillow/Pillow/pull/8362
+                return img.format  # type: ignore[no-any-return]
         except OSError:
             return None
 
-    def close(self):
+    def close(self) -> None:
         """Close the slide object."""
         if self._close:
+            assert self._image is not None
             self._image.close()
             self._close = False
         self._image = None
 
     @property
-    def level_count(self):
+    def level_count(self) -> Literal[1]:
         """The number of levels in the image."""
         return 1
 
     @property
-    def level_dimensions(self):
+    def level_dimensions(self) -> tuple[tuple[int, int]]:
         """A list of (width, height) tuples, one for each level of the image.
 
         level_dimensions[n] contains the dimensions of level n."""
+        if self._image is None:
+            raise ValueError('Passing closed slide object')
         return (self._image.size,)
 
     @property
-    def level_downsamples(self):
+    def level_downsamples(self) -> tuple[float]:
         """A list of downsampling factors for each level of the image.
 
         level_downsample[n] contains the downsample factor of level n."""
         return (1.0,)
 
     @property
-    def properties(self):
+    def properties(self) -> Mapping[str, str]:
         """Metadata about the image.
 
         This is a map: property name -> property value."""
         return {}
 
     @property
-    def associated_images(self):
+    def associated_images(self) -> Mapping[str, Image.Image]:
         """Images associated with this whole-slide image.
 
         This is a map: image name -> PIL.Image."""
         return {}
 
-    def get_best_level_for_downsample(self, _downsample):
+    def get_best_level_for_downsample(self, _downsample: float) -> Literal[0]:
         """Return the best level for displaying the given downsample."""
         return 0
 
-    def read_region(self, location, level, size):
+    def read_region(
+        self, location: tuple[int, int], level: int, size: tuple[int, int]
+    ) -> Image.Image:
         """Return a PIL.Image containing the contents of the region.
 
         location: (x, y) tuple giving the top left pixel in the level 0
                   reference frame.
         level:    the level number.
         size:     (width, height) tuple giving the region size."""
+        if self._image is None:
+            raise ValueError('Passing closed slide object')
         if level != 0:
             raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:
@@ -444,14 +466,16 @@ class ImageSlide(AbstractSlide):
         ]:  # "< 0" not a typo
             # Crop size is greater than zero in both dimensions.
             # PIL thinks the bottom right is the first *excluded* pixel
-            crop = self._image.crop(image_topleft + [d + 1 for d in image_bottomright])
+            crop_box = tuple(image_topleft + [d + 1 for d in image_bottomright])
             tile_offset = tuple(il - l for il, l in zip(image_topleft, location))
+            assert len(crop_box) == 4 and len(tile_offset) == 2
+            crop = self._image.crop(crop_box)
             tile.paste(crop, tile_offset)
         if self._profile is not None:
             tile.info['icc_profile'] = self._profile
         return tile
 
-    def set_cache(self, cache):
+    def set_cache(self, cache: OpenSlideCache) -> None:
         """Use the specified cache to store recently decoded slide tiles.
 
         ImageSlide does not support caching, so this method does nothing.
@@ -460,7 +484,7 @@ class ImageSlide(AbstractSlide):
         pass
 
 
-def open_slide(filename):
+def open_slide(filename: str | Path) -> OpenSlide | ImageSlide:
     """Open a whole-slide or regular image.
 
     Return an OpenSlide object for whole-slide images and an ImageSlide
