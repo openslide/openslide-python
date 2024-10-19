@@ -466,15 +466,10 @@ class ImageSlide(AbstractSlide):
         ]:  # "< 0" not a typo
             # Crop size is greater than zero in both dimensions.
             # PIL thinks the bottom right is the first *excluded* pixel
-            crop = self._image.crop(
-                (
-                    image_topleft[0],
-                    image_topleft[1],
-                    image_bottomright[0] + 1,
-                    image_bottomright[1] + 1,
-                )
-            )
-            tile_offset = image_topleft[0] - location[0], image_topleft[1] - location[1]
+            crop_box = tuple(image_topleft + [d + 1 for d in image_bottomright])
+            tile_offset = tuple(il - l for il, l in zip(image_topleft, location))
+            assert len(crop_box) == 4 and len(tile_offset) == 2
+            crop = self._image.crop(crop_box)
             tile.paste(crop, tile_offset)
         if self._profile is not None:
             tile.info['icc_profile'] = self._profile
