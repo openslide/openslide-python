@@ -23,26 +23,32 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 import base64
+from collections.abc import Callable
 from io import BytesIO
 import os
 import re
+from typing import TYPE_CHECKING, Any, Literal, Mapping
 from unicodedata import normalize
 import zlib
 
-from PIL import ImageCms
-from flask import Flask, abort, make_response, render_template, url_for
+from PIL import Image, ImageCms
+from flask import Flask, Response, abort, make_response, render_template, url_for
+
+if TYPE_CHECKING:
+    # Python 3.10+
+    from typing import TypeAlias
 
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined]
             import openslide
     else:
         import openslide
 else:
     import openslide
 
-from openslide import ImageSlide, open_slide
+from openslide import AbstractSlide, ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
 
 SLIDE_NAME = 'slide'
@@ -64,10 +70,33 @@ SRGB_PROFILE_BYTES = zlib.decompress(
 )
 SRGB_PROFILE = ImageCms.getOpenProfile(BytesIO(SRGB_PROFILE_BYTES))
 
+if TYPE_CHECKING:
+    ColorMode: TypeAlias = Literal[
+        'default',
+        'absolute-colorimetric',
+        'perceptual',
+        'relative-colorimetric',
+        'saturation',
+        'embed',
+        'ignore',
+    ]
+    Transform: TypeAlias = Callable[[Image.Image], None]
 
-def create_app(config=None, config_file=None):
+
+class DeepZoomServer(Flask):
+    slides: dict[str, DeepZoomGenerator]
+    transforms: dict[str, Transform]
+    slide_properties: Mapping[str, str]
+    associated_images: list[str]
+    slide_mpp: float
+
+
+def create_app(
+    config: dict[str, Any] | None = None,
+    config_file: str | None = None,
+) -> Flask:
     # Create and configure app
-    app = Flask(__name__)
+    app = DeepZoomServer(__name__)
     app.config.from_mapping(
         DEEPZOOM_SLIDE=None,
         DEEPZOOM_FORMAT='jpeg',
@@ -117,7 +146,7 @@ def create_app(config=None, config_file=None):
 
     # Set up routes
     @app.route('/')
-    def index():
+    def index() -> str:
         slide_url = url_for('dzi', slug=SLIDE_NAME)
         associated_urls = {
             name: url_for('dzi', slug=slugify(name)) for name in app.associated_images
@@ -131,7 +160,7 @@ def create_app(config=None, config_file=None):
         )
 
     @app.route('/<slug>.dzi')
-    def dzi(slug):
+    def dzi(slug: str) -> Response:
         format = app.config['DEEPZOOM_FORMAT']
         try:
             resp = make_response(app.slides[slug].get_dzi(format))
@@ -142,7 +171,7 @@ def create_app(config=None, config_file=None):
             abort(404)
 
     @app.route('/<slug>_files/<int:level>/<int:col>_<int:row>.<format>')
-    def tile(slug, level, col, row, format):
+    def tile(slug: str, level: int, col: int, row: int, format: str) -> Response:
         format = format.lower()
         if format != 'jpeg' and format != 'png':
             # Not supported by Deep Zoom
@@ -170,12 +199,12 @@ def create_app(config=None, config_file=None):
     return app
 
 
-def slugify(text):
+def slugify(text: str) -> str:
     text = normalize('NFKD', text.lower()).encode('ascii', 'ignore').decode()
     return re.sub('[^a-z0-9]+', '-', text)
 
 
-def get_transform(image, mode):
+def get_transform(image: AbstractSlide, mode: ColorMode) -> Transform:
     if image.color_profile is None:
         return lambda img: None
     if mode == 'ignore':
@@ -185,7 +214,7 @@ def get_transform(image, mode):
         # embed ICC profile in tiles
         return lambda img: None
     elif mode == 'default':
-        intent = ImageCms.getDefaultIntent(image.color_profile)
+        intent = ImageCms.Intent(ImageCms.getDefaultIntent(image.color_profile))
     elif mode == 'absolute-colorimetric':
         intent = ImageCms.Intent.ABSOLUTE_COLORIMETRIC
     elif mode == 'relative-colorimetric':
@@ -202,10 +231,10 @@ def get_transform(image, mode):
         'RGB',
         'RGB',
         intent,
-        0,
+        ImageCms.Flags(0),
     )
 
-    def xfrm(img):
+    def xfrm(img: Image.Image) -> None:
         ImageCms.applyTransform(img, transform, True)
         # Some browsers assume we intend the display's color space if we don't
         # embed the profile.  Pillow's serialization is larger, so use ours.

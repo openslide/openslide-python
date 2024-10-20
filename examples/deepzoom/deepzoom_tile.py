@@ -25,29 +25,36 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 import base64
+from collections.abc import Callable
 from io import BytesIO
 import json
 from multiprocessing import JoinableQueue, Process
+import multiprocessing.queues
 import os
 import re
 import shutil
 import sys
+from typing import TYPE_CHECKING, Literal
 from unicodedata import normalize
 import zlib
 
-from PIL import ImageCms
+from PIL import Image, ImageCms
+
+if TYPE_CHECKING:
+    # Python 3.10+
+    from typing import TypeAlias
 
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined]
             import openslide
     else:
         import openslide
 else:
     import openslide
 
-from openslide import ImageSlide, open_slide
+from openslide import AbstractSlide, ImageSlide, open_slide
 from openslide.deepzoom import DeepZoomGenerator
 
 VIEWER_SLIDE_NAME = 'slide'
@@ -69,12 +76,34 @@ SRGB_PROFILE_BYTES = zlib.decompress(
 )
 SRGB_PROFILE = ImageCms.getOpenProfile(BytesIO(SRGB_PROFILE_BYTES))
 
+if TYPE_CHECKING:
+    ColorMode: TypeAlias = Literal[
+        'default',
+        'absolute-colorimetric',
+        'perceptual',
+        'relative-colorimetric',
+        'saturation',
+        'embed',
+        'ignore',
+    ]
+    TileQueue: TypeAlias = multiprocessing.queues.JoinableQueue[
+        tuple[str | None, int, tuple[int, int], str] | None
+    ]
+    Transform: TypeAlias = Callable[[Image.Image], None]
+
 
 class TileWorker(Process):
     """A child process that generates and writes tiles."""
 
     def __init__(
-        self, queue, slidepath, tile_size, overlap, limit_bounds, quality, color_mode
+        self,
+        queue: TileQueue,
+        slidepath: str,
+        tile_size: int,
+        overlap: int,
+        limit_bounds: bool,
+        quality: int,
+        color_mode: ColorMode,
     ):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
@@ -85,9 +114,9 @@ class TileWorker(Process):
         self._limit_bounds = limit_bounds
         self._quality = quality
         self._color_mode = color_mode
-        self._slide = None
+        self._slide: AbstractSlide | None = None
 
-    def run(self):
+    def run(self) -> None:
         self._slide = open_slide(self._slidepath)
         last_associated = None
         dz, transform = self._get_dz_and_transform()
@@ -107,9 +136,12 @@ class TileWorker(Process):
             )
             self._queue.task_done()
 
-    def _get_dz_and_transform(self, associated=None):
+    def _get_dz_and_transform(
+        self, associated: str | None = None
+    ) -> tuple[DeepZoomGenerator, Transform]:
+        assert self._slide is not None
         if associated is not None:
-            image = ImageSlide(self._slide.associated_images[associated])
+            image: AbstractSlide = ImageSlide(self._slide.associated_images[associated])
         else:
             image = self._slide
         dz = DeepZoomGenerator(
@@ -117,7 +149,7 @@ class TileWorker(Process):
         )
         return dz, self._get_transform(image)
 
-    def _get_transform(self, image):
+    def _get_transform(self, image: AbstractSlide) -> Transform:
         if image.color_profile is None:
             return lambda img: None
         mode = self._color_mode
@@ -128,7 +160,7 @@ class TileWorker(Process):
             # embed ICC profile in tiles
             return lambda img: None
         elif mode == 'default':
-            intent = ImageCms.getDefaultIntent(image.color_profile)
+            intent = ImageCms.Intent(ImageCms.getDefaultIntent(image.color_profile))
         elif mode == 'absolute-colorimetric':
             intent = ImageCms.Intent.ABSOLUTE_COLORIMETRIC
         elif mode == 'relative-colorimetric':
@@ -145,10 +177,10 @@ class TileWorker(Process):
             'RGB',
             'RGB',
             intent,
-            0,
+            ImageCms.Flags(0),
         )
 
-        def xfrm(img):
+        def xfrm(img: Image.Image) -> None:
             ImageCms.applyTransform(img, transform, True)
             # Some browsers assume we intend the display's color space if we
             # don't embed the profile.  Pillow's serialization is larger, so
@@ -161,7 +193,14 @@ class TileWorker(Process):
 class DeepZoomImageTiler:
     """Handles generation of tiles and metadata for a single image."""
 
-    def __init__(self, dz, basename, format, associated, queue):
+    def __init__(
+        self,
+        dz: DeepZoomGenerator,
+        basename: str,
+        format: str,
+        associated: str | None,
+        queue: TileQueue,
+    ):
         self._dz = dz
         self._basename = basename
         self._format = format
@@ -169,11 +208,11 @@ class DeepZoomImageTiler:
         self._queue = queue
         self._processed = 0
 
-    def run(self):
+    def run(self) -> None:
         self._write_tiles()
         self._write_dzi()
 
-    def _write_tiles(self):
+    def _write_tiles(self) -> None:
         for level in range(self._dz.level_count):
             tiledir = os.path.join("%s_files" % self._basename, str(level))
             if not os.path.exists(tiledir):
@@ -188,7 +227,7 @@ class DeepZoomImageTiler:
                         self._queue.put((self._associated, level, (col, row), tilename))
                     self._tile_done()
 
-    def _tile_done(self):
+    def _tile_done(self) -> None:
         self._processed += 1
         count, total = self._processed, self._dz.tile_count
         if count % 100 == 0 or count == total:
@@ -201,11 +240,11 @@ class DeepZoomImageTiler:
             if count == total:
                 print(file=sys.stderr)
 
-    def _write_dzi(self):
+    def _write_dzi(self) -> None:
         with open('%s.dzi' % self._basename, 'w') as fh:
             fh.write(self.get_dzi())
 
-    def get_dzi(self):
+    def get_dzi(self) -> str:
         return self._dz.get_dzi(self._format)
 
 
@@ -214,16 +253,16 @@ class DeepZoomStaticTiler:
 
     def __init__(
         self,
-        slidepath,
-        basename,
-        format,
-        tile_size,
-        overlap,
-        limit_bounds,
-        quality,
-        color_mode,
-        workers,
-        with_viewer,
+        slidepath: str,
+        basename: str,
+        format: str,
+        tile_size: int,
+        overlap: int,
+        limit_bounds: bool,
+        quality: int,
+        color_mode: ColorMode,
+        workers: int,
+        with_viewer: bool,
     ):
         if with_viewer:
             # Check extra dependency before doing a bunch of work
@@ -234,11 +273,11 @@ class DeepZoomStaticTiler:
         self._tile_size = tile_size
         self._overlap = overlap
         self._limit_bounds = limit_bounds
-        self._queue = JoinableQueue(2 * workers)
+        self._queue: TileQueue = JoinableQueue(2 * workers)
         self._workers = workers
         self._color_mode = color_mode
         self._with_viewer = with_viewer
-        self._dzi_data = {}
+        self._dzi_data: dict[str, str] = {}
         for _i in range(workers):
             TileWorker(
                 self._queue,
@@ -250,7 +289,7 @@ class DeepZoomStaticTiler:
                 color_mode,
             ).start()
 
-    def run(self):
+    def run(self) -> None:
         self._run_image()
         if self._with_viewer:
             for name in self._slide.associated_images:
@@ -259,7 +298,7 @@ class DeepZoomStaticTiler:
             self._write_static()
         self._shutdown()
 
-    def _run_image(self, associated=None):
+    def _run_image(self, associated: str | None = None) -> None:
         """Run a single image from self._slide."""
         if associated is None:
             image = self._slide
@@ -277,14 +316,14 @@ class DeepZoomStaticTiler:
         tiler.run()
         self._dzi_data[self._url_for(associated)] = tiler.get_dzi()
 
-    def _url_for(self, associated):
+    def _url_for(self, associated: str | None) -> str:
         if associated is None:
             base = VIEWER_SLIDE_NAME
         else:
             base = self._slugify(associated)
         return '%s.dzi' % base
 
-    def _write_html(self):
+    def _write_html(self) -> None:
         import jinja2
 
         # https://docs.python.org/3/reference/import.html#main-spec
@@ -321,13 +360,13 @@ class DeepZoomStaticTiler:
         with open(os.path.join(self._basename, 'index.html'), 'w') as fh:
             fh.write(data)
 
-    def _write_static(self):
+    def _write_static(self) -> None:
         basesrc = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
         basedst = os.path.join(self._basename, 'static')
         self._copydir(basesrc, basedst)
         self._copydir(os.path.join(basesrc, 'images'), os.path.join(basedst, 'images'))
 
-    def _copydir(self, src, dest):
+    def _copydir(self, src: str, dest: str) -> None:
         if not os.path.exists(dest):
             os.makedirs(dest)
         for name in os.listdir(src):
@@ -336,11 +375,11 @@ class DeepZoomStaticTiler:
                 shutil.copy(srcpath, os.path.join(dest, name))
 
     @classmethod
-    def _slugify(cls, text):
+    def _slugify(cls, text: str) -> str:
         text = normalize('NFKD', text.lower()).encode('ascii', 'ignore').decode()
         return re.sub('[^a-z0-9]+', '_', text)
 
-    def _shutdown(self):
+    def _shutdown(self) -> None:
         for _i in range(self._workers):
             self._queue.put(None)
         self._queue.join()

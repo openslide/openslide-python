@@ -28,13 +28,13 @@ from openslide import ImageSlide, OpenSlide, lowlevel, open_slide
 
 
 class TestLibrary(unittest.TestCase):
-    def test_open_slide(self):
+    def test_open_slide(self) -> None:
         with open_slide(file_path('boxes.tiff')) as osr:
             self.assertTrue(isinstance(osr, OpenSlide))
         with open_slide(file_path('boxes.png')) as osr:
             self.assertTrue(isinstance(osr, ImageSlide))
 
-    def test_lowlevel_available(self):
+    def test_lowlevel_available(self) -> None:
         '''Ensure all exported functions have an 'available' attribute.'''
         for name in dir(lowlevel):
             attr = getattr(lowlevel, name)
