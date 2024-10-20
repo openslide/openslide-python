@@ -24,7 +24,6 @@ import re
 import sys
 import unittest
 
-from PIL import Image
 from common import file_path
 
 from openslide import (
@@ -154,12 +153,6 @@ class TestSlide(_SlideTest, unittest.TestCase):
         )
 
     @unittest.skipIf(sys.maxsize < 1 << 32, '32-bit Python')
-    # Broken on Pillow < 6.2.0.
-    # https://github.com/python-pillow/Pillow/issues/3963
-    @unittest.skipIf(
-        [int(i) for i in getattr(Image, '__version__', '0').split('.')] < [6, 2, 0],
-        'broken on Pillow < 6.2.0',
-    )
     # Disabled to avoid OOM killer on small systems, since the stdlib
     # doesn't provide a way to find out how much RAM we have
     def _test_read_region_2GB(self):
