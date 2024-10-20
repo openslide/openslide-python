@@ -26,7 +26,6 @@ This package provides Python bindings for the OpenSlide library.
 from __future__ import annotations
 
 from io import BytesIO
-from pathlib import Path
 from types import TracebackType
 from typing import Iterator, Literal, Mapping, TypeVar
 
@@ -82,7 +81,7 @@ class AbstractSlide:
         return False
 
     @classmethod
-    def detect_format(cls, filename: str | Path) -> str | None:
+    def detect_format(cls, filename: lowlevel.Filename) -> str | None:
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
@@ -189,11 +188,11 @@ class OpenSlide(AbstractSlide):
     operations on the OpenSlide object, other than close(), will fail.
     """
 
-    def __init__(self, filename: str | Path):
+    def __init__(self, filename: lowlevel.Filename):
         """Open a whole-slide image."""
         AbstractSlide.__init__(self)
         self._filename = filename
-        self._osr = lowlevel.open(str(filename))
+        self._osr = lowlevel.open(filename)
         if lowlevel.read_icc_profile.available:
             self._profile = lowlevel.read_icc_profile(self._osr)
 
@@ -201,11 +200,11 @@ class OpenSlide(AbstractSlide):
         return f'{self.__class__.__name__}({self._filename!r})'
 
     @classmethod
-    def detect_format(cls, filename: str | Path) -> str | None:
+    def detect_format(cls, filename: lowlevel.Filename) -> str | None:
         """Return a string describing the format vendor of the specified file.
 
         If the file format is not recognized, return None."""
-        return lowlevel.detect_vendor(str(filename))
+        return lowlevel.detect_vendor(filename)
 
     def close(self) -> None:
         """Close the OpenSlide object."""
@@ -358,7 +357,7 @@ class OpenSlideCache:
 class ImageSlide(AbstractSlide):
     """A wrapper for a PIL.Image that provides the OpenSlide interface."""
 
-    def __init__(self, file: str | Path | Image.Image):
+    def __init__(self, file: lowlevel.Filename | Image.Image):
         """Open an image file.
 
         file can be a filename or a PIL.Image."""
@@ -376,7 +375,7 @@ class ImageSlide(AbstractSlide):
         return f'{self.__class__.__name__}({self._file_arg!r})'
 
     @classmethod
-    def detect_format(cls, filename: str | Path) -> str | None:
+    def detect_format(cls, filename: lowlevel.Filename) -> str | None:
         """Return a string describing the format of the specified file.
 
         If the file format is not recognized, return None."""
@@ -484,7 +483,7 @@ class ImageSlide(AbstractSlide):
         pass
 
 
-def open_slide(filename: str | Path) -> OpenSlide | ImageSlide:
+def open_slide(filename: lowlevel.Filename) -> OpenSlide | ImageSlide:
     """Open a whole-slide or regular image.
 
     Return an OpenSlide object for whole-slide images and an ImageSlide

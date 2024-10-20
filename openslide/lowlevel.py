@@ -2,7 +2,7 @@
 # openslide-python - Python bindings for the OpenSlide library
 #
 # Copyright (c) 2010-2013 Carnegie Mellon University
-# Copyright (c) 2016-2023 Benjamin Gilbert
+# Copyright (c) 2016-2024 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -48,6 +48,7 @@ from ctypes import (
     cdll,
 )
 from itertools import count
+import os
 import platform
 from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, cast
 
@@ -56,7 +57,7 @@ from PIL import Image
 from . import _convert
 
 if TYPE_CHECKING:
-    # Python 3.10+ for ParamSpec
+    # Python 3.10+
     from typing import ParamSpec, TypeAlias
 
     from _convert import _Buffer
@@ -194,6 +195,28 @@ class _OpenSlideCache:
         if not obj._as_parameter_:
             raise ValueError("Passing undefined cache object")
         return obj
+
+
+if TYPE_CHECKING:
+    # Python 3.10+
+    Filename: TypeAlias = str | bytes | os.PathLike[Any]
+
+
+class _filename_p:
+    """Wrapper class to convert filename arguments to bytes."""
+
+    @classmethod
+    def from_param(cls, obj: Filename) -> bytes:
+        # fspath and fsencode raise TypeError on unexpected types
+        if platform.system() == 'Windows':
+            # OpenSlide 4.0.0+ requires UTF-8 on Windows
+            obj = os.fspath(obj)
+            if isinstance(obj, str):
+                return obj.encode('UTF-8')
+            else:
+                return obj
+        else:
+            return os.fsencode(obj)
 
 
 class _utf8_p:
@@ -350,14 +373,14 @@ def _wraps_funcs(
 
 
 try:
-    detect_vendor: _Func[[str], str] = _func(
-        'openslide_detect_vendor', c_char_p, [_utf8_p], _check_string
+    detect_vendor: _Func[[Filename], str] = _func(
+        'openslide_detect_vendor', c_char_p, [_filename_p], _check_string
     )
 except AttributeError:
     raise OpenSlideVersionError('3.4.0')
 
-open: _Func[[str], _OpenSlide] = _func(
-    'openslide_open', c_void_p, [_utf8_p], _check_open
+open: _Func[[Filename], _OpenSlide] = _func(
+    'openslide_open', c_void_p, [_filename_p], _check_open
 )
 
 close: _Func[[_OpenSlide], None] = _func(
@@ -452,7 +475,7 @@ get_property_names: _Func[[_OpenSlide], list[str]] = _func(
     'openslide_get_property_names', POINTER(c_char_p), [_OpenSlide], _check_name_list
 )
 
-get_property_value: _Func[[_OpenSlide, str], str] = _func(
+get_property_value: _Func[[_OpenSlide, str | bytes], str] = _func(
     'openslide_get_property_value', c_char_p, [_OpenSlide, _utf8_p]
 )
 
@@ -464,7 +487,7 @@ get_associated_image_names: _Func[[_OpenSlide], list[str]] = _func(
 )
 
 _get_associated_image_dimensions: _Func[
-    [_OpenSlide, str, _Pointer[c_int64], _Pointer[c_int64]], None
+    [_OpenSlide, str | bytes, _Pointer[c_int64], _Pointer[c_int64]], None
 ] = _func(
     'openslide_get_associated_image_dimensions',
     None,
@@ -473,46 +496,54 @@ _get_associated_image_dimensions: _Func[
 
 
 @_wraps_funcs([_get_associated_image_dimensions])
-def get_associated_image_dimensions(slide: _OpenSlide, name: str) -> tuple[int, int]:
+def get_associated_image_dimensions(
+    slide: _OpenSlide, name: str | bytes
+) -> tuple[int, int]:
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
     return w.value, h.value
 
 
-_read_associated_image: _Func[[_OpenSlide, str, _Pointer[c_uint32]], None] = _func(
-    'openslide_read_associated_image', None, [_OpenSlide, _utf8_p, POINTER(c_uint32)]
+_read_associated_image: _Func[[_OpenSlide, str | bytes, _Pointer[c_uint32]], None] = (
+    _func(
+        'openslide_read_associated_image',
+        None,
+        [_OpenSlide, _utf8_p, POINTER(c_uint32)],
+    )
 )
 
 
 @_wraps_funcs([get_associated_image_dimensions, _read_associated_image])
-def read_associated_image(slide: _OpenSlide, name: str) -> Image.Image:
+def read_associated_image(slide: _OpenSlide, name: str | bytes) -> Image.Image:
     w, h = get_associated_image_dimensions(slide, name)
     buf = (w * h * c_uint32)()
     _read_associated_image(slide, name, buf)
     return _load_image(buf, (w, h))
 
 
-get_associated_image_icc_profile_size: _Func[[_OpenSlide, str], int] = _func(
+get_associated_image_icc_profile_size: _Func[[_OpenSlide, str | bytes], int] = _func(
     'openslide_get_associated_image_icc_profile_size',
     c_int64,
     [_OpenSlide, _utf8_p],
     minimum_version='4.0.0',
 )
 
-_read_associated_image_icc_profile: _Func[[_OpenSlide, str, _Pointer[c_char]], None] = (
-    _func(
-        'openslide_read_associated_image_icc_profile',
-        None,
-        [_OpenSlide, _utf8_p, POINTER(c_char)],
-        minimum_version='4.0.0',
-    )
+_read_associated_image_icc_profile: _Func[
+    [_OpenSlide, str | bytes, _Pointer[c_char]], None
+] = _func(
+    'openslide_read_associated_image_icc_profile',
+    None,
+    [_OpenSlide, _utf8_p, POINTER(c_char)],
+    minimum_version='4.0.0',
 )
 
 
 @_wraps_funcs(
     [get_associated_image_icc_profile_size, _read_associated_image_icc_profile]
 )
-def read_associated_image_icc_profile(slide: _OpenSlide, name: str) -> bytes | None:
+def read_associated_image_icc_profile(
+    slide: _OpenSlide, name: str | bytes
+) -> bytes | None:
     size = get_associated_image_icc_profile_size(slide, name)
     if size == 0:
         return None

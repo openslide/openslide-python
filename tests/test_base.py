@@ -45,7 +45,7 @@ class TestLibrary(unittest.TestCase):
             if getattr(attr, '__module__', None) == '__future__':
                 continue
             # ignore random imports
-            if hasattr(ctypes, name) or name in ('count', 'platform'):
+            if hasattr(ctypes, name) or name in ('count', 'os', 'platform'):
                 continue
             self.assertTrue(
                 hasattr(attr, 'available'),
