@@ -2,7 +2,7 @@
 # openslide-python - Python bindings for the OpenSlide library
 #
 # Copyright (c) 2010-2013 Carnegie Mellon University
-# Copyright (c) 2016-2023 Benjamin Gilbert
+# Copyright (c) 2016-2024 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -48,6 +48,7 @@ from ctypes import (
     cdll,
 )
 from itertools import count
+import os
 import platform
 from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, cast
 
@@ -56,7 +57,7 @@ from PIL import Image
 from . import _convert
 
 if TYPE_CHECKING:
-    # Python 3.10+ for ParamSpec
+    # Python 3.10+
     from typing import ParamSpec, TypeAlias
 
     from _convert import _Buffer
@@ -194,6 +195,28 @@ class _OpenSlideCache:
         if not obj._as_parameter_:
             raise ValueError("Passing undefined cache object")
         return obj
+
+
+if TYPE_CHECKING:
+    # Python 3.10+
+    Filename: TypeAlias = str | bytes | os.PathLike[Any]
+
+
+class _filename_p:
+    """Wrapper class to convert filename arguments to bytes."""
+
+    @classmethod
+    def from_param(cls, obj: Filename) -> bytes:
+        # fspath and fsencode raise TypeError on unexpected types
+        if platform.system() == 'Windows':
+            # OpenSlide 4.0.0+ requires UTF-8 on Windows
+            obj = os.fspath(obj)
+            if isinstance(obj, str):
+                return obj.encode('UTF-8')
+            else:
+                return obj
+        else:
+            return os.fsencode(obj)
 
 
 class _utf8_p:
@@ -350,14 +373,14 @@ def _wraps_funcs(
 
 
 try:
-    detect_vendor: _Func[[str], str] = _func(
-        'openslide_detect_vendor', c_char_p, [_utf8_p], _check_string
+    detect_vendor: _Func[[Filename], str] = _func(
+        'openslide_detect_vendor', c_char_p, [_filename_p], _check_string
     )
 except AttributeError:
     raise OpenSlideVersionError('3.4.0')
 
-open: _Func[[str], _OpenSlide] = _func(
-    'openslide_open', c_void_p, [_utf8_p], _check_open
+open: _Func[[Filename], _OpenSlide] = _func(
+    'openslide_open', c_void_p, [_filename_p], _check_open
 )
 
 close: _Func[[_OpenSlide], None] = _func(

@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2016-2023 Benjamin Gilbert
+# Copyright (c) 2016-2024 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import sys
 import unittest
 
 from PIL import Image
@@ -43,6 +44,21 @@ class TestImageWithoutOpening(unittest.TestCase):
             with ImageSlide(img) as osr:
                 self.assertEqual(osr.dimensions, (300, 250))
                 self.assertEqual(repr(osr), 'ImageSlide(%r)' % img)
+
+    @unittest.skipUnless(
+        sys.getfilesystemencoding() == 'utf-8',
+        'Python filesystem encoding is not UTF-8',
+    )
+    def test_unicode_path(self):
+        path = file_path('😐.png')
+        for arg in path, str(path):
+            self.assertEqual(ImageSlide.detect_format(arg), 'PNG')
+            self.assertEqual(ImageSlide(arg).dimensions, (300, 250))
+
+    def test_unicode_path_bytes(self):
+        arg = str(file_path('😐.png')).encode('UTF-8')
+        self.assertEqual(ImageSlide.detect_format(arg), 'PNG')
+        self.assertEqual(ImageSlide(arg).dimensions, (300, 250))
 
     def test_operations_on_closed_handle(self):
         with Image.open(file_path('boxes.png')) as img:

@@ -1,7 +1,7 @@
 #
 # openslide-python - Python bindings for the OpenSlide library
 #
-# Copyright (c) 2016-2023 Benjamin Gilbert
+# Copyright (c) 2016-2024 Benjamin Gilbert
 #
 # This library is free software; you can redistribute it and/or modify it
 # under the terms of version 2.1 of the GNU Lesser General Public License
@@ -60,11 +60,26 @@ class TestSlideWithoutOpening(unittest.TestCase):
         self.assertRaises(
             OpenSlideUnsupportedFormatError, lambda: OpenSlide('setup.py')
         )
-        self.assertRaises(OpenSlideUnsupportedFormatError, lambda: OpenSlide(None))
-        self.assertRaises(OpenSlideUnsupportedFormatError, lambda: OpenSlide(3))
+        self.assertRaises(ArgumentError, lambda: OpenSlide(None))
+        self.assertRaises(ArgumentError, lambda: OpenSlide(3))
         self.assertRaises(
             OpenSlideUnsupportedFormatError, lambda: OpenSlide('unopenable.tiff')
         )
+
+    @unittest.skipUnless(
+        sys.getfilesystemencoding() == 'utf-8',
+        'Python filesystem encoding is not UTF-8',
+    )
+    def test_unicode_path(self):
+        path = file_path('😐.svs')
+        for arg in path, str(path):
+            self.assertEqual(OpenSlide.detect_format(arg), 'aperio')
+            self.assertEqual(OpenSlide(arg).dimensions, (16, 16))
+
+    def test_unicode_path_bytes(self):
+        arg = str(file_path('😐.svs')).encode('UTF-8')
+        self.assertEqual(OpenSlide.detect_format(arg), 'aperio')
+        self.assertEqual(OpenSlide(arg).dimensions, (16, 16))
 
     def test_operations_on_closed_handle(self):
         osr = OpenSlide(file_path('boxes.tiff'))
