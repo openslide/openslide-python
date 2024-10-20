@@ -475,7 +475,7 @@ get_property_names: _Func[[_OpenSlide], list[str]] = _func(
     'openslide_get_property_names', POINTER(c_char_p), [_OpenSlide], _check_name_list
 )
 
-get_property_value: _Func[[_OpenSlide, str], str] = _func(
+get_property_value: _Func[[_OpenSlide, str | bytes], str] = _func(
     'openslide_get_property_value', c_char_p, [_OpenSlide, _utf8_p]
 )
 
@@ -487,7 +487,7 @@ get_associated_image_names: _Func[[_OpenSlide], list[str]] = _func(
 )
 
 _get_associated_image_dimensions: _Func[
-    [_OpenSlide, str, _Pointer[c_int64], _Pointer[c_int64]], None
+    [_OpenSlide, str | bytes, _Pointer[c_int64], _Pointer[c_int64]], None
 ] = _func(
     'openslide_get_associated_image_dimensions',
     None,
@@ -496,46 +496,54 @@ _get_associated_image_dimensions: _Func[
 
 
 @_wraps_funcs([_get_associated_image_dimensions])
-def get_associated_image_dimensions(slide: _OpenSlide, name: str) -> tuple[int, int]:
+def get_associated_image_dimensions(
+    slide: _OpenSlide, name: str | bytes
+) -> tuple[int, int]:
     w, h = c_int64(), c_int64()
     _get_associated_image_dimensions(slide, name, byref(w), byref(h))
     return w.value, h.value
 
 
-_read_associated_image: _Func[[_OpenSlide, str, _Pointer[c_uint32]], None] = _func(
-    'openslide_read_associated_image', None, [_OpenSlide, _utf8_p, POINTER(c_uint32)]
+_read_associated_image: _Func[[_OpenSlide, str | bytes, _Pointer[c_uint32]], None] = (
+    _func(
+        'openslide_read_associated_image',
+        None,
+        [_OpenSlide, _utf8_p, POINTER(c_uint32)],
+    )
 )
 
 
 @_wraps_funcs([get_associated_image_dimensions, _read_associated_image])
-def read_associated_image(slide: _OpenSlide, name: str) -> Image.Image:
+def read_associated_image(slide: _OpenSlide, name: str | bytes) -> Image.Image:
     w, h = get_associated_image_dimensions(slide, name)
     buf = (w * h * c_uint32)()
     _read_associated_image(slide, name, buf)
     return _load_image(buf, (w, h))
 
 
-get_associated_image_icc_profile_size: _Func[[_OpenSlide, str], int] = _func(
+get_associated_image_icc_profile_size: _Func[[_OpenSlide, str | bytes], int] = _func(
     'openslide_get_associated_image_icc_profile_size',
     c_int64,
     [_OpenSlide, _utf8_p],
     minimum_version='4.0.0',
 )
 
-_read_associated_image_icc_profile: _Func[[_OpenSlide, str, _Pointer[c_char]], None] = (
-    _func(
-        'openslide_read_associated_image_icc_profile',
-        None,
-        [_OpenSlide, _utf8_p, POINTER(c_char)],
-        minimum_version='4.0.0',
-    )
+_read_associated_image_icc_profile: _Func[
+    [_OpenSlide, str | bytes, _Pointer[c_char]], None
+] = _func(
+    'openslide_read_associated_image_icc_profile',
+    None,
+    [_OpenSlide, _utf8_p, POINTER(c_char)],
+    minimum_version='4.0.0',
 )
 
 
 @_wraps_funcs(
     [get_associated_image_icc_profile_size, _read_associated_image_icc_profile]
 )
-def read_associated_image_icc_profile(slide: _OpenSlide, name: str) -> bytes | None:
+def read_associated_image_icc_profile(
+    slide: _OpenSlide, name: str | bytes
+) -> bytes | None:
     size = get_associated_image_icc_profile_size(slide, name)
     if size == 0:
         return None
