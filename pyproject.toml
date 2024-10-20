@@ -23,6 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Typing :: Typed",
 ]
@@ -44,7 +45,7 @@ version = {attr = "openslide._version.__version__"}
 
 [tool.black]
 skip-string-normalization = true
-target-version = ["py38", "py39", "py310", "py311", "py312"]
+target-version = ["py38", "py39", "py310", "py311", "py312", "py313"]
 
 # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
 # also ignore:
