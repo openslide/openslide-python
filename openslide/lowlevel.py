@@ -72,12 +72,14 @@ def _load_library() -> CDLL:
         pass
 
     def try_load(names: list[str]) -> CDLL:
+        error_strings = []
         for name in names:
             try:
                 return cdll.LoadLibrary(name)
-            except OSError:
+            except OSError as err:
+                error_strings.append(f"{name}: {err}")
                 if name == names[-1]:
-                    raise
+                    raise OSError("\n".join(error_strings))
         else:
             raise ValueError('No library names specified')
 
