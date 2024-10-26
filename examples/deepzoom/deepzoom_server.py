@@ -293,8 +293,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '-f',
         '--format',
-        metavar='{jpeg|png}',
         dest='DEEPZOOM_FORMAT',
+        choices=['jpeg', 'png'],
         help='image format for tiles [jpeg]',
     )
     parser.add_argument(
