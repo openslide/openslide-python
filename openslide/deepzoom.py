@@ -163,12 +163,12 @@ class DeepZoomGenerator:
 
     @property
     def level_tiles(self) -> tuple[tuple[int, int], ...]:
-        """A list of (tiles_x, tiles_y) tuples for each Deep Zoom level."""
+        """A tuple of (tiles_x, tiles_y) tuples for each Deep Zoom level."""
         return self._t_dimensions
 
     @property
     def level_dimensions(self) -> tuple[tuple[int, int], ...]:
-        """A list of (pixels_x, pixels_y) tuples for each Deep Zoom level."""
+        """A tuple of (pixels_x, pixels_y) tuples for each Deep Zoom level."""
         return self._z_dimensions
 
     @property

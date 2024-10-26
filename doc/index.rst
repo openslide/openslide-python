@@ -93,25 +93,25 @@ OpenSlide objects
 
 .. module:: openslide
 
-.. class:: OpenSlide(filename)
+.. class:: OpenSlide(filename: str | bytes | ~os.PathLike[typing.Any])
 
    An open whole-slide image.
 
    If any operation on the object fails, :exc:`OpenSlideError` is raised.
    OpenSlide has latching error semantics: once :exc:`OpenSlideError` is
    raised, all future operations on the :class:`OpenSlide`, other than
-   :meth:`close()`, will also raise :exc:`OpenSlideError`.
+   :meth:`close`, will also raise :exc:`OpenSlideError`.
 
-   :meth:`close()` is called automatically when the object is deleted.
+   :meth:`close` is called automatically when the object is deleted.
    The object may be used as a context manager, in which case it will be
    closed upon exiting the context.
 
-   :param str filename: the file to open
+   :param filename: the file to open
    :raises OpenSlideUnsupportedFormatError: if the file is not recognized by
       OpenSlide
    :raises OpenSlideError: if the file is recognized but an error occurred
 
-   .. classmethod:: detect_format(filename)
+   .. classmethod:: detect_format(filename: str | bytes | ~os.PathLike[typing.Any]) -> str | None
 
       Return a string describing the format vendor of the specified file.
       This string is also accessible via the :data:`PROPERTY_NAME_VENDOR`
@@ -119,85 +119,97 @@ OpenSlide objects
 
       If the file is not recognized, return :obj:`None`.
 
-      :param str filename: the file to examine
+      :param filename: the file to examine
 
    .. attribute:: level_count
 
       The number of levels in the slide.  Levels are numbered from ``0``
       (highest resolution) to ``level_count - 1`` (lowest resolution).
 
+      :type: int
+
    .. attribute:: dimensions
 
       A ``(width, height)`` tuple for level 0 of the slide.
 
+      :type: tuple[int, int]
+
    .. attribute:: level_dimensions
 
-      A list of ``(width, height)`` tuples, one for each level of the slide.
+      A tuple of ``(width, height)`` tuples, one for each level of the slide.
       ``level_dimensions[k]`` are the dimensions of level ``k``.
+
+      :type: tuple[tuple[int, int], ...]
 
    .. attribute:: level_downsamples
 
-      A list of downsample factors for each level of the slide.
+      A tuple of downsample factors for each level of the slide.
       ``level_downsamples[k]`` is the downsample factor of level ``k``.
+
+      :type: tuple[float, ...]
 
    .. attribute:: properties
 
       Metadata about the slide, in the form of a
       :class:`~collections.abc.Mapping` from OpenSlide property name to
-      property value.  Property values are always strings.  OpenSlide
-      provides some :ref:`standard-properties`, plus
-      additional properties that vary by slide format.
+      property value.  OpenSlide provides some :ref:`standard-properties`,
+      plus additional properties that vary by slide format.
+
+      :type: ~collections.abc.Mapping[str, str]
 
    .. attribute:: associated_images
 
       Images, such as label or macro images, which are associated with this
       slide.  This is a :class:`~collections.abc.Mapping` from image
-      name to RGBA :class:`Image <PIL.Image.Image>`.
+      name to RGBA :class:`~PIL.Image.Image`.
 
       Unlike in the C interface, these images are not premultiplied.
+
+      :type: ~collections.abc.Mapping[str, ~PIL.Image.Image]
 
    .. attribute:: color_profile
 
       The embedded :ref:`color profile <color-management>` for this slide,
-      as a Pillow :class:`~PIL.ImageCms.ImageCmsProfile`, or :obj:`None` if
-      not available.
+      or :obj:`None` if not available.
 
-   .. method:: read_region(location, level, size)
+      :type: ~PIL.ImageCms.ImageCmsProfile | None
 
-      Return an RGBA :class:`Image <PIL.Image.Image>` containing the
-      contents of the specified region.
+   .. method:: read_region(location: tuple[int, int], level: int, size: tuple[int, int]) -> ~PIL.Image.Image
+
+      Return an RGBA :class:`~PIL.Image.Image` containing the contents of
+      the specified region.
 
       Unlike in the C interface, the image data is not premultiplied.
 
-      :param tuple location: ``(x, y)`` tuple giving the top left pixel in
-         the level 0 reference frame
-      :param int level: the level number
-      :param tuple size: ``(width, height)`` tuple giving the region size
+      :param location: ``(x, y)`` tuple giving the top left pixel in the
+         level 0 reference frame
+      :param level: the level number
+      :param size: ``(width, height)`` tuple giving the region size
 
-   .. method:: get_best_level_for_downsample(downsample)
+   .. method:: get_best_level_for_downsample(downsample: float) -> int
 
       Return the best level for displaying the given downsample.
 
-      :param float downsample: the desired downsample factor
+      :param downsample: the desired downsample factor
 
-   .. method:: get_thumbnail(size)
+   .. method:: get_thumbnail(size: tuple[int, int]) -> ~PIL.Image.Image
 
-      Return an :class:`Image <PIL.Image.Image>` containing an RGB thumbnail
-      of the slide.
+      Return an :class:`~PIL.Image.Image` containing an RGB thumbnail of the
+      slide.
 
-      :param tuple size: the maximum size of the thumbnail as a
-         ``(width, height)`` tuple
+      :param size: the maximum size of the thumbnail as a ``(width, height)``
+         tuple
 
-   .. method:: set_cache(cache)
+   .. method:: set_cache(cache: OpenSlideCache) -> None
 
       Use the specified :class:`OpenSlideCache` to store recently decoded
       slide tiles.  By default, the :class:`OpenSlide` has a private cache
       with a default size.
 
-      :param OpenSlideCache cache: a cache object
+      :param cache: a cache object
       :raises OpenSlideVersionError: if OpenSlide is older than version 4.0.0
 
-   .. method:: close()
+   .. method:: close() -> None
 
       Close the OpenSlide object.
 
@@ -254,7 +266,7 @@ reusing it for multiple slide regions::
 Caching
 -------
 
-.. class:: OpenSlideCache(capacity)
+.. class:: OpenSlideCache(capacity: int)
 
    An in-memory tile cache.
 
@@ -262,7 +274,7 @@ Caching
    with :meth:`OpenSlide.set_cache` to cache recently-decoded tiles.  By
    default, each :class:`OpenSlide` has its own cache with a default size.
 
-   :param int capacity: the cache capacity in bytes
+   :param capacity: the cache capacity in bytes
    :raises OpenSlideVersionError: if OpenSlide is older than version 4.0.0
 
 
@@ -335,7 +347,7 @@ Exceptions
 
    Once :exc:`OpenSlideError` has been raised by a particular
    :class:`OpenSlide`, all future operations on that :class:`OpenSlide`
-   (other than :meth:`close() <OpenSlide.close>`) will also raise
+   (other than :meth:`~OpenSlide.close`) will also raise
    :exc:`OpenSlideError`.
 
 .. exception:: OpenSlideUnsupportedFormatError
@@ -354,20 +366,24 @@ Exceptions
 Wrapping a Pillow Image
 =======================
 
-.. class:: ImageSlide(file)
+.. class:: AbstractSlide
 
-   A wrapper around an :class:`Image <PIL.Image.Image>` object that
-   provides an :class:`OpenSlide`-compatible API.
+   The abstract base class of :class:`OpenSlide` and :class:`ImageSlide`.
 
-   :param file: a filename or :class:`Image <PIL.Image.Image>` object
+.. class:: ImageSlide(file: str | bytes | ~os.PathLike[typing.Any] | ~PIL.Image.Image)
+
+   A wrapper around an :class:`~PIL.Image.Image` object that provides an
+   :class:`OpenSlide`-compatible API.
+
+   :param file: a filename or :class:`~PIL.Image.Image` object
    :raises OSError: if the file cannot be opened
 
-.. function:: open_slide(filename)
+.. function:: open_slide(filename: str | bytes | ~os.PathLike[typing.Any]) -> OpenSlide | ImageSlide
 
    Return an :class:`OpenSlide` for whole-slide images and an
    :class:`ImageSlide` for other types of images.
 
-   :param str filename: the file to open
+   :param filename: the file to open
    :raises OpenSlideError: if the file is recognized by OpenSlide but an
       error occurred
    :raises OSError: if the file is not recognized at all
@@ -385,72 +401,79 @@ Deep Zoom or a similar format.
 
 .. _`Deep Zoom`: https://docs.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/cc645050(v=vs.95)
 
-.. class:: DeepZoomGenerator(osr, tile_size=254, overlap=1, limit_bounds=False)
+.. class:: DeepZoomGenerator(osr: AbstractSlide, tile_size: int = 254, overlap: int = 1, limit_bounds: bool = False)
 
-   A Deep Zoom generator that wraps an
-   :class:`OpenSlide <openslide.OpenSlide>` or
-   :class:`ImageSlide <openslide.ImageSlide>` object.
+   A Deep Zoom generator that wraps an :class:`~openslide.OpenSlide` object,
+   :class:`~openslide.ImageSlide` object, or user-provided instance of
+   :class:`~openslide.AbstractSlide`.
 
    :param osr: the slide object
-   :param int tile_size: the width and height of a single tile.  For best
-      viewer performance, ``tile_size + 2 * overlap`` should be a power of two.
-   :param int overlap: the number of extra pixels to add to each interior edge
-      of a tile
-   :param bool limit_bounds: ``True`` to render only the non-empty slide
-      region
+   :param tile_size: the width and height of a single tile.  For best viewer
+      performance, ``tile_size + 2 * overlap`` should be a power of two.
+   :param overlap: the number of extra pixels to add to each interior edge of a
+      tile
+   :param limit_bounds: :obj:`True` to render only the non-empty slide region
 
    .. attribute:: level_count
 
       The number of Deep Zoom levels in the image.
 
+      :type: int
+
    .. attribute:: tile_count
 
       The total number of Deep Zoom tiles in the image.
 
+      :type: int
+
    .. attribute:: level_tiles
 
-      A list of ``(tiles_x, tiles_y)`` tuples for each Deep Zoom level.
+      A tuple of ``(tiles_x, tiles_y)`` tuples for each Deep Zoom level.
       ``level_tiles[k]`` are the tile counts of level ``k``.
+
+      :type: tuple[tuple[int, int], ...]
 
    .. attribute:: level_dimensions
 
-      A list of ``(pixels_x, pixels_y)`` tuples for each Deep Zoom level.
+      A tuple of ``(pixels_x, pixels_y)`` tuples for each Deep Zoom level.
       ``level_dimensions[k]`` are the dimensions of level ``k``.
 
-   .. method:: get_dzi(format)
+      :type: tuple[tuple[int, int], ...]
+
+   .. method:: get_dzi(format: str) -> str
 
       Return a string containing the XML metadata for the Deep Zoom ``.dzi``
       file.
 
-      :param str format: the delivery format of the individual tiles
-         (``png`` or ``jpeg``)
+      :param format: the delivery format of the individual tiles (``png`` or
+         ``jpeg``)
 
-   .. method:: get_tile(level, address)
+   .. method:: get_tile(level: int, address: tuple[int, int]) -> ~PIL.Image.Image
 
-      Return an RGB :class:`Image <PIL.Image.Image>` for a tile.
+      Return an RGB :class:`~PIL.Image.Image` for a tile.
 
-      :param int level: the Deep Zoom level
-      :param tuple address: the address of the tile within the level as a
+      :param level: the Deep Zoom level
+      :param address: the address of the tile within the level as a
          ``(column, row)`` tuple
 
-   .. method:: get_tile_coordinates(level, address)
+   .. method:: get_tile_coordinates(level: int, address: tuple[int, int]) -> tuple[tuple[int, int], int, tuple[int, int]]
 
       Return the :meth:`OpenSlide.read_region()
       <openslide.OpenSlide.read_region>` arguments corresponding to the
       specified tile.
 
-      Most applications should use :meth:`get_tile()` instead.
+      Most applications should use :meth:`get_tile` instead.
 
-      :param int level: the Deep Zoom level
-      :param tuple address: the address of the tile within the level as a
+      :param level: the Deep Zoom level
+      :param address: the address of the tile within the level as a
          ``(column, row)`` tuple
 
-   .. method:: get_tile_dimensions(level, address)
+   .. method:: get_tile_dimensions(level: int, address: tuple[int, int]) -> tuple[int, int]
 
       Return a ``(pixels_x, pixels_y)`` tuple for the specified tile.
 
-      :param int level: the Deep Zoom level
-      :param tuple address: the address of the tile within the level as a
+      :param level: the Deep Zoom level
+      :param address: the address of the tile within the level as a
          ``(column, row)`` tuple
 
 
