@@ -406,7 +406,7 @@ class ImageSlide(AbstractSlide):
 
         level_dimensions[n] contains the dimensions of level n."""
         if self._image is None:
-            raise ValueError('Passing closed slide object')
+            raise ValueError('Cannot read from a closed slide')
         return (self._image.size,)
 
     @property
@@ -444,7 +444,7 @@ class ImageSlide(AbstractSlide):
         level:    the level number.
         size:     (width, height) tuple giving the region size."""
         if self._image is None:
-            raise ValueError('Passing closed slide object')
+            raise ValueError('Cannot read from a closed slide')
         if level != 0:
             raise OpenSlideError("Invalid level")
         if ['fail' for s in size if s < 0]:
