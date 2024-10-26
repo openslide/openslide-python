@@ -161,12 +161,13 @@ class AbstractSlide(metaclass=ABCMeta):
         size:     (width, height) tuple giving the region size."""
         raise NotImplementedError
 
-    @abstractmethod
-    def set_cache(self, cache: OpenSlideCache) -> None:
+    def set_cache(self, cache: OpenSlideCache) -> None:  # noqa: B027
         """Use the specified cache to store recently decoded slide tiles.
 
+        This class does not support caching, so this method does nothing.
+
         cache: an OpenSlideCache object."""
-        raise NotImplementedError
+        pass
 
     def get_thumbnail(self, size: tuple[int, int]) -> Image.Image:
         """Return a PIL.Image containing an RGB thumbnail of the image.
@@ -485,14 +486,6 @@ class ImageSlide(AbstractSlide):
         if self._profile is not None:
             tile.info['icc_profile'] = self._profile
         return tile
-
-    def set_cache(self, cache: OpenSlideCache) -> None:
-        """Use the specified cache to store recently decoded slide tiles.
-
-        ImageSlide does not support caching, so this method does nothing.
-
-        cache: an OpenSlideCache object."""
-        pass
 
 
 def open_slide(filename: lowlevel.Filename) -> OpenSlide | ImageSlide:
