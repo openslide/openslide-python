@@ -100,9 +100,9 @@ OpenSlide objects
    If any operation on the object fails, :exc:`OpenSlideError` is raised.
    OpenSlide has latching error semantics: once :exc:`OpenSlideError` is
    raised, all future operations on the :class:`OpenSlide`, other than
-   :meth:`close()`, will also raise :exc:`OpenSlideError`.
+   :meth:`close`, will also raise :exc:`OpenSlideError`.
 
-   :meth:`close()` is called automatically when the object is deleted.
+   :meth:`close` is called automatically when the object is deleted.
    The object may be used as a context manager, in which case it will be
    closed upon exiting the context.
 
@@ -161,7 +161,7 @@ OpenSlide objects
 
       Images, such as label or macro images, which are associated with this
       slide.  This is a :class:`~collections.abc.Mapping` from image
-      name to RGBA :class:`Image <PIL.Image.Image>`.
+      name to RGBA :class:`~PIL.Image.Image`.
 
       Unlike in the C interface, these images are not premultiplied.
 
@@ -176,8 +176,8 @@ OpenSlide objects
 
    .. method:: read_region(location: tuple[int, int], level: int, size: tuple[int, int]) -> ~PIL.Image.Image
 
-      Return an RGBA :class:`Image <PIL.Image.Image>` containing the
-      contents of the specified region.
+      Return an RGBA :class:`~PIL.Image.Image` containing the contents of
+      the specified region.
 
       Unlike in the C interface, the image data is not premultiplied.
 
@@ -194,8 +194,8 @@ OpenSlide objects
 
    .. method:: get_thumbnail(size: tuple[int, int]) -> ~PIL.Image.Image
 
-      Return an :class:`Image <PIL.Image.Image>` containing an RGB thumbnail
-      of the slide.
+      Return an :class:`~PIL.Image.Image` containing an RGB thumbnail of the
+      slide.
 
       :param size: the maximum size of the thumbnail as a ``(width, height)``
          tuple
@@ -347,7 +347,7 @@ Exceptions
 
    Once :exc:`OpenSlideError` has been raised by a particular
    :class:`OpenSlide`, all future operations on that :class:`OpenSlide`
-   (other than :meth:`close() <OpenSlide.close>`) will also raise
+   (other than :meth:`~OpenSlide.close`) will also raise
    :exc:`OpenSlideError`.
 
 .. exception:: OpenSlideUnsupportedFormatError
@@ -372,10 +372,10 @@ Wrapping a Pillow Image
 
 .. class:: ImageSlide(file: str | bytes | ~os.PathLike[typing.Any] | ~PIL.Image.Image)
 
-   A wrapper around an :class:`Image <PIL.Image.Image>` object that
-   provides an :class:`OpenSlide`-compatible API.
+   A wrapper around an :class:`~PIL.Image.Image` object that provides an
+   :class:`OpenSlide`-compatible API.
 
-   :param file: a filename or :class:`Image <PIL.Image.Image>` object
+   :param file: a filename or :class:`~PIL.Image.Image` object
    :raises OSError: if the file cannot be opened
 
 .. function:: open_slide(filename: str | bytes | ~os.PathLike[typing.Any]) -> OpenSlide | ImageSlide
@@ -403,17 +403,16 @@ Deep Zoom or a similar format.
 
 .. class:: DeepZoomGenerator(osr: AbstractSlide, tile_size: int = 254, overlap: int = 1, limit_bounds: bool = False)
 
-   A Deep Zoom generator that wraps an
-   :class:`OpenSlide <openslide.OpenSlide>` object,
-   :class:`ImageSlide <openslide.ImageSlide>` object, or user-provided
-   instance of :class:`~openslide.AbstractSlide`.
+   A Deep Zoom generator that wraps an :class:`~openslide.OpenSlide` object,
+   :class:`~openslide.ImageSlide` object, or user-provided instance of
+   :class:`~openslide.AbstractSlide`.
 
    :param osr: the slide object
    :param tile_size: the width and height of a single tile.  For best viewer
       performance, ``tile_size + 2 * overlap`` should be a power of two.
    :param overlap: the number of extra pixels to add to each interior edge of a
       tile
-   :param limit_bounds: ``True`` to render only the non-empty slide region
+   :param limit_bounds: :obj:`True` to render only the non-empty slide region
 
    .. attribute:: level_count
 
@@ -451,7 +450,7 @@ Deep Zoom or a similar format.
 
    .. method:: get_tile(level: int, address: tuple[int, int]) -> ~PIL.Image.Image
 
-      Return an RGB :class:`Image <PIL.Image.Image>` for a tile.
+      Return an RGB :class:`~PIL.Image.Image` for a tile.
 
       :param level: the Deep Zoom level
       :param address: the address of the tile within the level as a
@@ -463,7 +462,7 @@ Deep Zoom or a similar format.
       <openslide.OpenSlide.read_region>` arguments corresponding to the
       specified tile.
 
-      Most applications should use :meth:`get_tile()` instead.
+      Most applications should use :meth:`get_tile` instead.
 
       :param level: the Deep Zoom level
       :param address: the address of the tile within the level as a
