@@ -72,14 +72,16 @@ def _load_library() -> CDLL:
         pass
 
     def try_load(names: list[str]) -> CDLL:
-        for name in names:
-            try:
-                return cdll.LoadLibrary(name)
-            except OSError:
-                if name == names[-1]:
-                    raise
-        else:
-            raise ValueError('No library names specified')
+        try:
+            return cdll.LoadLibrary(names[0])
+        except OSError:
+            remaining = names[1:]
+            if remaining:
+                # handle recursively so implicit exception chaining captures
+                # all the failures
+                return try_load(remaining)
+            else:
+                raise
 
     if platform.system() == 'Windows':
         try:
