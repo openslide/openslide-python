@@ -84,18 +84,18 @@ def _load_library() -> CDLL:
     if platform.system() == 'Windows':
         try:
             return try_load(['libopenslide-1.dll', 'libopenslide-0.dll'])
-        except FileNotFoundError:
+        except FileNotFoundError as exc:
             raise ModuleNotFoundError(
                 "Couldn't locate OpenSlide DLL. "
                 "Try `pip install openslide-bin`, "
                 "or if you're using an OpenSlide binary package, "
                 "ensure you've called os.add_dll_directory(). "
                 "https://openslide.org/api/python/#installing"
-            )
+            ) from exc
     elif platform.system() == 'Darwin':
         try:
             return try_load(['libopenslide.1.dylib', 'libopenslide.0.dylib'])
-        except OSError:
+        except OSError as exc:
             # MacPorts doesn't add itself to the dyld search path, but
             # does add itself to the find_library() search path
             # (DEFAULT_LIBRARY_FALLBACK in ctypes.macholib.dyld).
@@ -107,17 +107,17 @@ def _load_library() -> CDLL:
                     "Couldn't locate OpenSlide dylib. "
                     "Try `pip install openslide-bin`. "
                     "https://openslide.org/api/python/#installing"
-                )
+                ) from exc
             return cdll.LoadLibrary(lib)
     else:
         try:
             return try_load(['libopenslide.so.1', 'libopenslide.so.0'])
-        except OSError:
+        except OSError as exc:
             raise ModuleNotFoundError(
                 "Couldn't locate OpenSlide shared library. "
                 "Try `pip install openslide-bin`. "
                 "https://openslide.org/api/python/#installing"
-            )
+            ) from exc
 
 
 _lib = _load_library()
