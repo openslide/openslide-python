@@ -568,7 +568,6 @@ set_cache: _Func[[_OpenSlide, _OpenSlideCache], None] = _func(
     'openslide_set_cache',
     None,
     [_OpenSlide, _OpenSlideCache],
-    None,
     minimum_version='4.0.0',
 )
 
