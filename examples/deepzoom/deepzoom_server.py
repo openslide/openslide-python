@@ -26,6 +26,7 @@ import base64
 from collections.abc import Callable
 from io import BytesIO
 import os
+from pathlib import Path
 import re
 from typing import TYPE_CHECKING, Any, Literal, Mapping
 from unicodedata import normalize
@@ -93,7 +94,7 @@ class DeepZoomServer(Flask):
 
 def create_app(
     config: dict[str, Any] | None = None,
-    config_file: str | None = None,
+    config_file: Path | None = None,
 ) -> Flask:
     # Create and configure app
     app = DeepZoomServer(__name__)
@@ -113,9 +114,9 @@ def create_app(
         app.config.from_mapping(config)
 
     # Open slide
-    slidefile = app.config['DEEPZOOM_SLIDE']
-    if slidefile is None:
+    if app.config['DEEPZOOM_SLIDE'] is None:
         raise ValueError('No slide file specified')
+    slidefile = Path(app.config['DEEPZOOM_SLIDE'])
     config_map = {
         'DEEPZOOM_TILE_SIZE': 'tile_size',
         'DEEPZOOM_OVERLAP': 'overlap',
@@ -273,7 +274,7 @@ if __name__ == '__main__':
         ),
     )
     parser.add_argument(
-        '-c', '--config', metavar='FILE', dest='config', help='config file'
+        '-c', '--config', metavar='FILE', type=Path, dest='config', help='config file'
     )
     parser.add_argument(
         '-d',
@@ -333,6 +334,7 @@ if __name__ == '__main__':
     parser.add_argument(
         'DEEPZOOM_SLIDE',
         metavar='SLIDE',
+        type=Path,
         nargs='?',
         help='slide file',
     )
