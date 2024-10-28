@@ -293,8 +293,8 @@ class OpenSlide(AbstractSlide):
         cache: an OpenSlideCache object."""
         try:
             llcache = cache._openslide_cache
-        except AttributeError:
-            raise TypeError('Not a cache object')
+        except AttributeError as exc:
+            raise TypeError('Not a cache object') from exc
         lowlevel.set_cache(self._osr, llcache)
 
 
