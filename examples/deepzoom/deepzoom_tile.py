@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined]
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined,unused-ignore]  # noqa: E501
             import openslide
     else:
         import openslide
@@ -382,6 +382,19 @@ class DeepZoomStaticTiler:
 
 
 if __name__ == '__main__':
+    try:
+        # Python 3.13+
+        available_cpus = os.process_cpu_count()  # type: ignore[attr-defined]
+    except AttributeError:
+        try:
+            # Linux
+            available_cpus = len(
+                os.sched_getaffinity(0)  # type: ignore[attr-defined,unused-ignore]
+            )
+        except AttributeError:
+            # default
+            available_cpus = 4
+
     parser = ArgumentParser(usage='%(prog)s [options] <SLIDE>')
     parser.add_argument(
         '-B',
@@ -433,8 +446,8 @@ if __name__ == '__main__':
         metavar='COUNT',
         dest='workers',
         type=int,
-        default=4,
-        help='number of worker processes to start [4]',
+        default=available_cpus,
+        help=f'number of worker processes to start [{available_cpus}]',
     )
     parser.add_argument(
         '-o',
