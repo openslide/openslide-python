@@ -6,6 +6,7 @@
 * examples: Default to ICC profile's default intent, not absolute colorimetric
 * tests: Correctly require pytest ≥ 7.0
 
+
 ## Version 1.3.0, 2023-07-22
 
 * Support new soname in OpenSlide ≥ 4.0.0
@@ -20,6 +21,7 @@
 * examples: Update OpenSeadragon to 4.1.0
 * examples: Correctly import `openslide` on Windows if `OPENSLIDE_PATH` not set
 * tests: Fix `pytest` of installed package from source directory
+
 
 ## Version 1.2.0, 2022-06-17
 
@@ -37,12 +39,14 @@
 * examples: Read OpenSlide DLL path from `OPENSLIDE_PATH` env var on Windows
 * examples: Update OpenSeadragon to 3.0.0
 
+
 ## Version 1.1.2, 2020-09-13
 
 * Fix install with setuptools ≥ 46
 * Fix `ImportError` with Python 3.9
 * Fix docs build with Sphinx 2.x
 * Remove `--without-performance` install option
+
 
 ## Version 1.1.1, 2016-06-11
 
@@ -54,6 +58,7 @@
 * Add test suite
 * examples: Drop support for Internet Explorer \< 9
 
+
 ## Version 1.1.0, 2015-04-20
 
 * Improve pixel read performance using optional extension module
@@ -63,9 +68,11 @@
 * examples: Verify at server startup that file was specified
 * examples: Disable pinch zoom outside of viewer
 
+
 ## Version 1.0.1, 2014-03-09
 
 * Fix documentation build breakage
+
 
 ## Version 1.0.0, 2014-03-09
 
@@ -73,10 +80,12 @@
 * Switch from distutils to setuptools
 * Declare Pillow dependency in `setup.py` (but still support PIL)
 
+
 ## Version 0.5.1, 2014-01-26
 
 * Fix breakage on Python 2.6
 * examples: Fix tile server breakage on classic PIL
+
 
 ## Version 0.5.0, 2014-01-25
 
@@ -93,6 +102,7 @@
 * examples: Avoid loading smallest Deep Zoom levels
 * examples: Update OpenSeadragon to 1.0.0
 
+
 ## Version 0.4.0, 2012-09-08
 
 * Require OpenSlide 3.3.0
@@ -100,6 +110,7 @@
 * Provide OpenSlide version in `openslide.__library_version__`
 * Properly report `openslide_open()` errors on OpenSlide 3.3.0
 * Fix library loading on Mac OS X
+
 
 ## Version 0.3.0, 2011-12-16
 
@@ -109,6 +120,7 @@
 * Fix loading libopenslide on Windows
 * Fix for large JPEG tiles in example Deep Zoom tilers
 * Make example static tiler output self-contained
+
 
 ## Version 0.2.0, 2011-09-02
 
