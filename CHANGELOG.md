@@ -1,5 +1,38 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.4.0, 2024-10-29
+
+### New features
+
+* Support OpenSlide [installed from PyPI][] with `pip install openslide-bin`
+* Add type hints for Python ≥ 3.10
+* Add wheels for Linux aarch64, Linux x86_64, and macOS arm64 + x86_64
+* Build version-independent wheels on Python ≥ 3.11
+* examples: Default `deepzoom_tile.py` job count to available CPUs when known
+
+### Changes
+
+* Drop wheel for 32-bit Windows
+* Require `AbstractSlide` subclasses to implement all abstract methods
+* Provide default `AbstractSlide.set_cache()` implementation
+* Switch to [PEP 621][] project metadata
+* docs: Document existence of `AbstractSlide`
+* examples: Update OpenSeadragon to 5.0.0
+
+### Bug fixes
+
+* If OpenSlide cannot be loaded, report errors from all attempts
+* Fix `OpenSlide` support for `bytes` filename arguments (1.2.0 regression)
+* Disallow arbitrary types as `OpenSlide` filename arguments (1.2.0 regression)
+* Encode `OpenSlide` filename arguments using [Python filesystem encoding][]
+* Add error check to `OpenSlide.set_cache()`
+* docs: Fix types of properties that return tuples of items
+
+[installed from PyPI]: https://pypi.org/project/openslide-bin/
+[PEP 621]: https://peps.python.org/pep-0621/
+[Python filesystem encoding]: https://docs.python.org/3/glossary.html#term-filesystem-encoding-and-error-handler
+
+
 ## Version 1.3.1, 2023-10-08
 
 * docs: Document using ICC profile's default intent, not absolute colorimetric
