@@ -21,7 +21,4 @@ setup(
         # tag wheel for Limited API
         'bdist_wheel': {'py_limited_api': 'cp311'} if _abi3 else {},
     },
-    package_data={
-        'openslide': ['py.typed'],
-    },
 )
