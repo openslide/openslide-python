@@ -283,14 +283,14 @@ jobs:
       run: |
         version=$(echo "${{ github.ref_name }}" | sed "s/^v//")
         # recompress tarball with xz
-        gunzip -k "${{ needs.pre-commit.outputs.dist-base }}/openslide-python-${version}.tar.gz"
-        tar xf "${{ needs.pre-commit.outputs.dist-base }}/openslide-python-${version}.tar"
-        xz -9 "${{ needs.pre-commit.outputs.dist-base }}/openslide-python-${version}.tar"
+        gunzip -k "${{ needs.pre-commit.outputs.dist-base }}/openslide_python-${version}.tar.gz"
+        tar xf "${{ needs.pre-commit.outputs.dist-base }}/openslide_python-${version}.tar"
+        xz -9 "${{ needs.pre-commit.outputs.dist-base }}/openslide_python-${version}.tar"
         # extract changelog
         awk -e '/^## / && ok {exit}' \
             -e '/^## / {ok=1; next}' \
             -e 'ok {print}' \
-            "openslide-python-$version/CHANGELOG.md" > changes
+            "openslide_python-$version/CHANGELOG.md" > changes
         gh release create --latest --verify-tag \
             --repo "${{ github.repository }}" \
             --title "OpenSlide Python $version" \
