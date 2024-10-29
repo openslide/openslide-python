@@ -38,10 +38,14 @@ Documentation = "https://openslide.org/api/python/"
 Repository = "https://github.com/openslide/openslide-python"
 
 [tool.setuptools]
+include-package-data = false
 packages = ["openslide"]
 
 [tool.setuptools.dynamic]
 version = {attr = "openslide._version.__version__"}
+
+[tool.setuptools.package-data]
+openslide = ["py.typed", "*.pyi"]
 
 [tool.black]
 skip-string-normalization = true
