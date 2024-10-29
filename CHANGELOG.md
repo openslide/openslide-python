@@ -13,6 +13,7 @@
 ### Changes
 
 * Drop wheel for 32-bit Windows
+* Rename source distribution to `openslide_python` per [PEP 625][]
 * Require `AbstractSlide` subclasses to implement all abstract methods
 * Provide default `AbstractSlide.set_cache()` implementation
 * Switch to [PEP 621][] project metadata
@@ -29,6 +30,7 @@
 * docs: Fix types of properties that return tuples of items
 
 [installed from PyPI]: https://pypi.org/project/openslide-bin/
+[PEP 625]: https://peps.python.org/pep-0625/
 [PEP 621]: https://peps.python.org/pep-0621/
 [Python filesystem encoding]: https://docs.python.org/3/glossary.html#term-filesystem-encoding-and-error-handler
 
