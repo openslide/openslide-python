@@ -1,5 +1,13 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.4.1, 2024-10-30
+
+### Bug fixes
+
+* Fix `setup.py install` with old setuptools (1.4.0 regression)
+* examples: Fix `deepzoom_tile.py -r` with Jinja \< 2.11.0 (1.4.0 regression)
+
+
 ## Version 1.4.0, 2024-10-29
 
 ### New features
