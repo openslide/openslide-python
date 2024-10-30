@@ -231,6 +231,25 @@ jobs:
         path: artifacts/whl
         compression-level: 0
 
+  setuptools:
+    name: Setuptools install
+    needs: pre-commit
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libopenslide0 python3-pil
+        pip install pytest
+    - name: Install OpenSlide Python
+      run: sudo python setup.py install
+    - name: Run tests
+      run: pytest -v
+    - name: Tile slide
+      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
+
   docs:
     name: Docs
     needs: pre-commit
