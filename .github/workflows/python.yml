@@ -310,9 +310,11 @@ jobs:
             -e '/^## / {ok=1; next}' \
             -e 'ok {print}' \
             "openslide_python-$version/CHANGELOG.md" > changes
+        # create release; upload artifacts but not *.publish.attestation
+        # files created by gh-action-pypi-publish
         gh release create --latest --verify-tag \
             --repo "${{ github.repository }}" \
             --title "OpenSlide Python $version" \
             --notes-file changes \
             "${{ github.ref_name }}" \
-            "${{ needs.pre-commit.outputs.dist-base }}/"*
+            "${{ needs.pre-commit.outputs.dist-base }}/"*.{tar.gz,tar.xz,whl}
