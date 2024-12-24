@@ -1,6 +1,6 @@
-//! openseadragon 5.0.0
-//! Built on 2024-08-14
-//! Git commit: v5.0.0-0-f28b7fc1
+//! openseadragon 5.0.1
+//! Built on 2024-12-09
+//! Git commit: v5.0.1-0-480de92d
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 /**
  * @namespace OpenSeadragon
- * @version openseadragon 5.0.0
+ * @version openseadragon 5.0.1
  * @classdesc The root namespace for OpenSeadragon.  All utility methods
  * and classes are defined on or below this namespace.
  *
@@ -220,7 +220,7 @@
   *     For complete list of modes, please @see {@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation/ globalCompositeOperation}
   *
   * @property {Boolean} [imageSmoothingEnabled=true]
-  *     Image smoothing for canvas rendering (only if the canvas drawer is used). Note: Ignored
+  *     Image smoothing for rendering (only if the canvas or webgl drawer is used). Note: Ignored
   *     by some (especially older) browsers which do not support this canvas property.
   *     This property can be changed in {@link Viewer.DrawerBase.setImageSmoothingEnabled}.
   *
@@ -856,10 +856,10 @@ function OpenSeadragon( options ){
      * @since 1.0.0
      */
     $.version = {
-        versionStr: '5.0.0',
+        versionStr: '5.0.1',
         major: parseInt('5', 10),
         minor: parseInt('0', 10),
-        revision: parseInt('0', 10)
+        revision: parseInt('1', 10)
     };
 
 
@@ -10407,8 +10407,7 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
     },
 
     /**
-     * Update pixel density ratio, clears all tiles and triggers updates for
-     * all items if the ratio has changed.
+     * Update pixel density ratio and forces a resize operation.
      * @private
      */
      _updatePixelDensityRatio: function() {
@@ -10416,8 +10415,7 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
         var currentPixelDensityRatio = $.getCurrentPixelDensityRatio();
         if (previusPixelDensityRatio !== currentPixelDensityRatio) {
             $.pixelDensityRatio = currentPixelDensityRatio;
-            this.world.resetItems();
-            this.forceRedraw();
+            this.forceResize();
         }
     },
 
@@ -12289,7 +12287,6 @@ $.extend( $.Navigator.prototype, $.EventSource.prototype, $.Viewer.prototype, /*
     },
 
     setDisplayTransform: function(rule) {
-      setElementTransform(this.displayRegion, rule);
       setElementTransform(this.canvas, rule);
       setElementTransform(this.element, rule);
     },
@@ -19044,9 +19041,17 @@ $.Tile.prototype = {
             };
         }
 
+        this.elementWrapper = document.createElement('div');
         this.element = options.element;
-        this.element.innerHTML = "<div>" + this.element.innerHTML + "</div>";
-        this.style = options.element.style;
+        this.elementWrapper.appendChild(this.element);
+
+        if (this.element.id) {
+            this.elementWrapper.id = "overlay-wrapper-" + this.element.id;
+        } else {
+            this.elementWrapper.id = "overlay-wrapper";
+        }
+
+        this.style = this.elementWrapper.style;
         this._init(options);
     };
 
@@ -19113,7 +19118,7 @@ $.Tile.prototype = {
          * @function
          */
         destroy: function() {
-            var element = this.element;
+            var element = this.elementWrapper;
             var style = this.style;
 
             if (element.parentNode) {
@@ -19158,7 +19163,7 @@ $.Tile.prototype = {
          * @param {Element} container
          */
         drawHTML: function(container, viewport) {
-            var element = this.element;
+            var element = this.elementWrapper;
             if (element.parentNode !== container) {
                 //save the source parent for later if we need it
                 element.prevElementParent = element.parentNode;
@@ -19169,7 +19174,7 @@ $.Tile.prototype = {
                 this.style.position = "absolute";
                 // this.size is used by overlays which don't get scaled in at
                 // least one direction when this.checkResize is set to false.
-                this.size = $.getElementSize(element);
+                this.size = $.getElementSize(this.elementWrapper);
             }
             var positionAndSize = this._getOverlayPositionAndSize(viewport);
             var position = positionAndSize.position;
@@ -19186,15 +19191,15 @@ $.Tile.prototype = {
                 this.onDraw(position, size, this.element);
             } else {
                 var style = this.style;
-                var innerElement = element.firstChild;
-                var innerStyle = innerElement.style;
+                var innerStyle = this.element.style;
+                innerStyle.display = "block";
                 style.left = position.x + "px";
                 style.top = position.y + "px";
                 if (this.width !== null) {
-                    style.width = size.x + "px";
+                    innerStyle.width = size.x + "px";
                 }
                 if (this.height !== null) {
-                    style.height = size.y + "px";
+                    innerStyle.height = size.y + "px";
                 }
                 var transformOriginProp = $.getCssPropertyWithVendorPrefix(
                     'transformOrigin');
@@ -19219,7 +19224,7 @@ $.Tile.prototype = {
                         style[transformProp] = "";
                     }
                 }
-                style.display = 'block';
+                style.display = 'flex';
             }
         },
 
@@ -19271,7 +19276,7 @@ $.Tile.prototype = {
             }
             if (this.checkResize &&
                 (this.width === null || this.height === null)) {
-                var eltSize = this.size = $.getElementSize(this.element);
+                var eltSize = this.size = $.getElementSize(this.elementWrapper);
                 if (this.width === null) {
                     width = eltSize.x;
                 }
@@ -21155,6 +21160,8 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             this._renderingCanvas = null;
             this._backupCanvasDrawer = null;
 
+            this._imageSmoothingEnabled = true; // will be updated by setImageSmoothingEnabled
+
             // Add listeners for events that require modifying the scene or camera
             this._boundToTileReady = ev => this._tileReadyHandler(ev);
             this._boundToImageUnloaded = ev => this._imageUnloadedHandler(ev);
@@ -21198,10 +21205,7 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-            let canvases = Array.from(this._TextureMap.keys());
-            canvases.forEach(canvas => {
-                this._cleanupImageData(canvas); // deletes texture, removes from _TextureMap
-            });
+            this._unloadTextures();
 
             // Delete all our created resources
             gl.deleteBuffer(this._secondPass.bufferOutputPosition);
@@ -21223,6 +21227,7 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             // unbind our event listeners from the viewer
             this.viewer.removeHandler("tile-ready", this._boundToTileReady);
             this.viewer.removeHandler("image-unloaded", this._boundToImageUnloaded);
+            this.viewer.removeHandler("resize", this._resizeHandler);
 
             // set our webgl context reference to null to enable garbage collection
             this._gl = null;
@@ -21317,9 +21322,10 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
         */
         draw(tiledImages){
             let gl = this._gl;
+            const bounds = this.viewport.getBoundsNoRotateWithMargins(true);
             let view = {
-                bounds: this.viewport.getBoundsNoRotate(true),
-                center: this.viewport.getCenter(true),
+                bounds: bounds,
+                center: new OpenSeadragon.Point(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2),
                 rotation: this.viewport.getRotation(true) * Math.PI / 180
             };
 
@@ -21511,7 +21517,7 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
                         gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferTexturePosition);
                         gl.vertexAttribPointer(this._secondPass.aTexturePosition, 2, gl.FLOAT, false, 0, 0);
                         gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferOutputPosition);
-                        gl.vertexAttribPointer(this._firstPass.aOutputPosition, 2, gl.FLOAT, false, 0, 0);
+                        gl.vertexAttribPointer(this._secondPass.aOutputPosition, 2, gl.FLOAT, false, 0, 0);
 
                         // Draw the quad (two triangles)
                         gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -21547,11 +21553,15 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
 
         // Public API required by all Drawer implementations
         /**
-        * Required by DrawerBase, but has no effect on WebGLDrawer.
-        * @param {Boolean} enabled
+        * Sets whether image smoothing is enabled or disabled
+        * @param {Boolean} enabled If true, uses gl.LINEAR as the TEXTURE_MIN_FILTER and TEXTURE_MAX_FILTER, otherwise gl.NEAREST.
         */
         setImageSmoothingEnabled(enabled){
-            // noop - this property does not impact WebGLDrawer
+            if( this._imageSmoothingEnabled !== enabled ){
+                this._imageSmoothingEnabled = enabled;
+                this._unloadTextures();
+                this.viewer.world.draw();
+            }
         }
 
         /**
@@ -21662,6 +21672,11 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
         }
 
         // private
+        _textureFilter(){
+            return this._imageSmoothingEnabled ? this._gl.LINEAR : this._gl.NEAREST;
+        }
+
+        // private
         _setupRenderer(){
             let gl = this._gl;
             if(!gl){
@@ -21677,7 +21692,7 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this._renderToTexture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this._renderingCanvas.width, this._renderingCanvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._textureFilter());
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -21876,7 +21891,7 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, this._renderToTexture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._textureFilter());
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -21902,8 +21917,7 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
 
             this._gl = this._renderingCanvas.getContext('webgl');
 
-            //make the additional canvas elements mirror size changes to the output canvas
-            this.viewer.addHandler("resize", function(){
+            this._resizeHandler = function(){
 
                 if(_this._outputCanvas !== _this.viewer.drawer.canvas){
                     _this._outputCanvas.style.width = _this.viewer.drawer.canvas.clientWidth + 'px';
@@ -21924,7 +21938,10 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
 
                 // important - update the size of the rendering viewport!
                 _this._resizeRenderer();
-            });
+            };
+
+            //make the additional canvas elements mirror size changes to the output canvas
+            this.viewer.addHandler("resize", this._resizeHandler);
         }
 
         // private
@@ -22014,8 +22031,8 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
                 // Set the parameters so we can render any size image.
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._textureFilter());
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._textureFilter());
 
                 // Upload the image into the texture.
                 this._uploadImageData(tileContext);
@@ -22037,6 +22054,14 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
                 x: widthOverlapFraction,
                 y: heightOverlapFraction
             };
+        }
+
+        // private
+        _unloadTextures(){
+            let canvases = Array.from(this._TextureMap.keys());
+            canvases.forEach(canvas => {
+                this._cleanupImageData(canvas); // deletes texture, removes from _TextureMap
+            });
         }
 
         // private
@@ -25101,6 +25126,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             this._clip = null;
         }
 
+        this._needsUpdate = true;
         this._needsDraw = true;
         /**
          * Raised when the TiledImage's clip is changed.
