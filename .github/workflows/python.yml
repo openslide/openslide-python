@@ -234,21 +234,23 @@ jobs:
   setuptools:
     name: Setuptools install
     needs: pre-commit
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
     steps:
-    - name: Check out repo
-      uses: actions/checkout@v4
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libopenslide0 python3-pil
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            git libopenslide0 python3-jinja2 python3-pil python3-pip
         pip install pytest
+    - name: Check out repo
+      uses: actions/checkout@v4
     - name: Install OpenSlide Python
-      run: sudo python setup.py install
+      run: python3 setup.py install
     - name: Run tests
       run: pytest -v
     - name: Tile slide
-      run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
+      run: python3 examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
 
   docs:
     name: Docs
