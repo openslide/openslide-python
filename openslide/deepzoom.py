@@ -263,10 +263,10 @@ class DeepZoomGenerator:
 
     @staticmethod
     def _pairs_from_n_tuples(
-        tuples: tuple[tuple[int, ...], ...]
+        tuples: tuple[tuple[int, ...], ...],
     ) -> tuple[tuple[int, int], ...]:
         def all_pairs(
-            tuples: tuple[tuple[int, ...], ...]
+            tuples: tuple[tuple[int, ...], ...],
         ) -> TypeGuard[tuple[tuple[int, int], ...]]:
             return all(len(t) == 2 for t in tuples)
 

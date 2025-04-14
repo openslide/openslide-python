@@ -322,7 +322,7 @@ if TYPE_CHECKING:
     class _Func(Protocol[_P, _T]):
         available: bool
 
-        def __call__(self, *args: _P.args) -> _T: ...
+        def __call__(self, *args: _P.args) -> _T: ...  # type: ignore[valid-type]
 
     class _CTypesFunc(_Func[_P, _T]):
         restype: type | None
@@ -358,7 +358,7 @@ def _func(
 
 
 def _wraps_funcs(
-    wrapped: list[_Func[..., Any]]
+    wrapped: list[_Func[..., Any]],
 ) -> Callable[[Callable[_P, _T]], _Func[_P, _T]]:
     def decorator(fn: Callable[_P, _T]) -> _Func[_P, _T]:
         if TYPE_CHECKING:
