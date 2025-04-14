@@ -67,6 +67,14 @@ repos:
         name: Validate reStructuredText syntax
         additional_dependencies: [sphinx, toml]
 
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        name: Check spelling with codespell
+        additional_dependencies:
+          - tomli  # Python < 3.11
+
   - repo: meta
     hooks:
       - id: check-hooks-apply
