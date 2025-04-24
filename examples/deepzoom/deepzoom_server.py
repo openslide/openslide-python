@@ -23,12 +23,12 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 import base64
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from io import BytesIO
 import os
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING, Any, Literal, Mapping
+from typing import TYPE_CHECKING, Any, Literal
 from unicodedata import normalize
 import zlib
 
