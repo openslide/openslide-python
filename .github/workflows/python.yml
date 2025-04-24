@@ -235,7 +235,7 @@ jobs:
     name: Setuptools install
     needs: pre-commit
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    container: ubuntu:22.04
     steps:
     - name: Install dependencies
       run: |
