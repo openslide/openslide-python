@@ -1,5 +1,5 @@
 include *.md
-global-include py.typed *.pyi
+global-include LICENSE.* py.typed *.pyi
 recursive-include doc *.py *.rst
 recursive-include examples *.html *.js *.png *.py
 recursive-include tests *.dcm *.png *.py *.svs *.tiff
