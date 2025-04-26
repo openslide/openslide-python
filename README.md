@@ -73,7 +73,13 @@ installing so OpenSlide Python can find OpenSlide.
 ## License
 
 OpenSlide Python is released under the terms of the [GNU Lesser General
-Public License, version 2.1](https://openslide.org/license/).
+Public License, version 2.1](https://openslide.org/license/).  The Deep Zoom
+example code includes JavaScript released under the
+[BSD license](https://github.com/openslide/openslide-python/tree/main/examples/deepzoom/licenses/LICENSE.openseadragon),
+the
+[MIT license](https://github.com/openslide/openslide-python/tree/main/examples/deepzoom/licenses/LICENSE.jquery),
+and released into the
+[public domain](https://github.com/openslide/openslide-python/tree/main/examples/deepzoom/licenses/LICENSE.openseadragon-scalebar).
 
 OpenSlide Python is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
