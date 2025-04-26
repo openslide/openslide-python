@@ -5,14 +5,14 @@ maintainers = [
 ]
 description = "Python interface to OpenSlide"
 readme = "README.md"
-license = {text = "GNU Lesser General Public License, version 2.1"}
+license = "LGPL-2.1-only AND BSD-3-Clause AND MIT AND LicenseRef-Public-Domain"
+license-files = ["COPYING.LESSER", "**/LICENSE.*"]
 keywords = ["OpenSlide", "whole-slide image", "virtual slide", "library"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Healthcare Industry",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
@@ -87,5 +87,5 @@ pythonpath = "tests"
 ignore_messages = "(Hyperlink target \".*\" is not referenced\\.$)"
 
 [build-system]
-requires = ["setuptools >= 61.0.0"]
+requires = ["setuptools >= 77.0.0"]
 build-backend = "setuptools.build_meta"
