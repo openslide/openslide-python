@@ -25,9 +25,10 @@ This package provides Python bindings for the OpenSlide library.
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from collections.abc import Iterator, Mapping
 from io import BytesIO
 from types import TracebackType
-from typing import Iterator, Literal, Mapping, TypeVar
+from typing import Literal, TypeVar
 
 from PIL import Image, ImageCms
 
