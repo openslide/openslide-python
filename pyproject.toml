@@ -36,6 +36,9 @@ Documentation = "https://openslide.org/api/python/"
 "Release notes" = "https://github.com/openslide/openslide-python/blob/main/CHANGELOG.md"
 Repository = "https://github.com/openslide/openslide-python"
 
+[dependency-groups]
+test = ["pytest >= 7"]
+
 [tool.setuptools]
 include-package-data = false
 packages = ["openslide"]
