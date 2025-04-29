@@ -1,5 +1,19 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.4.2, 2025-04-28
+
+### Changes
+
+* Drop support for Python 3.8
+* Switch to [PEP 639][] project license metadata
+* examples: Update OpenSeadragon to 5.0.1
+* examples: Add license files for bundled JavaScript
+* tests: Add [PEP 735][] dependency group for test dependencies
+
+[PEP 639]: https://peps.python.org/pep-0639/
+[PEP 735]: https://peps.python.org/pep-0735/
+
+
 ## Version 1.4.1, 2024-10-30
 
 ### Bug fixes
