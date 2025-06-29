@@ -102,16 +102,21 @@ static PyMethodDef _convert_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+static PyModuleDef_Slot _convert_slots[] = {
+    {0, NULL}
+};
+
 static struct PyModuleDef _convert_module = {
     PyModuleDef_HEAD_INIT,
     "_convert",
     NULL,
     0,
     _convert_methods,
+    _convert_slots,
 };
 
 PyMODINIT_FUNC
 PyInit__convert(void)
 {
-    return PyModule_Create2(&_convert_module, PYTHON_API_VERSION);
+    return PyModuleDef_Init(&_convert_module);
 }
