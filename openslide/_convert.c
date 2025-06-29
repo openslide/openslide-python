@@ -96,22 +96,22 @@ DONE:
     return ret;
 }
 
-static PyMethodDef ConvertMethods[] = {
+static PyMethodDef _convert_methods[] = {
     {"argb2rgba", _convert_argb2rgba, METH_VARARGS,
         "Convert aRGB to RGBA in place."},
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef convertmodule = {
+static struct PyModuleDef _convert_module = {
     PyModuleDef_HEAD_INIT,
     "_convert",
     NULL,
     0,
-    ConvertMethods
+    _convert_methods,
 };
 
 PyMODINIT_FUNC
 PyInit__convert(void)
 {
-    return PyModule_Create2(&convertmodule, PYTHON_API_VERSION);
+    return PyModule_Create2(&_convert_module, PYTHON_API_VERSION);
 }
