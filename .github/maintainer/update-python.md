@@ -1,3 +1,10 @@
+---
+link-text: Update checklist for a Python minor release
+repo: openslide/openslide-python
+title: Add Python X.Y
+labels: [release]
+---
+
 # Adding a new Python release
 
 - Update Git main
