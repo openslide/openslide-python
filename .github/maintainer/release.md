@@ -1,3 +1,10 @@
+---
+link-text: Release checklist
+repo: openslide/openslide-python
+title: Release X.Y.Z
+labels: [release]
+---
+
 # OpenSlide Python release process
 
 - [ ] Update `CHANGELOG.md` and version in `openslide/_version.py`
