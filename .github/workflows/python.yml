@@ -22,9 +22,9 @@ jobs:
       docs-base: ${{ steps.paths.outputs.docs }}
     steps:
     - name: Check out repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.13'
     - name: Run pre-commit hooks
@@ -52,10 +52,10 @@ jobs:
             sdist: sdist
     steps:
     - name: Check out repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
       if: matrix.upstream-python == null
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
     - name: Set up Python ${{ matrix.python-version }} (macOS fallback)
@@ -162,9 +162,9 @@ jobs:
         openslide: [zip, wheel]
     steps:
     - name: Check out repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install Python tools
@@ -234,7 +234,7 @@ jobs:
             git libopenslide0 python3-jinja2 python3-pil python3-pip
         pip install pytest
     - name: Check out repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Install OpenSlide Python
       run: python3 setup.py install
     - name: Run tests
@@ -248,9 +248,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.13'
     - name: Install Python tools
@@ -279,7 +279,7 @@ jobs:
       id-token: write
     steps:
     - name: Download artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         pattern: "${{ needs.pre-commit.outputs.dist-base }}-*"
         merge-multiple: true
