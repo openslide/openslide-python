@@ -31,6 +31,7 @@ rather than in the high-level interface.)
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from ctypes import (
     CDLL,
     POINTER,
@@ -49,7 +50,7 @@ from ctypes import (
 from itertools import count
 import os
 import platform
-from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast
 
 from PIL import Image
 
