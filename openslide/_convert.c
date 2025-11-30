@@ -103,6 +103,9 @@ static PyMethodDef _convert_methods[] = {
 };
 
 static PyModuleDef_Slot _convert_slots[] = {
+#if PY_VERSION_HEX >= 0x030D0000 && !defined(Py_LIMITED_API)
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
     {0, NULL}
 };
 

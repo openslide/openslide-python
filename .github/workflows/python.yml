@@ -50,7 +50,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.13t", "3.14", "3.14t"]
         openslide: [system, wheel]
         include:
           - os: ubuntu-latest
@@ -132,8 +132,8 @@ jobs:
         mkdir -p "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         mv dist/* "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         # from system builds, save version-specific wheels and oldest abi3 wheel
-        python -c 'import sys
-        if sys.version_info < (3, 12) and "${{ matrix.openslide }}" == "system":
+        python -c 'import sys, sysconfig
+        if "${{ matrix.openslide }}" == "system" and (sys.version_info < (3, 12) or sysconfig.get_config_var("Py_GIL_DISABLED")):
             print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
       run: pip install artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}/*.whl
@@ -165,7 +165,7 @@ jobs:
         shell: bash
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.13t", "3.14", "3.14t"]
         openslide: [zip, wheel]
     steps:
     - name: Check out repo
@@ -203,8 +203,8 @@ jobs:
         mkdir -p "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         mv dist/*.whl "artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}"
         # from zip builds, save version-specific wheels and oldest abi3 wheel
-        python -c 'import sys
-        if sys.version_info < (3, 12) and "${{ matrix.openslide }}" == "zip":
+        python -c 'import sys, sysconfig
+        if "${{ matrix.openslide }}" == "zip" and (sys.version_info < (3, 12) or sysconfig.get_config_var("Py_GIL_DISABLED")):
             print("archive_wheel=1")' >> $GITHUB_ENV
     - name: Install
       run: pip install artifacts/whl/${{ needs.pre-commit.outputs.dist-base }}/*.whl
