@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import sysconfig
 
 from setuptools import Extension, setup
 
@@ -7,9 +8,9 @@ from setuptools import Extension, setup
 with open(Path(__file__).parent / 'openslide/_version.py') as _fh:
     exec(_fh.read())  # instantiates __version__
 
-# use the Limited API on Python 3.11+; build release-specific wheels on
-# older Python
-_abi3 = sys.version_info >= (3, 11)
+# use the Limited API on Python 3.11+ on GIL builds; build release-specific
+# wheels on older or free-threaded Python
+_abi3 = sys.version_info >= (3, 11) and not sysconfig.get_config_var('Py_GIL_DISABLED')
 
 setup(
     ext_modules=[
