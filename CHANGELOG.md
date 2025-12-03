@@ -1,5 +1,20 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.4.3, 2025-12-03
+
+### New features
+
+* Support [free-threaded Python][free-thread]
+
+### Changes
+
+* Drop support for Python 3.9
+* Switch extension module to [multi-phase initialization][multi-phase-init]
+
+[free-thread]: https://docs.python.org/3/howto/free-threading-python.html
+[multi-phase-init]: https://peps.python.org/pep-0489/
+
+
 ## Version 1.4.2, 2025-04-28
 
 ### Changes
