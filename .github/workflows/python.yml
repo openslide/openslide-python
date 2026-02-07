@@ -16,7 +16,7 @@ env:
 jobs:
   pre-commit:
     name: Rerun pre-commit checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       dist-base: ${{ steps.paths.outputs.dist }}
       docs-base: ${{ steps.paths.outputs.docs }}
@@ -252,7 +252,7 @@ jobs:
   docs:
     name: Docs
     needs: pre-commit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Check out repo
       uses: actions/checkout@v5
@@ -279,7 +279,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/openslide-python
     needs: [pre-commit, tests, windows]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     concurrency: release-${{ github.ref }}
     permissions:
       contents: write
