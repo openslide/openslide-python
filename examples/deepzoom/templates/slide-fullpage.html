@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <title>{{ slide_filename }}</title>
 
-<style type="text/css">
+<style>
 html {
     overflow: hidden;
 }
@@ -22,10 +22,10 @@ div#view {
 
 <div id="view"></div>
 
-<script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='openseadragon.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='openseadragon-scalebar.js') }}"></script>
-<script type="text/javascript">
+<script src="{{ url_for('static', filename='jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='openseadragon.js') }}"></script>
+<script src="{{ url_for('static', filename='openseadragon-scalebar.js') }}"></script>
+<script>
 $(function() {
     var viewer = new OpenSeadragon({
         id: "view",
