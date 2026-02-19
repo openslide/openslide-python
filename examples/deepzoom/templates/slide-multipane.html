@@ -3,7 +3,7 @@
 <title>Slide Viewer</title>
 <meta name="viewport" content="user-scalable=no">
 
-<style type="text/css">
+<style>
 html {
     overflow: hidden;
 }
@@ -110,10 +110,10 @@ div#properties dd {
     {% endif %}
 </div>
 
-<script type="text/javascript" src="static/jquery.js"></script>
-<script type="text/javascript" src="static/openseadragon.js"></script>
-<script type="text/javascript" src="static/openseadragon-scalebar.js"></script>
-<script type="text/javascript">
+<script src="static/jquery.js"></script>
+<script src="static/openseadragon.js"></script>
+<script src="static/openseadragon-scalebar.js"></script>
+<script>
 $(function() {
     var dzi_data = {{ dzi_data|default('{}')|safe }};
     var viewer = new OpenSeadragon({
