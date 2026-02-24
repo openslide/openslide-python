@@ -1,6 +1,6 @@
-//! openseadragon 6.0.0
-//! Built on 2026-02-18
-//! Git commit: v6.0.0-0-2bbaff29
+//! openseadragon 6.0.1
+//! Built on 2026-02-23
+//! Git commit: v6.0.1-0-a186f355
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 /**
  * @namespace OpenSeadragon
- * @version openseadragon 6.0.0
+ * @version openseadragon 6.0.1
  * @classdesc The root namespace for OpenSeadragon.  All utility methods
  * and classes are defined on or below this namespace.
  *
@@ -886,10 +886,10 @@ function OpenSeadragon( options ){
      * @since 1.0.0
      */
     $.version = {
-        versionStr: '6.0.0',
+        versionStr: '6.0.1',
         major: parseInt('6', 10),
         minor: parseInt('0', 10),
-        revision: parseInt('0', 10)
+        revision: parseInt('1', 10)
     };
 
 
@@ -10143,7 +10143,9 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
                 }
 
                 if (queueItem.originalSuccess) {
-                    queueItem.originalSuccess(event);
+                    queueItem.originalSuccess({
+                        item: tiledImage
+                    });
                 }
 
                 // It might happen processReadyItems() is called after viewer.destroy()
