@@ -143,14 +143,14 @@ jobs:
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
     - name: Archive sdist
       if: matrix.sdist
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ needs.pre-commit.outputs.dist-base }}-source
         path: artifacts/src
         compression-level: 0
     - name: Archive wheel
       if: env.archive_wheel
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ needs.pre-commit.outputs.dist-base }}-${{ env.OS_ARCH_TAG }}-${{ matrix.python-version }}
         path: artifacts/whl
@@ -222,7 +222,7 @@ jobs:
       run: python examples/deepzoom/deepzoom_tile.py --viewer -o tiled tests/fixtures/small.svs
     - name: Archive wheel
       if: env.archive_wheel
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ needs.pre-commit.outputs.dist-base }}-windows-x64-${{ matrix.python-version }}
         path: artifacts/whl
@@ -267,7 +267,7 @@ jobs:
     - name: Build
       run: sphinx-build -d doctrees doc artifact/${{ needs.pre-commit.outputs.docs-base }}
     - name: Archive
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ needs.pre-commit.outputs.docs-base }}
         path: artifact
@@ -286,7 +286,7 @@ jobs:
       id-token: write
     steps:
     - name: Download artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         pattern: "${{ needs.pre-commit.outputs.dist-base }}-*"
         merge-multiple: true
