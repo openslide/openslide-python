@@ -23,13 +23,13 @@ repos:
         args: ["--py310-plus"]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 7.0.0
+    rev: 8.0.1
     hooks:
       - id: isort
         name: Reorder python imports with isort
 
   - repo: https://github.com/psf/black
-    rev: 25.12.0
+    rev: 26.3.1
     hooks:
       - id: black
         name: Format python code with black
@@ -69,7 +69,7 @@ repos:
         additional_dependencies: [sphinx, toml]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
         name: Check spelling with codespell
