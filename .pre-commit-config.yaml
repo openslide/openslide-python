@@ -58,6 +58,7 @@ repos:
     hooks:
       - id: mypy
         name: Check Python types
+        # Pillow is ignored in dependabot.yml
         additional_dependencies: [flask, openslide-bin, pillow >= 12.1.0, types-PyYAML, types-setuptools]
 
   - repo: https://github.com/rstcheck/rstcheck
