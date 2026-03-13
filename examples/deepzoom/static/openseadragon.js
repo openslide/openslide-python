@@ -1,6 +1,6 @@
-//! openseadragon 6.0.1
-//! Built on 2026-02-23
-//! Git commit: v6.0.1-0-a186f355
+//! openseadragon 6.0.2
+//! Built on 2026-03-12
+//! Git commit: v6.0.2-0-7842cd92
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 /**
  * @namespace OpenSeadragon
- * @version openseadragon 6.0.1
+ * @version openseadragon 6.0.2
  * @classdesc The root namespace for OpenSeadragon.  All utility methods
  * and classes are defined on or below this namespace.
  *
@@ -886,10 +886,10 @@ function OpenSeadragon( options ){
      * @since 1.0.0
      */
     $.version = {
-        versionStr: '6.0.1',
+        versionStr: '6.0.2',
         major: parseInt('6', 10),
         minor: parseInt('0', 10),
-        revision: parseInt('1', 10)
+        revision: parseInt('2', 10)
     };
 
 
