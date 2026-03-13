@@ -18,6 +18,10 @@ updates:
     groups:
       deps:
         patterns: ["*"]
+    ignore:
+      # The pre-commit config declares the minimum version, and we shouldn't
+      # bump that
+      - dependency-name: pillow
     labels: ["dependencies"]
     schedule:
       interval: monthly
