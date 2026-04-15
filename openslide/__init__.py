@@ -457,9 +457,9 @@ class ImageSlide(AbstractSlide):
         if self._image is None:
             raise ValueError('Cannot read from a closed slide')
         if level != 0:
-            raise OpenSlideError("Invalid level")
+            raise OpenSlideError('Invalid level')
         if ['fail' for s in size if s < 0]:
-            raise OpenSlideError(f"Size {size} must be non-negative")
+            raise OpenSlideError(f'Size {size} must be non-negative')
         # Any corner of the requested region may be outside the bounds of
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.
@@ -470,7 +470,7 @@ class ImageSlide(AbstractSlide):
             max(0, min(l + s - 1, limit - 1))
             for l, s, limit in zip(location, size, self._image.size)
         ]
-        tile = Image.new("RGBA", size, (0,) * 4)
+        tile = Image.new('RGBA', size, (0,) * 4)
         if not [
             'fail' for tl, br in zip(image_topleft, image_bottomright) if br - tl < 0
         ]:  # "< 0" not a typo
@@ -500,12 +500,12 @@ def open_slide(filename: lowlevel.Filename) -> OpenSlide | ImageSlide:
 if __name__ == '__main__':
     import sys
 
-    print("OpenSlide vendor:", OpenSlide.detect_format(sys.argv[1]))
-    print("PIL format:", ImageSlide.detect_format(sys.argv[1]))
+    print('OpenSlide vendor:', OpenSlide.detect_format(sys.argv[1]))
+    print('PIL format:', ImageSlide.detect_format(sys.argv[1]))
     with open_slide(sys.argv[1]) as _slide:
-        print("Dimensions:", _slide.dimensions)
-        print("Levels:", _slide.level_count)
-        print("Level dimensions:", _slide.level_dimensions)
-        print("Level downsamples:", _slide.level_downsamples)
-        print("Properties:", _slide.properties)
-        print("Associated images:", _slide.associated_images)
+        print('Dimensions:', _slide.dimensions)
+        print('Levels:', _slide.level_count)
+        print('Level dimensions:', _slide.level_dimensions)
+        print('Level downsamples:', _slide.level_downsamples)
+        print('Properties:', _slide.properties)
+        print('Associated images:', _slide.associated_images)

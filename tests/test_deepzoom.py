@@ -87,7 +87,7 @@ class _Abstract:
 
         def test_tile_color_profile(self) -> None:
             if self.CLASS is OpenSlide and not lowlevel.read_icc_profile.available:
-                self.skipTest("requires OpenSlide 4.0.0")
+                self.skipTest('requires OpenSlide 4.0.0')
             self.assertEqual(len(self.dz.get_tile(9, (1, 0)).info['icc_profile']), 588)
 
         def test_get_tile_bad_level(self) -> None:

@@ -36,7 +36,7 @@ from openslide import (
 
 
 class TestCache(unittest.TestCase):
-    @unittest.skipUnless(lowlevel.cache_create.available, "requires OpenSlide 4.0.0")
+    @unittest.skipUnless(lowlevel.cache_create.available, 'requires OpenSlide 4.0.0')
     def test_create_cache(self) -> None:
         OpenSlideCache(0)
         OpenSlideCache(1)
@@ -153,7 +153,7 @@ class TestSlide(_Abstract.SlideTest):
         )
 
     @unittest.skipUnless(
-        lowlevel.read_icc_profile.available, "requires OpenSlide 4.0.0"
+        lowlevel.read_icc_profile.available, 'requires OpenSlide 4.0.0'
     )
     def test_color_profile(self) -> None:
         assert self.osr.color_profile is not None  # for type inference
@@ -192,7 +192,7 @@ class TestSlide(_Abstract.SlideTest):
     def test_thumbnail(self) -> None:
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
 
-    @unittest.skipUnless(lowlevel.cache_create.available, "requires OpenSlide 4.0.0")
+    @unittest.skipUnless(lowlevel.cache_create.available, 'requires OpenSlide 4.0.0')
     def test_set_cache(self) -> None:
         self.osr.set_cache(OpenSlideCache(64 << 10))
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
@@ -236,7 +236,7 @@ class TestAperioSlide(_Abstract.SlideTest):
 # Requires DICOM support in OpenSlide.  Use associated image ICC support as
 # a proxy.
 @unittest.skipUnless(
-    lowlevel.read_associated_image_icc_profile.available, "requires OpenSlide 4.0.0"
+    lowlevel.read_associated_image_icc_profile.available, 'requires OpenSlide 4.0.0'
 )
 class TestDicomSlide(_Abstract.SlideTest):
     FILENAME = 'boxes_0.dcm'

@@ -231,7 +231,7 @@ class DeepZoomImageTiler:
         count, total = self._processed, self._dz.tile_count
         if count % 100 == 0 or count == total:
             print(
-                "Tiling %s: wrote %d/%d tiles"
+                'Tiling %s: wrote %d/%d tiles'
                 % (self._associated or 'slide', count, total),
                 end='\r',
                 file=sys.stderr,

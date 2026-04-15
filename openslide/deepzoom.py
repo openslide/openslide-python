@@ -208,10 +208,10 @@ class DeepZoomGenerator:
     ) -> tuple[tuple[tuple[int, int], int, tuple[int, int]], tuple[int, int]]:
         # Check parameters
         if dz_level < 0 or dz_level >= self._dz_levels:
-            raise ValueError("Invalid level")
+            raise ValueError('Invalid level')
         for t, t_lim in zip(t_location, self._t_dimensions[dz_level]):
             if t < 0 or t >= t_lim:
-                raise ValueError("Invalid address")
+                raise ValueError('Invalid address')
 
         # Get preferred slide level
         slide_level = self._slide_from_dz_level[dz_level]
