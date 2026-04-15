@@ -50,27 +50,11 @@ version = {attr = "openslide._version.__version__"}
 [tool.setuptools.package-data]
 openslide = ["py.typed", "*.pyi"]
 
-[tool.black]
-skip-string-normalization = true
-target-version = ["py310", "py311", "py312", "py313", "py314"]
-
 # Ref: https://github.com/codespell-project/codespell#using-a-config-file
 [tool.codespell]
 check-hidden = true
 # ignore-regex = ""
 # ignore-words-list = ""
-
-# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
-# also ignore:
-# - E741 ambiguous variable name
-# requires Flake8-pyproject
-[tool.flake8]
-max-line-length = 88
-extend-ignore = ["E203", "E741"]
-
-[tool.isort]
-profile = "black"
-force_sort_within_sections = true
 
 [tool.mypy]
 python_version = "3.10"
@@ -86,6 +70,17 @@ pythonpath = "tests"
 
 [tool.rstcheck]
 ignore_messages = "(Hyperlink target \".*\" is not referenced\\.$)"
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+extend-select = ["B", "C4", "FLY", "I", "RUF", "UP"]
+# ambiguous-variable-name
+ignore = ["E741"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
 
 [build-system]
 requires = ["setuptools >= 77.0.0"]

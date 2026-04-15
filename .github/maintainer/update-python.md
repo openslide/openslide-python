@@ -9,7 +9,7 @@ labels: [release]
 
 - Update Git main
   - [ ] `git checkout main`
-  - [ ] In `pyproject.toml`, add classifier for new Python version and update `tool.black.target-version`
+  - [ ] In `pyproject.toml`, add classifier for new Python version
   - [ ] In `.github/workflows/python.yml`, update hardcoded Python versions and add new version to lists
   - [ ] Commit and open a PR
   - [ ] Merge the PR when CI passes
