@@ -44,8 +44,7 @@ class _Abstract:
         def test_repr(self) -> None:
             self.assertEqual(
                 repr(self.dz),
-                'DeepZoomGenerator(%r, tile_size=254, overlap=1, limit_bounds=False)'
-                % self.osr,
+                f'DeepZoomGenerator({self.osr!r}, tile_size=254, overlap=1, limit_bounds=False)',
             )
 
         def test_metadata(self) -> None:

@@ -193,7 +193,7 @@ def create_app(
             icc_profile=tile.info.get('icc_profile'),
         )
         resp = make_response(buf.getvalue())
-        resp.mimetype = 'image/%s' % format
+        resp.mimetype = f'image/{format}'
         return resp
 
     return app

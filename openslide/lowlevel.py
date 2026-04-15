@@ -379,7 +379,7 @@ try:
         'openslide_detect_vendor', c_char_p, [_filename_p], _check_string
     )
 except AttributeError:
-    raise OpenSlideVersionError('3.4.0')
+    raise OpenSlideVersionError('3.4.0') from None
 
 open: _Func[[Filename], _OpenSlide] = _func(
     'openslide_open', c_void_p, [_filename_p], _check_open
@@ -434,7 +434,7 @@ def read_region(
         # OpenSlide would catch this, but not before we tried to allocate
         # a negative-size buffer
         raise OpenSlideError(
-            'negative width (%d) or negative height (%d) not allowed' % (w, h)
+            f'negative width ({w}) or negative height ({h}) not allowed'
         )
     if w == 0 or h == 0:
         # Image.frombuffer() would raise an exception

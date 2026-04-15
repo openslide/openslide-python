@@ -124,7 +124,7 @@ class TestSlide(_Abstract.SlideTest):
     FILENAME = 'boxes.tiff'
 
     def test_repr(self) -> None:
-        self.assertEqual(repr(self.osr), 'OpenSlide(%r)' % file_path('boxes.tiff'))
+        self.assertEqual(repr(self.osr), f'OpenSlide({file_path("boxes.tiff")!r})')
 
     def test_basic_metadata(self) -> None:
         self.assertEqual(self.osr.level_count, 4)
@@ -146,11 +146,9 @@ class TestSlide(_Abstract.SlideTest):
         self.assertEqual(self.osr.properties['openslide.vendor'], 'generic-tiff')
         self.assertRaises(KeyError, lambda: self.osr.properties['__does_not_exist'])
         # test __len__ and __iter__
+        self.assertEqual(len(list(self.osr.properties)), len(self.osr.properties))
         self.assertEqual(
-            len([v for v in self.osr.properties]), len(self.osr.properties)
-        )
-        self.assertEqual(
-            repr(self.osr.properties), '<_PropertyMap %r>' % dict(self.osr.properties)
+            repr(self.osr.properties), f'<_PropertyMap {dict(self.osr.properties)!r}>'
         )
 
     @unittest.skipUnless(
@@ -215,7 +213,7 @@ class TestAperioSlide(_Abstract.SlideTest):
         self.assertRaises(KeyError, lambda: self.osr.associated_images['__missing'])
         # test __len__ and __iter__
         self.assertEqual(
-            len([v for v in self.osr.associated_images]),
+            len(list(self.osr.associated_images)),
             len(self.osr.associated_images),
         )
 
@@ -224,7 +222,7 @@ class TestAperioSlide(_Abstract.SlideTest):
 
         self.assertEqual(
             mangle_repr(self.osr.associated_images),
-            '<_AssociatedImageMap %s>' % mangle_repr(dict(self.osr.associated_images)),
+            f'<_AssociatedImageMap {mangle_repr(dict(self.osr.associated_images))}>',
         )
 
     def test_color_profile(self) -> None:

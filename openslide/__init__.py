@@ -169,7 +169,9 @@ class AbstractSlide(metaclass=ABCMeta):
         """Return a PIL.Image containing an RGB thumbnail of the image.
 
         size:     the maximum size of the thumbnail."""
-        downsample = max(dim / thumb for dim, thumb in zip(self.dimensions, size))
+        downsample = max(
+            dim / thumb for dim, thumb in zip(self.dimensions, size, strict=True)
+        )
         level = self.get_best_level_for_downsample(downsample)
         tile = self.read_region((0, 0), level, self.level_dimensions[level])
         # Apply on solid background
@@ -460,20 +462,25 @@ class ImageSlide(AbstractSlide):
         # the image.  Create a transparent tile of the correct size and
         # paste the valid part of the region into the correct location.
         image_topleft = [
-            max(0, min(l, limit - 1)) for l, limit in zip(location, self._image.size)
+            max(0, min(l, limit - 1))
+            for l, limit in zip(location, self._image.size, strict=True)
         ]
         image_bottomright = [
             max(0, min(l + s - 1, limit - 1))
-            for l, s, limit in zip(location, size, self._image.size)
+            for l, s, limit in zip(location, size, self._image.size, strict=True)
         ]
         tile = Image.new('RGBA', size, (0,) * 4)
         if not [
-            'fail' for tl, br in zip(image_topleft, image_bottomright) if br - tl < 0
+            'fail'
+            for tl, br in zip(image_topleft, image_bottomright, strict=True)
+            if br - tl < 0
         ]:  # "< 0" not a typo
             # Crop size is greater than zero in both dimensions.
             # PIL thinks the bottom right is the first *excluded* pixel
             crop_box = tuple(image_topleft + [d + 1 for d in image_bottomright])
-            tile_offset = tuple(il - l for il, l in zip(image_topleft, location))
+            tile_offset = tuple(
+                il - l for il, l in zip(image_topleft, location, strict=True)
+            )
             assert len(crop_box) == 4 and len(tile_offset) == 2
             crop = self._image.crop(crop_box)
             tile.paste(crop, tile_offset)
