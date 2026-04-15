@@ -21,8 +21,8 @@ from __future__ import annotations
 import sys
 import unittest
 
-from PIL import Image
 from common import file_path
+from PIL import Image
 
 from openslide import ImageSlide, OpenSlideCache, OpenSlideError, lowlevel
 

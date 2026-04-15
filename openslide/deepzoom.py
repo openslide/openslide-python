@@ -147,13 +147,7 @@ class DeepZoomGenerator:
         )
 
     def __repr__(self) -> str:
-        return '{}({!r}, tile_size={!r}, overlap={!r}, limit_bounds={!r})'.format(
-            self.__class__.__name__,
-            self._osr,
-            self._z_t_downsample,
-            self._z_overlap,
-            self._limit_bounds,
-        )
+        return f'{self.__class__.__name__}({self._osr!r}, tile_size={self._z_t_downsample!r}, overlap={self._z_overlap!r}, limit_bounds={self._limit_bounds!r})'
 
     @property
     def level_count(self) -> int:

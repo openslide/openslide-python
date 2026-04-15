@@ -43,7 +43,8 @@ class TestCache(unittest.TestCase):
         OpenSlideCache(4 << 20)
         self.assertRaises(ArgumentError, lambda: OpenSlideCache(-1))
         self.assertRaises(
-            ArgumentError, lambda: OpenSlideCache(1.3)  # type: ignore[arg-type]
+            ArgumentError,
+            lambda: OpenSlideCache(1.3),  # type: ignore[arg-type]
         )
 
 
@@ -197,10 +198,12 @@ class TestSlide(_Abstract.SlideTest):
         self.osr.set_cache(OpenSlideCache(64 << 10))
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
         self.assertRaises(
-            TypeError, lambda: self.osr.set_cache(None)  # type: ignore[arg-type]
+            TypeError,
+            lambda: self.osr.set_cache(None),  # type: ignore[arg-type]
         )
         self.assertRaises(
-            TypeError, lambda: self.osr.set_cache(3)  # type: ignore[arg-type]
+            TypeError,
+            lambda: self.osr.set_cache(3),  # type: ignore[arg-type]
         )
 
 

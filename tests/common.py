@@ -29,7 +29,7 @@ if os.name == 'nt':
     # environment.
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined,unused-ignore]  # noqa: E501
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined,unused-ignore]
             import openslide  # noqa: F401  module-imported-but-unused
 
 
