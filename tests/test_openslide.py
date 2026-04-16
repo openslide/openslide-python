@@ -36,14 +36,15 @@ from openslide import (
 
 
 class TestCache(unittest.TestCase):
-    @unittest.skipUnless(lowlevel.cache_create.available, "requires OpenSlide 4.0.0")
+    @unittest.skipUnless(lowlevel.cache_create.available, 'requires OpenSlide 4.0.0')
     def test_create_cache(self) -> None:
         OpenSlideCache(0)
         OpenSlideCache(1)
         OpenSlideCache(4 << 20)
         self.assertRaises(ArgumentError, lambda: OpenSlideCache(-1))
         self.assertRaises(
-            ArgumentError, lambda: OpenSlideCache(1.3)  # type: ignore[arg-type]
+            ArgumentError,
+            lambda: OpenSlideCache(1.3),  # type: ignore[arg-type]
         )
 
 
@@ -123,7 +124,7 @@ class TestSlide(_Abstract.SlideTest):
     FILENAME = 'boxes.tiff'
 
     def test_repr(self) -> None:
-        self.assertEqual(repr(self.osr), 'OpenSlide(%r)' % file_path('boxes.tiff'))
+        self.assertEqual(repr(self.osr), f'OpenSlide({file_path("boxes.tiff")!r})')
 
     def test_basic_metadata(self) -> None:
         self.assertEqual(self.osr.level_count, 4)
@@ -145,15 +146,13 @@ class TestSlide(_Abstract.SlideTest):
         self.assertEqual(self.osr.properties['openslide.vendor'], 'generic-tiff')
         self.assertRaises(KeyError, lambda: self.osr.properties['__does_not_exist'])
         # test __len__ and __iter__
+        self.assertEqual(len(list(self.osr.properties)), len(self.osr.properties))
         self.assertEqual(
-            len([v for v in self.osr.properties]), len(self.osr.properties)
-        )
-        self.assertEqual(
-            repr(self.osr.properties), '<_PropertyMap %r>' % dict(self.osr.properties)
+            repr(self.osr.properties), f'<_PropertyMap {dict(self.osr.properties)!r}>'
         )
 
     @unittest.skipUnless(
-        lowlevel.read_icc_profile.available, "requires OpenSlide 4.0.0"
+        lowlevel.read_icc_profile.available, 'requires OpenSlide 4.0.0'
     )
     def test_color_profile(self) -> None:
         assert self.osr.color_profile is not None  # for type inference
@@ -192,15 +191,17 @@ class TestSlide(_Abstract.SlideTest):
     def test_thumbnail(self) -> None:
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
 
-    @unittest.skipUnless(lowlevel.cache_create.available, "requires OpenSlide 4.0.0")
+    @unittest.skipUnless(lowlevel.cache_create.available, 'requires OpenSlide 4.0.0')
     def test_set_cache(self) -> None:
         self.osr.set_cache(OpenSlideCache(64 << 10))
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))
         self.assertRaises(
-            TypeError, lambda: self.osr.set_cache(None)  # type: ignore[arg-type]
+            TypeError,
+            lambda: self.osr.set_cache(None),  # type: ignore[arg-type]
         )
         self.assertRaises(
-            TypeError, lambda: self.osr.set_cache(3)  # type: ignore[arg-type]
+            TypeError,
+            lambda: self.osr.set_cache(3),  # type: ignore[arg-type]
         )
 
 
@@ -212,7 +213,7 @@ class TestAperioSlide(_Abstract.SlideTest):
         self.assertRaises(KeyError, lambda: self.osr.associated_images['__missing'])
         # test __len__ and __iter__
         self.assertEqual(
-            len([v for v in self.osr.associated_images]),
+            len(list(self.osr.associated_images)),
             len(self.osr.associated_images),
         )
 
@@ -221,7 +222,7 @@ class TestAperioSlide(_Abstract.SlideTest):
 
         self.assertEqual(
             mangle_repr(self.osr.associated_images),
-            '<_AssociatedImageMap %s>' % mangle_repr(dict(self.osr.associated_images)),
+            f'<_AssociatedImageMap {mangle_repr(dict(self.osr.associated_images))}>',
         )
 
     def test_color_profile(self) -> None:
@@ -236,7 +237,7 @@ class TestAperioSlide(_Abstract.SlideTest):
 # Requires DICOM support in OpenSlide.  Use associated image ICC support as
 # a proxy.
 @unittest.skipUnless(
-    lowlevel.read_associated_image_icc_profile.available, "requires OpenSlide 4.0.0"
+    lowlevel.read_associated_image_icc_profile.available, 'requires OpenSlide 4.0.0'
 )
 class TestDicomSlide(_Abstract.SlideTest):
     FILENAME = 'boxes_0.dcm'

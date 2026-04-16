@@ -31,8 +31,8 @@ from threading import Lock
 from typing import TYPE_CHECKING, Any, Literal
 import zlib
 
-from PIL import Image, ImageCms
 from flask import Flask, Response, abort, make_response, render_template, url_for
+from PIL import Image, ImageCms
 
 if TYPE_CHECKING:
     # Python 3.10+
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined,unused-ignore]  # noqa: E501
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined,unused-ignore]
             import openslide
     else:
         import openslide
@@ -192,7 +192,7 @@ def create_app(
             icc_profile=tile.info.get('icc_profile'),
         )
         resp = make_response(buf.getvalue())
-        resp.mimetype = 'image/%s' % format
+        resp.mimetype = f'image/{format}'
         return resp
 
     return app

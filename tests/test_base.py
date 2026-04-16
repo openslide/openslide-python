@@ -34,7 +34,7 @@ class TestLibrary(unittest.TestCase):
             self.assertTrue(isinstance(osr, ImageSlide))
 
     def test_lowlevel_available(self) -> None:
-        '''Ensure all exported functions have an 'available' attribute.'''
+        """Ensure all exported functions have an 'available' attribute."""
         for name in dir(lowlevel):
             attr = getattr(lowlevel, name)
             # ignore classes and unexported functions

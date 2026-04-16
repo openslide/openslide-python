@@ -21,8 +21,8 @@ from __future__ import annotations
 import sys
 import unittest
 
-from PIL import Image
 from common import file_path
+from PIL import Image
 
 from openslide import ImageSlide, OpenSlideCache, OpenSlideError, lowlevel
 
@@ -42,7 +42,7 @@ class TestImageWithoutOpening(unittest.TestCase):
         with Image.open(file_path('boxes.png')) as img:
             with ImageSlide(img) as osr:
                 self.assertEqual(osr.dimensions, (300, 250))
-                self.assertEqual(repr(osr), 'ImageSlide(%r)' % img)
+                self.assertEqual(repr(osr), f'ImageSlide({img!r})')
 
     @unittest.skipUnless(
         sys.getfilesystemencoding() == 'utf-8',
@@ -96,7 +96,7 @@ class TestImage(_Abstract.SlideTest):
     FILENAME = 'boxes.png'
 
     def test_repr(self) -> None:
-        self.assertEqual(repr(self.osr), 'ImageSlide(%r)' % file_path('boxes.png'))
+        self.assertEqual(repr(self.osr), f'ImageSlide({file_path("boxes.png")!r})')
 
     def test_metadata(self) -> None:
         self.assertEqual(self.osr.level_count, 1)
@@ -141,7 +141,7 @@ class TestImage(_Abstract.SlideTest):
     def test_thumbnail(self) -> None:
         self.assertEqual(self.osr.get_thumbnail((100, 100)).size, (100, 83))
 
-    @unittest.skipUnless(lowlevel.cache_create.available, "requires OpenSlide 4.0.0")
+    @unittest.skipUnless(lowlevel.cache_create.available, 'requires OpenSlide 4.0.0')
     def test_set_cache(self) -> None:
         self.osr.set_cache(OpenSlideCache(64 << 10))
         self.assertEqual(self.osr.read_region((0, 0), 0, (400, 400)).size, (400, 400))

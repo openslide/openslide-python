@@ -88,13 +88,15 @@ class DeepZoomGenerator:
             # Slide level dimensions scale factor in each axis
             size_scale = tuple(
                 int(osr.properties.get(prop, l0_lim)) / l0_lim
-                for prop, l0_lim in zip(self.BOUNDS_SIZE_PROPS, osr.dimensions)
+                for prop, l0_lim in zip(
+                    self.BOUNDS_SIZE_PROPS, osr.dimensions, strict=True
+                )
             )
             # Dimensions of active area
             self._l_dimensions = tuple(
                 tuple(
-                    int(math.ceil(l_lim * scale))
-                    for l_lim, scale in zip(l_size, size_scale)
+                    math.ceil(l_lim * scale)
+                    for l_lim, scale in zip(l_size, size_scale, strict=True)
                 )
                 for l_size in osr.level_dimensions
             )
@@ -106,14 +108,14 @@ class DeepZoomGenerator:
         z_size = self._l0_dimensions
         z_dimensions = [z_size]
         while z_size[0] > 1 or z_size[1] > 1:
-            z_size = tuple(max(1, int(math.ceil(z / 2))) for z in z_size)
+            z_size = tuple(max(1, math.ceil(z / 2)) for z in z_size)
             z_dimensions.append(z_size)
         # Narrow the type, for self.level_dimensions
         self._z_dimensions = self._pairs_from_n_tuples(tuple(reversed(z_dimensions)))
 
         # Tile
         def tiles(z_lim: int) -> int:
-            return int(math.ceil(z_lim / self._z_t_downsample))
+            return math.ceil(z_lim / self._z_t_downsample)
 
         self._t_dimensions = tuple(
             (tiles(z_w), tiles(z_h)) for z_w, z_h in self._z_dimensions
@@ -147,13 +149,7 @@ class DeepZoomGenerator:
         )
 
     def __repr__(self) -> str:
-        return '{}({!r}, tile_size={!r}, overlap={!r}, limit_bounds={!r})'.format(
-            self.__class__.__name__,
-            self._osr,
-            self._z_t_downsample,
-            self._z_overlap,
-            self._limit_bounds,
-        )
+        return f'{self.__class__.__name__}({self._osr!r}, tile_size={self._z_t_downsample!r}, overlap={self._z_overlap!r}, limit_bounds={self._limit_bounds!r})'
 
     @property
     def level_count(self) -> int:
@@ -208,10 +204,10 @@ class DeepZoomGenerator:
     ) -> tuple[tuple[tuple[int, int], int, tuple[int, int]], tuple[int, int]]:
         # Check parameters
         if dz_level < 0 or dz_level >= self._dz_levels:
-            raise ValueError("Invalid level")
-        for t, t_lim in zip(t_location, self._t_dimensions[dz_level]):
+            raise ValueError('Invalid level')
+        for t, t_lim in zip(t_location, self._t_dimensions[dz_level], strict=True):
             if t < 0 or t >= t_lim:
-                raise ValueError("Invalid address")
+                raise ValueError('Invalid address')
 
         # Get preferred slide level
         slide_level = self._slide_from_dz_level[dz_level]
@@ -220,14 +216,18 @@ class DeepZoomGenerator:
         z_overlap_tl = tuple(self._z_overlap * int(t != 0) for t in t_location)
         z_overlap_br = tuple(
             self._z_overlap * int(t != t_lim - 1)
-            for t, t_lim in zip(t_location, self.level_tiles[dz_level])
+            for t, t_lim in zip(t_location, self.level_tiles[dz_level], strict=True)
         )
 
         # Get final size of the tile
         z_size = tuple(
             min(self._z_t_downsample, z_lim - self._z_t_downsample * t) + z_tl + z_br
             for t, z_lim, z_tl, z_br in zip(
-                t_location, self._z_dimensions[dz_level], z_overlap_tl, z_overlap_br
+                t_location,
+                self._z_dimensions[dz_level],
+                z_overlap_tl,
+                z_overlap_br,
+                strict=True,
             )
         )
 
@@ -235,16 +235,18 @@ class DeepZoomGenerator:
         z_location = [self._z_from_t(t) for t in t_location]
         l_location = [
             self._l_from_z(dz_level, z - z_tl)
-            for z, z_tl in zip(z_location, z_overlap_tl)
+            for z, z_tl in zip(z_location, z_overlap_tl, strict=True)
         ]
         # Round location down and size up, and add offset of active area
         l0_location = tuple(
             int(self._l0_from_l(slide_level, l) + l0_off)
-            for l, l0_off in zip(l_location, self._l0_offset)
+            for l, l0_off in zip(l_location, self._l0_offset, strict=True)
         )
         l_size = tuple(
             int(min(math.ceil(self._l_from_z(dz_level, dz)), l_lim - math.ceil(l)))
-            for l, dz, l_lim in zip(l_location, z_size, self._l_dimensions[slide_level])
+            for l, dz, l_lim in zip(
+                l_location, z_size, self._l_dimensions[slide_level], strict=True
+            )
         )
 
         # Return read_region() parameters plus tile size for final scaling

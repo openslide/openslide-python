@@ -47,7 +47,7 @@ if TYPE_CHECKING:
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
     if _dll_path is not None:
-        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined,unused-ignore]  # noqa: E501
+        with os.add_dll_directory(_dll_path):  # type: ignore[attr-defined,unused-ignore]
             import openslide
     else:
         import openslide
@@ -231,8 +231,7 @@ class DeepZoomImageTiler:
         count, total = self._processed, self._dz.tile_count
         if count % 100 == 0 or count == total:
             print(
-                "Tiling %s: wrote %d/%d tiles"
-                % (self._associated or 'slide', count, total),
+                f'Tiling {self._associated or "slide"}: wrote {count}/{total} tiles',
                 end='\r',
                 file=sys.stderr,
             )
@@ -320,7 +319,7 @@ class DeepZoomStaticTiler:
             base = VIEWER_SLIDE_NAME
         else:
             base = self._slugify(associated)
-        return '%s.dzi' % base
+        return f'{base}.dzi'
 
     def _write_html(self) -> None:
         import jinja2

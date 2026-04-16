@@ -38,7 +38,7 @@ DIRS = {
 }
 FILES = {
     # Added in Sphinx 5.0.0, scheduled to be removed in Sphinx 6
-    'static/_sphinx_javascript_frameworks_compat.js': 'static/sphinx_javascript_frameworks_compat.js',  # noqa: E501
+    'static/_sphinx_javascript_frameworks_compat.js': 'static/sphinx_javascript_frameworks_compat.js',
 }
 REWRITE_EXTENSIONS = {'.html', '.js'}
 
