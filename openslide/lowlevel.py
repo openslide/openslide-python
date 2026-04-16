@@ -50,16 +50,13 @@ from ctypes import (
 from itertools import count
 import os
 import platform
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast
+from typing import TYPE_CHECKING, Any, ParamSpec, Protocol, TypeAlias, TypeVar, cast
 
 from PIL import Image
 
 from . import _convert
 
 if TYPE_CHECKING:
-    # Python 3.10+
-    from typing import ParamSpec, TypeAlias
-
     from _convert import _Buffer
 
 
@@ -199,9 +196,7 @@ class _OpenSlideCache:
         return obj
 
 
-if TYPE_CHECKING:
-    # Python 3.10+
-    Filename: TypeAlias = str | bytes | os.PathLike[Any]
+Filename: TypeAlias = str | bytes | os.PathLike[Any]
 
 
 class _filename_p:
@@ -314,24 +309,25 @@ class _FunctionUnavailable:
         raise OpenSlideVersionError(self._minimum_version)
 
 
-# gate runtime code that requires ParamSpec, Python 3.10+
-if TYPE_CHECKING:
-    _P = ParamSpec('_P')
-    _T = TypeVar('_T', covariant=True)
+_P = ParamSpec('_P')
+_T = TypeVar('_T', covariant=True)
 
-    class _Func(Protocol[_P, _T]):
-        available: bool
 
-        def __call__(self, *args: _P.args) -> _T: ...  # type: ignore[valid-type]
+class _Func(Protocol[_P, _T]):
+    available: bool
 
-    class _CTypesFunc(_Func[_P, _T]):
-        restype: type | None
-        argtypes: list[type]
-        errcheck: _ErrCheck
+    def __call__(self, *args: _P.args) -> _T: ...  # type: ignore[valid-type]
 
-    _ErrCheck: TypeAlias = (
-        Callable[[Any, _CTypesFunc[..., Any], tuple[Any, ...]], Any] | None
-    )
+
+class _CTypesFunc(_Func[_P, _T]):
+    restype: type | None
+    argtypes: list[type]
+    errcheck: _ErrCheck
+
+
+_ErrCheck: TypeAlias = (
+    Callable[[Any, _CTypesFunc[..., Any], tuple[Any, ...]], Any] | None
+)
 
 
 # resolve and return an OpenSlide function with the specified properties
@@ -361,11 +357,7 @@ def _wraps_funcs(
     wrapped: list[_Func[..., Any]],
 ) -> Callable[[Callable[_P, _T]], _Func[_P, _T]]:
     def decorator(fn: Callable[_P, _T]) -> _Func[_P, _T]:
-        if TYPE_CHECKING:
-            # requires ParamSpec, Python 3.10+
-            f = cast(_Func[_P, _T], fn)
-        else:
-            f = fn
+        f = cast('_Func[_P, _T]', fn)
         f.available = True
         for w in wrapped:
             f.available = f.available and w.available

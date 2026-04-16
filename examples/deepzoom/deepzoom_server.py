@@ -27,16 +27,12 @@ from io import BytesIO
 import os
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal, TypeAlias
 from unicodedata import normalize
 import zlib
 
 from flask import Flask, Response, abort, make_response, render_template, url_for
 from PIL import Image, ImageCms
-
-if TYPE_CHECKING:
-    # Python 3.10+
-    from typing import TypeAlias
 
 if os.name == 'nt':
     _dll_path = os.getenv('OPENSLIDE_PATH')
@@ -70,17 +66,16 @@ SRGB_PROFILE_BYTES = zlib.decompress(
 )
 SRGB_PROFILE = ImageCms.getOpenProfile(BytesIO(SRGB_PROFILE_BYTES))
 
-if TYPE_CHECKING:
-    ColorMode: TypeAlias = Literal[
-        'default',
-        'absolute-colorimetric',
-        'perceptual',
-        'relative-colorimetric',
-        'saturation',
-        'embed',
-        'ignore',
-    ]
-    Transform: TypeAlias = Callable[[Image.Image], None]
+ColorMode: TypeAlias = Literal[
+    'default',
+    'absolute-colorimetric',
+    'perceptual',
+    'relative-colorimetric',
+    'saturation',
+    'embed',
+    'ignore',
+]
+Transform: TypeAlias = Callable[[Image.Image], None]
 
 
 class DeepZoomServer(Flask):
