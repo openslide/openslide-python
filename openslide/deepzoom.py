@@ -26,16 +26,12 @@ from __future__ import annotations
 
 from io import BytesIO
 import math
-from typing import TYPE_CHECKING
+from typing import TypeGuard
 from xml.etree.ElementTree import Element, ElementTree, SubElement
 
 from PIL import Image
 
 import openslide
-
-if TYPE_CHECKING:
-    # Python 3.10+
-    from typing import TypeGuard
 
 
 class DeepZoomGenerator:
