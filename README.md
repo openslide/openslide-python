@@ -16,6 +16,7 @@ OpenSlide can read virtual slides in several formats:
 * [Aperio][] (`.svs`, `.tif`)
 * [DICOM][] (`.dcm`)
 * [Hamamatsu][] (`.ndpi`, `.vms`, `.vmu`)
+* [Huron][] (`.tif`)
 * [Leica][] (`.scn`)
 * [MIRAX][] (`.mrxs`)
 * [Philips][] (`.tiff`)
@@ -29,6 +30,7 @@ OpenSlide can read virtual slides in several formats:
 [Aperio]: https://openslide.org/formats/aperio/
 [DICOM]: https://openslide.org/formats/dicom/
 [Hamamatsu]: https://openslide.org/formats/hamamatsu/
+[Huron]: https://openslide.org/formats/huron/
 [Leica]: https://openslide.org/formats/leica/
 [MIRAX]: https://openslide.org/formats/mirax/
 [Philips]: https://openslide.org/formats/philips/
