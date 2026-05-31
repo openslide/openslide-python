@@ -288,36 +288,20 @@ Standard properties
 The :mod:`openslide` module provides attributes containing the names of
 some commonly-used OpenSlide properties.
 
-.. data:: PROPERTY_NAME_COMMENT
-
-   The name of the property containing a slide's comment, if any.
-
-.. data:: PROPERTY_NAME_VENDOR
-
-   The name of the property containing an identification of the vendor.
-
-.. data:: PROPERTY_NAME_QUICKHASH1
-
-   The name of the property containing the "quickhash-1" sum.
-
 .. data:: PROPERTY_NAME_BACKGROUND_COLOR
 
    The name of the property containing a slide's background color, if any.
    It is represented as an RGB hex triplet.
 
-.. data:: PROPERTY_NAME_OBJECTIVE_POWER
+.. data:: PROPERTY_NAME_BOUNDS_HEIGHT
 
-   The name of the property containing a slide's objective power, if known.
+   The name of the property containing the height of the rectangle bounding
+   the non-empty region of the slide, if available.
 
-.. data:: PROPERTY_NAME_MPP_X
+.. data:: PROPERTY_NAME_BOUNDS_WIDTH
 
-   The name of the property containing the number of microns per pixel in
-   the X dimension of level 0, if known.
-
-.. data:: PROPERTY_NAME_MPP_Y
-
-   The name of the property containing the number of microns per pixel in
-   the Y dimension of level 0, if known.
+   The name of the property containing the width of the rectangle bounding
+   the non-empty region of the slide, if available.
 
 .. data:: PROPERTY_NAME_BOUNDS_X
 
@@ -329,15 +313,31 @@ some commonly-used OpenSlide properties.
    The name of the property containing the Y coordinate of the rectangle
    bounding the non-empty region of the slide, if available.
 
-.. data:: PROPERTY_NAME_BOUNDS_WIDTH
+.. data:: PROPERTY_NAME_COMMENT
 
-   The name of the property containing the width of the rectangle bounding
-   the non-empty region of the slide, if available.
+   The name of the property containing a slide's comment, if any.
 
-.. data:: PROPERTY_NAME_BOUNDS_HEIGHT
+.. data:: PROPERTY_NAME_MPP_X
 
-   The name of the property containing the height of the rectangle bounding
-   the non-empty region of the slide, if available.
+   The name of the property containing the number of microns per pixel in
+   the X dimension of level 0, if known.
+
+.. data:: PROPERTY_NAME_MPP_Y
+
+   The name of the property containing the number of microns per pixel in
+   the Y dimension of level 0, if known.
+
+.. data:: PROPERTY_NAME_OBJECTIVE_POWER
+
+   The name of the property containing a slide's objective power, if known.
+
+.. data:: PROPERTY_NAME_QUICKHASH1
+
+   The name of the property containing the "quickhash-1" sum.
+
+.. data:: PROPERTY_NAME_VENDOR
+
+   The name of the property containing an identification of the vendor.
 
 
 Exceptions
