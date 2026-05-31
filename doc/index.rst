@@ -293,6 +293,10 @@ some commonly-used OpenSlide properties.
    The name of the property containing a slide's background color, if any.
    It is represented as an RGB hex triplet.
 
+.. data:: PROPERTY_NAME_BARCODE
+
+   The name of the property containing a slide's barcode, if any.
+
 .. data:: PROPERTY_NAME_BOUNDS_HEIGHT
 
    The name of the property containing the height of the rectangle bounding

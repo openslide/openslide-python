@@ -45,6 +45,7 @@ from openslide.lowlevel import OpenSlideVersionError as OpenSlideVersionError
 __library_version__ = lowlevel.get_version()
 
 PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
+PROPERTY_NAME_BARCODE = 'openslide.barcode'
 PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
 PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_X = 'openslide.bounds-x'
