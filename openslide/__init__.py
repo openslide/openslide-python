@@ -44,17 +44,18 @@ from openslide.lowlevel import OpenSlideVersionError as OpenSlideVersionError
 
 __library_version__ = lowlevel.get_version()
 
-PROPERTY_NAME_COMMENT = 'openslide.comment'
-PROPERTY_NAME_VENDOR = 'openslide.vendor'
-PROPERTY_NAME_QUICKHASH1 = 'openslide.quickhash-1'
 PROPERTY_NAME_BACKGROUND_COLOR = 'openslide.background-color'
-PROPERTY_NAME_OBJECTIVE_POWER = 'openslide.objective-power'
-PROPERTY_NAME_MPP_X = 'openslide.mpp-x'
-PROPERTY_NAME_MPP_Y = 'openslide.mpp-y'
+PROPERTY_NAME_BARCODE = 'openslide.barcode'
+PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
+PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
 PROPERTY_NAME_BOUNDS_X = 'openslide.bounds-x'
 PROPERTY_NAME_BOUNDS_Y = 'openslide.bounds-y'
-PROPERTY_NAME_BOUNDS_WIDTH = 'openslide.bounds-width'
-PROPERTY_NAME_BOUNDS_HEIGHT = 'openslide.bounds-height'
+PROPERTY_NAME_COMMENT = 'openslide.comment'
+PROPERTY_NAME_MPP_X = 'openslide.mpp-x'
+PROPERTY_NAME_MPP_Y = 'openslide.mpp-y'
+PROPERTY_NAME_OBJECTIVE_POWER = 'openslide.objective-power'
+PROPERTY_NAME_QUICKHASH1 = 'openslide.quickhash-1'
+PROPERTY_NAME_VENDOR = 'openslide.vendor'
 
 _T = TypeVar('_T')
 
