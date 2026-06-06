@@ -14,6 +14,7 @@ closest to a desired zoom level.
 OpenSlide can read virtual slides in several formats:
 
 * [Aperio][] (`.svs`, `.tif`)
+* [ARGOS][] (`.avs`)
 * [DICOM][] (`.dcm`)
 * [Hamamatsu][] (`.ndpi`, `.vms`, `.vmu`)
 * [Huron][] (`.tif`)
@@ -28,6 +29,7 @@ OpenSlide can read virtual slides in several formats:
 
 [OpenSlide]: https://openslide.org/
 [Aperio]: https://openslide.org/formats/aperio/
+[ARGOS]: https://openslide.org/formats/argos/
 [DICOM]: https://openslide.org/formats/dicom/
 [Hamamatsu]: https://openslide.org/formats/hamamatsu/
 [Huron]: https://openslide.org/formats/huron/
