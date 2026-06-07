@@ -1,5 +1,13 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.4.4, 2026-06-07
+
+### Changes
+
+* Add attribute for `openslide.barcode` property
+* examples: Update OpenSeadragon to 6.0.2
+
+
 ## Version 1.4.3, 2025-12-03
 
 ### New features
