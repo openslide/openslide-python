@@ -48,9 +48,9 @@ argb2rgba(PY_UINT32_T *buf, Py_ssize_t len)
             u8 g = 255 * ((val >>  8) & 0xff) / a;
             u8 b = 255 * ((val >>  0) & 0xff) / a;
 #ifdef WORDS_BIGENDIAN
-            val = r << 24 | g << 16 | b << 8 | a;
+            val = (PY_UINT32_T) r << 24 | g << 16 | b << 8 | a;
 #else
-            val = a << 24 | b << 16 | g << 8 | r;
+            val = (PY_UINT32_T) a << 24 | b << 16 | g << 8 | r;
 #endif
             buf[cur] = val;
             break;
