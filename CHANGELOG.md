@@ -1,6 +1,6 @@
 # Notable Changes in OpenSlide Python
 
-## Version 1.4.4, 2026-06-07
+## Version 1.4.5, 2026-06-07
 
 ### Changes
 
