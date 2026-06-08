@@ -279,7 +279,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/openslide-python
     needs: [pre-commit, tests, windows]
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     concurrency: release-${{ github.ref }}
     permissions:
       contents: write
@@ -305,7 +305,9 @@ jobs:
         tar xf "${{ needs.pre-commit.outputs.dist-base }}/openslide_python-${version}.tar"
         xz -9 "${{ needs.pre-commit.outputs.dist-base }}/openslide_python-${version}.tar"
         # extract changelog
-        awk '/^## / && ok {exit} /^## / {ok=1; next} ok {print}' \
+        awk -e '/^## / && ok {exit}' \
+            -e '/^## / {ok=1; next}' \
+            -e 'ok {print}' \
             "openslide_python-$version/CHANGELOG.md" > changes
         # create release; upload artifacts but not *.publish.attestation
         # files created by gh-action-pypi-publish
