@@ -13,7 +13,7 @@ closest to a desired zoom level.
 
 OpenSlide can read virtual slides in several formats:
 
-* [Aperio][] (`.svs`, `.tif`)
+* [Aperio][] (`.svs`)
 * [ARGOS][] (`.avs`)
 * [DICOM][] (`.dcm`)
 * [Hamamatsu][] (`.ndpi`, `.vms`, `.vmu`)
