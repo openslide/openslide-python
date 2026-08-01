@@ -310,16 +310,16 @@ class _FunctionUnavailable:
 
 
 _P = ParamSpec('_P')
-_T = TypeVar('_T', covariant=True)
+_T_co = TypeVar('_T_co', covariant=True)
 
 
-class _Func(Protocol[_P, _T]):
+class _Func(Protocol[_P, _T_co]):
     available: bool
 
-    def __call__(self, *args: _P.args) -> _T: ...  # type: ignore[valid-type]
+    def __call__(self, *args: _P.args) -> _T_co: ...  # type: ignore[valid-type]
 
 
-class _CTypesFunc(_Func[_P, _T]):
+class _CTypesFunc(_Func[_P, _T_co]):
     restype: type | None
     argtypes: list[type]
     errcheck: _ErrCheck
@@ -337,9 +337,9 @@ def _func(
     argtypes: list[type],
     errcheck: _ErrCheck = _check_error,
     minimum_version: str | None = None,
-) -> _Func[_P, _T]:
+) -> _Func[_P, _T_co]:
     try:
-        func: _CTypesFunc[_P, _T] = getattr(_lib, name)
+        func: _CTypesFunc[_P, _T_co] = getattr(_lib, name)
     except AttributeError:
         if minimum_version is None:
             raise
@@ -355,9 +355,9 @@ def _func(
 
 def _wraps_funcs(
     wrapped: list[_Func[..., Any]],
-) -> Callable[[Callable[_P, _T]], _Func[_P, _T]]:
-    def decorator(fn: Callable[_P, _T]) -> _Func[_P, _T]:
-        f = cast('_Func[_P, _T]', fn)
+) -> Callable[[Callable[_P, _T_co]], _Func[_P, _T_co]]:
+    def decorator(fn: Callable[_P, _T_co]) -> _Func[_P, _T_co]:
+        f = cast('_Func[_P, _T_co]', fn)
         f.available = True
         for w in wrapped:
             f.available = f.available and w.available

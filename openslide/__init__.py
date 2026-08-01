@@ -164,7 +164,6 @@ class AbstractSlide(metaclass=ABCMeta):
         This class does not support caching, so this method does nothing.
 
         cache: an OpenSlideCache object."""
-        pass
 
     def get_thumbnail(self, size: tuple[int, int]) -> Image.Image:
         """Return a PIL.Image containing an RGB thumbnail of the image.

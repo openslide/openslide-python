@@ -39,10 +39,9 @@ class TestImageWithoutOpening(unittest.TestCase):
 
     def test_open_image(self) -> None:
         # passing PIL.Image to ImageSlide
-        with Image.open(file_path('boxes.png')) as img:
-            with ImageSlide(img) as osr:
-                self.assertEqual(osr.dimensions, (300, 250))
-                self.assertEqual(repr(osr), f'ImageSlide({img!r})')
+        with Image.open(file_path('boxes.png')) as img, ImageSlide(img) as osr:
+            self.assertEqual(osr.dimensions, (300, 250))
+            self.assertEqual(repr(osr), f'ImageSlide({img!r})')
 
     @unittest.skipUnless(
         sys.getfilesystemencoding() == 'utf-8',
