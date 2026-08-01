@@ -6,7 +6,7 @@ from setuptools import Extension, setup
 
 # Load version string
 with open(Path(__file__).parent / 'openslide/_version.py') as _fh:
-    exec(_fh.read())  # instantiates __version__
+    exec(_fh.read())  # instantiates __version__  # noqa: S102
 
 # use the Limited API on Python 3.11+ on GIL builds; build release-specific
 # wheels on older or free-threaded Python

@@ -78,6 +78,7 @@ quote-style = "single"
 extend-select = ["B", "C4", "FLY", "I", "RUF", "UP"]
 # ambiguous-variable-name
 ignore = ["E741"]
+typing-extensions = false
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
