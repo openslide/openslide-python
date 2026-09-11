@@ -1,6 +1,6 @@
-//! openseadragon 6.1.0
-//! Built on 2026-08-06
-//! Git commit: v6.1.0-0-1dc52bd0
+//! openseadragon 6.1.1
+//! Built on 2026-09-09
+//! Git commit: v6.1.1-0-201d4783
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 /**
  * @namespace OpenSeadragon
- * @version openseadragon 6.1.0
+ * @version openseadragon 6.1.1
  * @classdesc The root namespace for OpenSeadragon.  All utility methods
  * and classes are defined on or below this namespace.
  *
@@ -932,10 +932,10 @@ function OpenSeadragon( options ){
      * @since 1.0.0
      */
     $.version = {
-        versionStr: '6.1.0',
+        versionStr: '6.1.1',
         major: parseInt('6', 10),
         minor: parseInt('1', 10),
-        revision: parseInt('0', 10)
+        revision: parseInt('1', 10)
     };
 
 
@@ -7934,8 +7934,8 @@ $.Control.prototype = {
      */
     destroy: function() {
         this.wrapper.removeChild( this.element );
-        if (this.anchor !== $.ControlAnchor.NONE) {
-            this.container.removeChild(this.wrapper);
+        if (this.wrapper.parentNode) {
+            this.wrapper.parentNode.removeChild(this.wrapper);
         }
     },
 
@@ -15730,7 +15730,7 @@ $.IIIFTileSource = function( options ){
     }
 
     // Create an array with precise resolution sizes if these have been supplied through the 'sizes' object
-    if( this.sizes ) {
+    if( this.sizes && this.sizes.length > 0 ) {
         let sizeLength = this.sizes.length;
 
         // Create a copy of the sizes list and sort in ascending order
@@ -16692,8 +16692,8 @@ $.extend( $.IIIFTileSource.prototype, $.TileSource.prototype, /** @lends OpenSea
      * @param {Object} data - The raw metadata object to check
      * @returns {Boolean} - True if supported, false otherwise
      */
-    supports: function(data) {
-      return (data && data.type === "iris" && data.serverUrl && data.slideId);
+    supports: function (data) {
+      return !!(data && data.type === "iris" && data.serverUrl && data.slideId);
     },
 
     /**
@@ -18438,6 +18438,8 @@ self.onmessage = async (e) => {
     // eslint-disable-next-line compat/compat
     const url = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
     _imageConversionWorker = new Worker(url);
+    // eslint-disable-next-line compat/compat
+    URL.revokeObjectURL(url);
 
     _imageConversionWorker.onmessage = (e) => {
         const { id, ok, bmp, err } = e.data || {};
@@ -29265,10 +29267,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         return this._needsDraw;
     },
 
+    /**
+     * @private
+     */
     get crossOriginPolicy(){
         return this._crossOriginPolicy;
     },
 
+    /**
+     * @private
+     */
     set crossOriginPolicy(crossOriginPolicy) {
         if (typeof crossOriginPolicy === 'string') {
             this._crossOriginPolicy = crossOriginPolicy.toLowerCase();
@@ -29884,9 +29892,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         this.flipped = flip;
     },
 
+    /**
+     * @private
+     */
     get flipped() {
         return this._flipped;
     },
+
+    /**
+     * @private
+     */
     set flipped(flipped) {
         const changed = this._flipped !== !!flipped;
         this._flipped = !!flipped;
@@ -29897,9 +29912,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
     },
 
+    /**
+     * @private
+     */
     get wrapHorizontal(){
         return this._wrapHorizontal;
     },
+
+    /**
+     * @private
+     */
     set wrapHorizontal(wrap){
         const changed = this._wrapHorizontal !== !!wrap;
         this._wrapHorizontal = !!wrap;
@@ -29910,9 +29932,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
     },
 
+    /**
+     * @private
+     */
     get wrapVertical(){
         return this._wrapVertical;
     },
+
+    /**
+     * @private
+     */
     set wrapVertical(wrap){
         const changed = this._wrapVertical !== !!wrap;
         this._wrapVertical = !!wrap;
@@ -29923,9 +29952,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
     },
 
+    /**
+     * @private
+     */
     get debugMode(){
         return this._debugMode;
     },
+
+    /**
+     * @private
+     */
     set debugMode(debug){
         this._debugMode = !!debug;
         this._needsDraw = true;
@@ -29946,10 +29982,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         this.opacity = opacity;
     },
 
+    /**
+     * @private
+     */
     get opacity() {
         return this._opacity;
     },
 
+    /**
+     * @private
+     */
     set opacity(opacity) {
         if (opacity === this.opacity) {
             return;
@@ -30117,10 +30159,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         return this.getBoundsNoRotate(current).getCenter();
     },
 
+    /**
+     * @private
+     */
     get compositeOperation(){
         return this._compositeOperation;
     },
 
+    /**
+     * @private
+     */
     set compositeOperation(compositeOperation){
 
         if (compositeOperation === this._compositeOperation) {
