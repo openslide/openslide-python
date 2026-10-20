@@ -8,7 +8,7 @@ from setuptools import Extension, setup
 with open(Path(__file__).parent / 'openslide/_version.py') as _fh:
     exec(_fh.read())  # instantiates __version__  # noqa: S102
 
-# use the Limited API on Python 3.11+ on GIL builds; build release-specific
+# use the Stable ABI on Python 3.11+ on GIL builds; build release-specific
 # wheels on older or free-threaded Python
 _abi3 = sys.version_info >= (3, 11) and not sysconfig.get_config_var('Py_GIL_DISABLED')
 
@@ -19,12 +19,12 @@ setup(
             ['openslide/_convert.c'],
             # hide symbols that aren't in the Limited API
             define_macros=[('Py_LIMITED_API', '0x030b0000')] if _abi3 else [],
-            # tag extension module for Limited API
+            # tag extension module for Stable ABI
             py_limited_api=_abi3,
         ),
     ],
     options={
-        # tag wheel for Limited API
+        # tag wheel for Stable ABI
         'bdist_wheel': {'py_limited_api': 'cp311'} if _abi3 else {},
     },
     #
