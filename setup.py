@@ -1,13 +1,8 @@
-from pathlib import Path
 import sys
 import sysconfig
 
 from setuptools import Extension, setup
 from setuptools import __version__ as _setuptools_ver
-
-# Load version string
-with open(Path(__file__).parent / 'openslide/_version.py') as _fh:
-    exec(_fh.read())  # instantiates __version__  # noqa: S102
 
 # Use the free-threaded Stable ABI (abi3t) only on free-threaded Python
 # 3.15+ with setuptools 84.2+; Python supports building abi3t from
@@ -45,18 +40,4 @@ setup(
         if _abi3
         else {},
     },
-    #
-    # setuptools < 61 compatibility for distro packages building from source
-    name='openslide-python',
-    version=__version__,  # type: ignore[name-defined]  # noqa: F821
-    install_requires=[
-        'Pillow',
-    ],
-    packages=[
-        'openslide',
-    ],
-    package_data={
-        'openslide': ['py.typed', '*.pyi'],
-    },
-    zip_safe=False,
 )
