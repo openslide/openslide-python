@@ -178,9 +178,7 @@ class AbstractSlide(metaclass=ABCMeta):
         bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR, 'ffffff')
         thumb = Image.new('RGB', tile.size, bg_color)
         thumb.paste(tile, None, tile)
-        # Image.Resampling added in Pillow 9.1.0
-        # Image.LANCZOS removed in Pillow 10
-        thumb.thumbnail(size, getattr(Image, 'Resampling', Image).LANCZOS)
+        thumb.thumbnail(size, Image.Resampling.LANCZOS)
         if self._profile is not None:
             thumb.info['icc_profile'] = self._profile
         return thumb
