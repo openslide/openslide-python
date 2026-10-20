@@ -392,7 +392,8 @@ class ImageSlide(AbstractSlide):
         If the file format is not recognized, return None."""
         try:
             with Image.open(filename) as img:
-                return img.format
+                # mypy will think img is Any until we drop Python 3.10
+                return img.format  # type: ignore[no-any-return]
         except OSError:
             return None
 
