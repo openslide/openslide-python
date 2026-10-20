@@ -102,6 +102,40 @@ static PyMethodDef _convert_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+#ifdef Py_TARGET_ABI3T
+PyABIInfo_VAR(abi_info);
+
+static PySlot _convert_slot_array[] = {
+    PySlot_STATIC_DATA(Py_mod_abi, &abi_info),
+    PySlot_STATIC_DATA(Py_mod_name, "_convert"),
+    PySlot_STATIC_DATA(Py_mod_methods, _convert_methods),
+    PySlot_DATA(Py_mod_gil, Py_MOD_GIL_NOT_USED),
+    PySlot_DATA(Py_mod_multiple_interpreters,
+                Py_MOD_PER_INTERPRETER_GIL_SUPPORTED),
+    PySlot_END
+};
+
+PyMODEXPORT_FUNC
+PyModExport__convert(void)
+{
+    return _convert_slot_array;
+}
+
+#ifdef _WIN32
+// distutils insists on exporting a PyInit_ function on Windows
+// https://github.com/pypa/distutils/issues/387
+// https://github.com/python/cpython/issues/158098
+PyMODINIT_FUNC
+PyInit__convert(void)
+{
+    PyErr_SetString(PyExc_SystemError,
+                    "PyInit_* called for module with PyModExport_*");
+    return NULL;
+}
+#endif
+
+#else
+
 static PyModuleDef_Slot _convert_slots[] = {
 #if PY_VERSION_HEX >= 0x030D0000 && !defined(Py_LIMITED_API)
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
@@ -124,3 +158,4 @@ PyInit__convert(void)
 {
     return PyModuleDef_Init(&_convert_module);
 }
+#endif
