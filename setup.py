@@ -7,7 +7,7 @@ from setuptools import __version__ as _setuptools_ver
 # Use the free-threaded Stable ABI (abi3t) only on free-threaded Python
 # 3.15+ with setuptools 84.2+; Python supports building abi3t from
 # GIL-enabled interpreters but setuptools doesn't yet.  Use the
-# non-free-threaded Stable API (abi3) on Python 3.11+ with GIL enabled, and
+# non-free-threaded Stable API (abi3) with GIL enabled, and
 # release-specific wheels in all other cases.
 _freethread = sysconfig.get_config_var('Py_GIL_DISABLED')
 _abi3t = (
@@ -15,7 +15,7 @@ _abi3t = (
     and _freethread
     and tuple(int(c) for c in _setuptools_ver.split('.')) >= (84, 2)
 )
-_abi3 = sys.version_info >= (3, 11) and not _freethread
+_abi3 = not _freethread
 
 setup(
     ext_modules=[

@@ -28,7 +28,7 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterator, Mapping
 from io import BytesIO
 from types import TracebackType
-from typing import Literal, TypeVar
+from typing import Literal, Self, TypeVar
 
 from PIL import Image, ImageCms
 
@@ -66,7 +66,7 @@ class AbstractSlide(metaclass=ABCMeta):
     def __init__(self) -> None:
         self._profile: bytes | None = None
 
-    def __enter__(self: _T) -> _T:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(
