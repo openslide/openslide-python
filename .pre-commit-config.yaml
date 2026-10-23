@@ -40,7 +40,7 @@ repos:
         name: Check Python types
         priority: 0
         # Pillow is ignored in dependabot.yml
-        additional_dependencies: [flask, openslide-bin, pillow >= 13.0.0, types-PyYAML, types-setuptools]
+        additional_dependencies: [flask, openslide-bin, pillow >= 12.1.0, types-PyYAML, types-setuptools]
 
   - repo: https://github.com/rstcheck/rstcheck
     rev: v6.3.0
@@ -56,8 +56,6 @@ repos:
       - id: codespell
         name: Check spelling with codespell
         priority: 0
-        additional_dependencies:
-          - tomli  # Python < 3.11
 
   - repo: meta
     hooks:

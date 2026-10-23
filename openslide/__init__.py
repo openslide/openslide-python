@@ -28,7 +28,7 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterator, Mapping
 from io import BytesIO
 from types import TracebackType
-from typing import Literal, TypeVar
+from typing import Literal, Self, TypeVar
 
 from PIL import Image, ImageCms
 
@@ -66,7 +66,7 @@ class AbstractSlide(metaclass=ABCMeta):
     def __init__(self) -> None:
         self._profile: bytes | None = None
 
-    def __enter__(self: _T) -> _T:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(
@@ -178,9 +178,7 @@ class AbstractSlide(metaclass=ABCMeta):
         bg_color = '#' + self.properties.get(PROPERTY_NAME_BACKGROUND_COLOR, 'ffffff')
         thumb = Image.new('RGB', tile.size, bg_color)
         thumb.paste(tile, None, tile)
-        # Image.Resampling added in Pillow 9.1.0
-        # Image.LANCZOS removed in Pillow 10
-        thumb.thumbnail(size, getattr(Image, 'Resampling', Image).LANCZOS)
+        thumb.thumbnail(size, Image.Resampling.LANCZOS)
         if self._profile is not None:
             thumb.info['icc_profile'] = self._profile
         return thumb
@@ -392,8 +390,7 @@ class ImageSlide(AbstractSlide):
         If the file format is not recognized, return None."""
         try:
             with Image.open(filename) as img:
-                # mypy will think img is Any until we drop Python 3.10
-                return img.format  # type: ignore[no-any-return]
+                return img.format
         except OSError:
             return None
 
