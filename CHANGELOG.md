@@ -1,5 +1,13 @@
 # Notable Changes in OpenSlide Python
 
+## Version 1.4.7, 2026-10-23
+
+### Changes
+
+* Build version-independent wheels on free-threaded Python ≥ 3.15
+* examples: Update OpenSeadragon to 6.1.1
+
+
 ## Version 1.4.6, 2026-06-07
 
 ### Changes
