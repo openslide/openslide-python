@@ -185,9 +185,7 @@ class DeepZoomGenerator:
 
         # Scale to the correct size
         if tile.size != z_size:
-            # Image.Resampling added in Pillow 9.1.0
-            # Image.LANCZOS removed in Pillow 10
-            tile.thumbnail(z_size, getattr(Image, 'Resampling', Image).LANCZOS)
+            tile.thumbnail(z_size, Image.Resampling.LANCZOS)
 
         # Reference ICC profile
         if profile is not None:
