@@ -21,6 +21,7 @@ from __future__ import annotations
 import unittest
 
 from common import file_path
+from PIL import Image
 
 from openslide import ImageSlide, OpenSlide, lowlevel
 from openslide.deepzoom import DeepZoomGenerator
@@ -84,6 +85,16 @@ class _Abstract:
         def test_get_tile(self) -> None:
             self.assertEqual(self.dz.get_tile(9, (1, 0)).size, (47, 250))
 
+        def test_get_tile_matches_tile_dimensions(self) -> None:
+            for level in range(self.dz.level_count):
+                cols, rows = self.dz.level_tiles[level]
+                for col in range(cols):
+                    for row in range(rows):
+                        self.assertEqual(
+                            self.dz.get_tile(level, (col, row)).size,
+                            self.dz.get_tile_dimensions(level, (col, row)),
+                        )
+
         def test_tile_color_profile(self) -> None:
             if self.CLASS is OpenSlide and not lowlevel.read_icc_profile.available:
                 self.skipTest('requires OpenSlide 4.0.0')
@@ -119,3 +130,27 @@ class TestSlideDeepZoom(_Abstract.BoxesDeepZoomTest):
 class TestImageDeepZoom(_Abstract.BoxesDeepZoomTest):
     CLASS = ImageSlide
     FILENAME = 'boxes.png'
+
+
+class TestDeepZoomEdgeTileSizes(unittest.TestCase):
+    def test_consistent_column_and_row_tile_sizes(self) -> None:
+        # Downsampled multi-tile level where edge tiles have non-uniform
+        # source aspect ratios (issue #111).
+        img = Image.new('RGB', (1439, 1029))
+        with ImageSlide(img) as osr:
+            dz = DeepZoomGenerator(osr, tile_size=254, overlap=1)
+            level = dz.level_count - 2  # 720x515 -> 3x3 tiles
+            cols, rows = dz.level_tiles[level]
+            col_widths: list[set[int]] = [set() for _ in range(cols)]
+            row_heights: list[set[int]] = [set() for _ in range(rows)]
+            for col in range(cols):
+                for row in range(rows):
+                    tile = dz.get_tile(level, (col, row))
+                    expected = dz.get_tile_dimensions(level, (col, row))
+                    self.assertEqual(tile.size, expected)
+                    col_widths[col].add(tile.width)
+                    row_heights[row].add(tile.height)
+            for widths in col_widths:
+                self.assertEqual(len(widths), 1)
+            for heights in row_heights:
+                self.assertEqual(len(heights), 1)
